@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -47,11 +48,12 @@ public class MazeRunner {
 
         this.activeTrigger = new Trigger(loop, () -> this.active);
 
-        for(EventMarker e : this.trajectory.events()) {
+        for(EventMarker e : this.trajectory.getEvents("test")) {
             if (this.eventtimes.containsKey(e.event))
                 ChoreoAlert.alert("YO MR. HICE SPICE SAYS NOT TO HAVE TWO EVENTS WITH THE SAME NAME, goofus.", Alert.AlertType.kWarning);
 
             this.eventtimes.put(e.event, atTime(e.timestamp));
+            SmartDashboard.putString("test1", "Added event " + e.event + " at time " + e.timestamp);
         }
     }
 
@@ -133,7 +135,7 @@ public class MazeRunner {
         return new FunctionalCommand(
                 () -> {
                     this.timer.restart();
-                    this.drive.resetPose(new Pose2d());
+                    this.trajectory.getInitialPose(autoFlip && ChoreoAllianceFlipUtil.shouldFlip()).ifPresent(this.drive::resetPose);
                     this.active = true;
                 },
                 () -> {
@@ -143,12 +145,7 @@ public class MazeRunner {
                     sample.ifPresent(this.drive::followPath);
                 },
                 interrupted -> {
-                    if (interrupted) {
-                        this.drive.setControl(new SwerveRequest.ApplyFieldSpeeds().withSpeeds(new ChassisSpeeds()));
-                    } else {
-                        Optional<SwerveSample> sample = this.trajectory.getFinalSample(autoFlip && ChoreoAllianceFlipUtil.shouldFlip());
-                        sample.ifPresent(this.drive::followPath);
-                    }
+                    this.drive.setControl(new SwerveRequest.ApplyFieldSpeeds().withSpeeds(new ChassisSpeeds()));
 
                     this.active = false;
                 },
