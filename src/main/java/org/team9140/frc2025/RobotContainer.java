@@ -12,16 +12,26 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+import org.team9140.lib.MazeRunner;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 
 public class RobotContainer
 {
+    private Command autonomousCommand = Commands.print("No autonomous sequence has been set.");
+
+    private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
     CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     CommandXboxController controller = new CommandXboxController(0);
 
     public RobotContainer() {
+        MazeRunner path = new MazeRunner("themaze", drivetrain, true);
+
+        autonomousCommand = path.gimmeCommand();
+
         configureBindings();
     }
 
@@ -35,9 +45,11 @@ public class RobotContainer
         controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
         controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
         controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
+
+        this.drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autonomousCommand;
     }
 }
