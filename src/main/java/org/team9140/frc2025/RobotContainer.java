@@ -5,6 +5,7 @@
 
 package org.team9140.frc2025;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -29,7 +30,7 @@ public class RobotContainer
     CommandXboxController controller = new CommandXboxController(0);
 
     public RobotContainer() {
-        MazeRunner path = new MazeRunner("themaze", drivetrain, true);
+        MazeRunner path = new MazeRunner("themaze", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
         path.atEventTime("Marker").onTrue(new PrintCommand("test1"));
         autonomousCommand = path.gimmeCommand();
 

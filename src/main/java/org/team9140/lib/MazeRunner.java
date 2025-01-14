@@ -13,10 +13,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -24,36 +26,39 @@ import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.function.BooleanSupplier;
 
 public class MazeRunner {
     private final TreeMap<String, Trigger> eventtimes;
+    private final StructPublisher<Pose2d> posePublisher;
     private Trajectory<SwerveSample> trajectory;
     private final EventLoop loop;
     private final Timer timer;
     private final CommandSwerveDrivetrain drive;
+    private final DriverStation.Alliance alliance;
 
-    private final boolean autoFlip;
     private boolean active = false;
     private final Trigger activeTrigger;
 
-    public MazeRunner(String name, CommandSwerveDrivetrain drivetrain, boolean autoMirror) {
-        Choreo.<SwerveSample>loadTrajectory(name).ifPresent(trajectory -> this.trajectory = trajectory);
+    public MazeRunner(String name, CommandSwerveDrivetrain drivetrain, DriverStation.Alliance alliance) {
+        Choreo.<SwerveSample>loadTrajectory(name).ifPresent(trajectory -> this.trajectory = alliance.equals(DriverStation.Alliance.Blue) ? trajectory : trajectory.flipped());
         this.drive = drivetrain;
-        this.autoFlip = autoMirror;
 
         this.loop = new EventLoop();
         this.timer = new Timer();
         this.eventtimes = new TreeMap<>();
+        this.alliance = alliance;
+        this.posePublisher = NetworkTableInstance.getDefault().getStructTopic("expected_pose", Pose2d.struct).publish();
 
         this.activeTrigger = new Trigger(loop, () -> this.active);
 
-        for(EventMarker e : this.trajectory.getEvents("test")) {
+        NetworkTableInstance.getDefault().getStructArrayTopic("trajectory", Pose2d.struct).publish().set(this.trajectory.getPoses());
+
+        for(EventMarker e : this.trajectory.events()) {
             if (this.eventtimes.containsKey(e.event))
                 ChoreoAlert.alert("YO MR. HICE SPICE SAYS NOT TO HAVE TWO EVENTS WITH THE SAME NAME, goofus.", Alert.AlertType.kWarning);
 
             this.eventtimes.put(e.event, atTime(e.timestamp));
-            SmartDashboard.putString("test1", "Added event " + e.event + " at time " + e.timestamp);
+            System.out.println("Added event " + e.event + " at time " + e.timestamp);
         }
     }
 
@@ -64,18 +69,7 @@ public class MazeRunner {
     public Trigger atTime(double timestamp) {
         return new Trigger(
                 loop,
-                new BooleanSupplier() {
-                    double lastTimestamp = timer.get();
-
-                    public boolean getAsBoolean() {
-                        double nowTimestamp = timer.get();
-                        try {
-                            return lastTimestamp < nowTimestamp && nowTimestamp >= timestamp;
-                        } finally {
-                            lastTimestamp = nowTimestamp;
-                        }
-                    }
-                })
+                () -> timer.get() >= timestamp)
                 .and(activeTrigger);
     }
 
@@ -91,58 +85,68 @@ public class MazeRunner {
 
     public Trigger atPose(Pose2d pose, double toleranceMeters, double toleranceRadians) {
         Pose2d flippedPose = ChoreoAllianceFlipUtil.flip(pose);
+
+        if (this.alliance.equals(DriverStation.Alliance.Red)) {
+            return positionTrigger(flippedPose, toleranceMeters, toleranceRadians);
+        }
+        return positionTrigger(pose, toleranceMeters, toleranceRadians);
+    }
+
+    private Trigger positionTrigger(Pose2d pose, double toleranceMeters, double toleranceRadians) {
         return new Trigger(
                 loop,
                 () -> {
                     final Pose2d currentPose = this.drive.getState().Pose;
-                    if (autoFlip && ChoreoAllianceFlipUtil.shouldFlip()) {
-                        boolean transValid =
-                                currentPose.getTranslation().getDistance(flippedPose.getTranslation())
-                                        < toleranceMeters;
-                        boolean rotValid =
-                                withinTolerance(
-                                        currentPose.getRotation(), flippedPose.getRotation(), toleranceRadians);
-                        return transValid && rotValid;
-                    } else {
-                        boolean transValid =
-                                currentPose.getTranslation().getDistance(pose.getTranslation())
-                                        < toleranceMeters;
-                        boolean rotValid =
-                                withinTolerance(
-                                        currentPose.getRotation(), pose.getRotation(), toleranceRadians);
-                        return transValid && rotValid;
-                    }
+                    boolean transValid =
+                            currentPose.getTranslation().getDistance(pose.getTranslation())
+                                    < toleranceMeters;
+                    boolean rotValid =
+                            withinTolerance(
+                                    currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+                    return transValid && rotValid;
                 })
                 .and(activeTrigger);
     }
 
     public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
         Translation2d flippedTranslation = ChoreoAllianceFlipUtil.flip(translation);
+
+        if (this.alliance.equals(DriverStation.Alliance.Red)) {
+            return new Trigger(
+                    loop,
+                    () -> {
+                        final Translation2d currentTrans = this.drive.getState().Pose.getTranslation();
+                        return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
+                    })
+                    .and(activeTrigger);
+        }
+
         return new Trigger(
                 loop,
                 () -> {
                     final Translation2d currentTrans = this.drive.getState().Pose.getTranslation();
-                    if (autoFlip && ChoreoAllianceFlipUtil.shouldFlip()) {
-                        return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
-                    } else {
-                        return currentTrans.getDistance(translation) < toleranceMeters;
-                    }
+                    return currentTrans.getDistance(translation) < toleranceMeters;
                 })
                 .and(activeTrigger);
+    }
+
+    public Pose2d getInitialPose() {
+        return this.trajectory.getInitialPose(false).get();
     }
 
     public Command gimmeCommand() {
         return new FunctionalCommand(
                 () -> {
                     this.timer.restart();
-                    this.trajectory.getInitialPose(autoFlip && ChoreoAllianceFlipUtil.shouldFlip()).ifPresent(this.drive::resetPose);
                     this.active = true;
                 },
                 () -> {
                     this.loop.poll();
-                    Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), autoFlip && ChoreoAllianceFlipUtil.shouldFlip());
-
-                    sample.ifPresent(this.drive::followPath);
+                    Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), false);
+                    sample.ifPresent((swerveSample) -> {
+                        this.drive.followPath(swerveSample);
+                        this.posePublisher.set(swerveSample.getPose());
+                    });
                 },
                 interrupted -> {
                     this.drive.setControl(new SwerveRequest.ApplyFieldSpeeds().withSpeeds(new ChassisSpeeds()));
