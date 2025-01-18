@@ -2,11 +2,19 @@ package org.team9140.frc2025.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import com.ctre.phoenix6.swerve.SwerveModule;
+import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.lib.SysIdRoutineTorqueCurrent;
+import org.team9140.lib.swerve.SwerveRequests9140;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -52,46 +60,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
-    /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+    private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();
+
+    private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
+            new SysIdRoutineTorqueCurrent.Config(
+                    Amps.of(0.25).per(Second),
+                    Amps.of(5.0),
+                    Seconds.of(15),
+                    state -> SignalLogger.writeString("sysIdSteer_state", state.toString())),
+            new SysIdRoutineTorqueCurrent.Mechanism(
+                    output -> setControl(m_steerSysID.withAmps(output)),
+                    null,
+                    this));
+
+    /*
+     * SysId routine for characterizing translation. This is used to find PID gains
+     * for the drive motors.
+     */
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
-                    null,        // Use default ramp rate (1 V/s)
+                    null, // Use default ramp rate (1 V/s)
                     Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-                    null,        // Use default timeout (10 s)
+                    null, // Use default timeout (10 s)
                     // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
-            ),
+                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
             new SysIdRoutine.Mechanism(
                     output -> setControl(m_translationCharacterization.withVolts(output)),
                     null,
-                    this
-            )
-    );
-
-    /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    null,        // Use default ramp rate (1 V/s)
-                    Volts.of(7), // Use dynamic voltage of 7 V
-                    null,        // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
-            ),
-            new SysIdRoutine.Mechanism(
-                    volts -> setControl(m_steerCharacterization.withVolts(volts)),
-                    null,
-                    this
-            )
-    );
+                    this));
 
     /*
      * SysId routine for characterizing rotation.
-     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+     * This is used to find PID gains for the FieldCentricFacingAngle
+     * HeadingController.
+     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
+     * importing the log to SysId.
      */
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     /* This is in radians per second², but SysId only supports "volts per second" */
@@ -100,8 +108,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     Volts.of(Math.PI),
                     null, // Use default timeout (10 s)
                     // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
-            ),
+                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
             new SysIdRoutine.Mechanism(
                     output -> {
                         /* output is actually radians per second, but SysId only supports "volts" */
@@ -110,12 +117,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
                     },
                     null,
-                    this
-            )
-    );
-
-    /* The SysId routine to test */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+                    this));
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -258,26 +260,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
     }
 
-    /**
-     * Runs the SysId Quasistatic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Quasistatic test
-     * @return Command to run
-     */
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.quasistatic(direction);
+    public Command sysIdSteerQ(SysIdRoutine.Direction direction) {
+        return m_steerRoutine.quasistatic(direction);
     }
 
-    /**
-     * Runs the SysId Dynamic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Dynamic test
-     * @return Command to run
-     */
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.dynamic(direction);
+    public Command sysIdSteerD(SysIdRoutine.Direction direction) {
+        return m_steerRoutine.dynamic(direction);
     }
 
     @Override
@@ -299,6 +287,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+    }
+
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+            .withDeadband(MetersPerSecond.of(0.3))
+            .withRotationalDeadband(RotationsPerSecond.of(0.2))
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
+        return this.run(() -> {
+            var vX = TunerConstants.kSpeedAt12Volts.times(-leftStickY.getAsDouble());
+            var vY = TunerConstants.kSpeedAt12Volts.times(-leftStickX.getAsDouble());
+            var omega = RotationsPerSecond.of(2).times(-rightStickX.getAsDouble());
+
+            this.setControl(this.drive
+                    .withVelocityX(vX)
+                    .withVelocityY(vY)
+                    .withRotationalRate(omega));
+        });
+    }
+
+    public Command resetGyroCommand() {
+        return this.runOnce(this::seedFieldCentric);
     }
 
     private void startSimThread() {
