@@ -5,6 +5,9 @@
 
 package org.team9140.frc2025;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -23,6 +26,8 @@ public class RobotContainer
 {
     private Command autonomousCommand = Commands.print("No autonomous sequence has been set.");
 
+    private MazeRunner path;
+
     private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
     CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -30,9 +35,18 @@ public class RobotContainer
     CommandXboxController controller = new CommandXboxController(0);
 
     public RobotContainer() {
-        MazeRunner path = new MazeRunner("themaze", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        path.atEventTime("Marker").onTrue(new PrintCommand("test1"));
-        autonomousCommand = path.gimmeCommand();
+        this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
+        this.path.atEventTime("test2").onTrue(new PrintCommand("test2"));
+        this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
+        this.path.atPose(new Pose2d(4.631613731384277, 7.529511451721191, Rotation2d.fromDegrees(90)), 0.05, 0.03).onTrue(
+                new PrintCommand("Pose 4")
+        );
+        this.path.atTranslation(new Translation2d(2.885009765625, 5.642167568206787), 0.1).onTrue(
+                        new PrintCommand("Pose 5")
+                );
+
+        this.autonomousCommand = this.path.gimmeCommand();
 
         configureBindings();
     }
@@ -43,15 +57,26 @@ public class RobotContainer
 
         controller.start().onTrue(drivetrain.resetGyroCommand());
 
-        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
+
+//        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
+
+        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     public Command getAutonomousCommand() {
+        this.drivetrain.resetPose(this.path.getInitialPose());
         return autonomousCommand;
     }
 }

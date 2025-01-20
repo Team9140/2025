@@ -6,6 +6,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule;
+import edu.wpi.first.math.MathUtil;
+import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
 import org.team9140.lib.swerve.SwerveRequests9140;
@@ -70,7 +73,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
             new SysIdRoutineTorqueCurrent.Config(
-                    Amps.of(0.25).per(Second),
+                    Amps.of(1.0).per(Second),
                     Amps.of(5.0),
                     Seconds.of(15),
                     state -> SignalLogger.writeString("sysIdSteer_state", state.toString())),
@@ -272,6 +275,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_steerRoutine.dynamic(direction);
     }
 
+    public Command sysIdRotateQ(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineRotation.quasistatic(direction);
+    }
+
+    public Command sysIdRotateD(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineRotation.dynamic(direction);
+    }
+
+    public Command sysIdDriveQ(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineTranslation.quasistatic(direction);
+    }
+
+    public Command sysIdDriveD(SysIdRoutine.Direction direction) {
+        return m_sysIdRoutineTranslation.dynamic(direction);
+    }
+
     @Override
     public void periodic() {
         /*
@@ -294,15 +313,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MetersPerSecond.of(0.3))
-            .withRotationalDeadband(RotationsPerSecond.of(0.2))
+            .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS)
+            .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
+            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
-            var vX = TunerConstants.kSpeedAt12Volts.times(-leftStickY.getAsDouble());
-            var vY = TunerConstants.kSpeedAt12Volts.times(-leftStickX.getAsDouble());
-            var omega = RotationsPerSecond.of(2).times(-rightStickX.getAsDouble());
+            var vX = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickY.getAsDouble()));
+            var vY = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickX.getAsDouble()));
+            var omega = RotationsPerSecond.of(2).times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
             this.setControl(this.drive
                     .withVelocityX(vX)
