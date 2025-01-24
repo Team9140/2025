@@ -27,6 +27,8 @@ import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import static org.team9140.lib.Util.rotationEpsilonEquals;
+
 public class MazeRunner {
     private final TreeMap<String, Trigger> eventtimes;
     private final StructPublisher<Pose2d> posePublisher;
@@ -73,16 +75,6 @@ public class MazeRunner {
                 .and(activeTrigger);
     }
 
-    private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
-        if (Math.abs(toleranceRadians) > Math.PI) {
-            return true;
-        }
-        double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
-        // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi], as pre-checked
-        // above.
-        return dot > Math.cos(toleranceRadians);
-    }
-
     public Trigger atPose(Pose2d pose, double toleranceMeters, double toleranceRadians) {
         Pose2d flippedPose = ChoreoAllianceFlipUtil.flip(pose);
 
@@ -101,7 +93,7 @@ public class MazeRunner {
                             currentPose.getTranslation().getDistance(pose.getTranslation())
                                     < toleranceMeters;
                     boolean rotValid =
-                            withinTolerance(
+                            rotationEpsilonEquals(
                                     currentPose.getRotation(), pose.getRotation(), toleranceRadians);
                     return transValid && rotValid;
                 })
