@@ -32,8 +32,6 @@ public class Util {
         final double tau = 2 * Math.PI;
         double theta_a = a.getRadians() < 0 ? tau - (-a.getRadians() % tau): a.getRadians() % tau;
         double theta_b = b.getRadians() < 0 ? tau - (-b.getRadians() % tau): b.getRadians() % tau;
-        System.out.println("theta_a = " + theta_a);
-        System.out.println("theta_b = " + theta_b);
         return epsilonEquals(theta_a, theta_b, epsilon);
     }
 
