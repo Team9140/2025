@@ -55,8 +55,6 @@ public class RobotContainer
         drivetrain
                 .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
 
-        controller.start().onTrue(drivetrain.resetGyroCommand());
-
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -67,10 +65,10 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
-        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }

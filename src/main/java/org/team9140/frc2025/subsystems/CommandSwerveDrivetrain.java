@@ -10,6 +10,7 @@ import edu.wpi.first.math.MathUtil;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
@@ -310,6 +311,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        SmartDashboard.putString("Closest Branch", AutoAiming.getBranch(this.getState().Pose.getTranslation()).toString());
     }
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -324,6 +327,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             var vY = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickX.getAsDouble()));
             var omega = RotationsPerSecond.of(2).times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
+            SmartDashboard.putNumber("right stick", rightStickX.getAsDouble());
             this.setControl(this.drive
                     .withVelocityX(vX)
                     .withVelocityY(vY)
