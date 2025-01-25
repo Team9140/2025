@@ -2,11 +2,8 @@ package org.team9140.frc2025.subsystems;
 
 import java.util.EnumSet;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.field.AprilTag;
 import org.team9140.lib.TargetInfo;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -71,6 +68,16 @@ public class Limelight extends SubsystemBase {
         }
     }
 
+    private class Listener implements TableEventListener {
+        @Override
+        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
+            if (key.equals("json")) {
+                if (!mDisableProcessing) {
+                    readInputsAndAddVisionUpdate();
+                }
+            }
+        }
+    }
 
     /**
      * Represents a Class to Store a Vision Update
@@ -80,12 +87,10 @@ public class Limelight extends SubsystemBase {
         private double timestamp;
         private Translation2d cameraToTarget;
         private int tagId;
-        private Pose2d fieldToTag;
 
         public VisionUpdate(double timestamp, Translation2d cameraToTarget, int tagId) {
             this.timestamp = timestamp;
             this.cameraToTarget = cameraToTarget;
-            this.fieldToTag = mTagMap.get(tagId).getFieldToTag();
         }
 
         public double getTimestamp() {
@@ -96,23 +101,8 @@ public class Limelight extends SubsystemBase {
             return cameraToTarget;
         }
 
-        public Pose2d getFieldToTag() {
-            return fieldToTag;
-        }
-
         public int getTagId() {
             return tagId;
-        }
-    }
-
-    private class Listener implements TableEventListener {
-        @Override
-        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-            if (key.equals("json")) {
-                if (!mDisableProcessing) {
-                    readInputsAndAddVisionUpdate();
-                }
-            }
         }
     }
 
@@ -155,24 +145,6 @@ public class Limelight extends SubsystemBase {
         mPeriodicIO.corners = mNetworkTable.getEntry("tcornxy").getNumberArray(new Number[] { 0, 0, 0, 0, 0 });
         Translation2d cameraToTarget = getCameraToTargetTranslation();
         int tagId = mPeriodicIO.tagId;
-
-        if (mPeriodicIO.seesTarget) {
-            if (mTagMap.keySet().contains(tagId) && cameraToTarget != null) {
-                RobotState.getInstance().addVisionUpdate(
-                        new VisionUpdate(timestamp - mPeriodicIO.latency, cameraToTarget, tagId));
-            } else {
-                RobotState.getInstance().addVisionUpdate(null);
-            }
-        }
-    }
-
-    /**
-     * Starts the Listener
-     */
-    public synchronized void start() {
-        if (mListenerId < 0) {
-            mListenerId = mNetworkTable.addListener("json", EnumSet.of(Kind.kValueAll), new Listener());
-        }
     }
 
     /**
@@ -264,7 +236,8 @@ public class Limelight extends SubsystemBase {
 
         double offset = isTopCorner ? Units.inchesToMeters(3) : - Units.inchesToMeters(3);
         // find intersection with the goal
-        double differential_height = mTagMap.get(target.getTagId()).getHeight() - Constants.Camera.kLensHeight + offset;
+        //replace map
+        double differential_height = Constants.Camera.FIELD_LAYOUT.getTagPose(target.getTagId()).get().getZ() - Constants.Camera.kLensHeight + offset;
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
             double distance = Math.hypot(x, y) * scaling;
@@ -285,7 +258,7 @@ public class Limelight extends SubsystemBase {
         // Get corners
         List<Translation2d> corners = getCorners(mPeriodicIO.corners);
 
-        if (corners.size() < 4 || !mTagMap.containsKey(mPeriodicIO.tagId)) {
+        if (corners.size() < 4 || Constants.Camera.FIELD_LAYOUT.getTagPose(mPeriodicIO.tagId).isEmpty()){
             return null;
         }
 
@@ -313,16 +286,13 @@ public class Limelight extends SubsystemBase {
             return null;
         } else {
             double[] undistortedNormalizedPixelValues;
-            if (undistortMap == null) {
-                try {
-                    undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth, desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight});
-                } catch (Exception e) {
-                    DriverStation.reportError("Undistorting Point Throwing Error!", false);
-                    return null;
-                }
-            } else {
-                undistortedNormalizedPixelValues = undistortMap.pixelToUndistortedNormalized((int) desiredTargetPixel.getX(), (int) desiredTargetPixel.getY());
+            try {
+                undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth, desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight});
+            } catch (Exception e) {
+                DriverStation.reportError("Undistorting Point Throwing Error!", false);
+                return null;
             }
+
 
             double y_pixels = undistortedNormalizedPixelValues[0];
             double z_pixels = undistortedNormalizedPixelValues[1];
@@ -415,25 +385,5 @@ public class Limelight extends SubsystemBase {
 
     public synchronized boolean getIsDisabled() {
         return mDisableProcessing;
-    }
-
-    @Override
-    public synchronized void outputTelemetry(boolean disabled) {
-        if (disabled) {
-            SmartDashboard.putBoolean("Has Target", mPeriodicIO.seesTarget);
-            SmartDashboard.putNumber("Pipeline Latency (ms)", mPeriodicIO.latency);
-            SmartDashboard.putNumber("LED Mode", mPeriodicIO.ledMode);
-        }
-    }
-
-    @Override
-    public void rewriteDeviceConfiguration() {
-        // todo, should we check and rewrite LL config?
-    }
-
-    @Override
-    public boolean checkDeviceConfiguration() {
-        // todo, should we check and rewrite LL config?
-        return true;
     }
 }

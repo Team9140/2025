@@ -1,6 +1,7 @@
 package org.team9140.frc2025;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 
@@ -21,9 +22,6 @@ public class Constants {
     }
 
     public static class Camera {
-        public static double kFieldWidth = 420;
-        public static double kFieldHeight = 240;
-
         public static final double kResolutionWidth = 1280;
         public static final double kResolutionHeight = 960;
 
@@ -37,6 +35,8 @@ public class Constants {
         public static final double kLimelightTransmissionTimeLatency = 0.0 / 1000.0; // seconds
         public static final double kImageCaptureLatency = 11.0; // milliseconds
         public static final double kLensHeight = 1.33296;
+
+        public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
     }
 
