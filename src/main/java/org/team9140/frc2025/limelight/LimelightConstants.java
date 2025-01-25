@@ -1,6 +1,5 @@
 package org.team9140.frc2025.limelight;
 import edu.wpi.first.math.geometry.Rotation2d;
-import org.team9140.frc2025.limelight.undistort.UndistortMap;
 
 public class LimelightConstants {
     private String id;
@@ -11,18 +10,15 @@ public class LimelightConstants {
 
     private UndistortConstants undistortConstants;
 
-    private UndistortMap undistortMap;
 
 
-
-    public LimelightConstants(String id, String name, double height, Rotation2d yawOffset, Rotation2d horizontalPlaneToLens,  UndistortConstants undistortConstants, UndistortMap undistortMap) {
+    public LimelightConstants(String id, String name, double height, Rotation2d yawOffset, Rotation2d horizontalPlaneToLens,  UndistortConstants undistortConstants) {
         this.id = id;
         this.name = name;
         this.height = height;
         this.yawOffset = yawOffset;
         this.horizontalPlaneToLens = horizontalPlaneToLens;
         this.undistortConstants = undistortConstants;
-        this.undistortMap = undistortMap;
     }
 
     public String getId() {
@@ -48,7 +44,5 @@ public class LimelightConstants {
     public UndistortConstants getUndistortConstants() {
         return undistortConstants;
     }
-
-    public UndistortMap getUndistortMap() { return this.undistortMap; };
 
 }

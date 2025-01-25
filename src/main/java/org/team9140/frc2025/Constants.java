@@ -9,5 +9,12 @@ public class Constants {
     public static class Drive {
         public static final LinearVelocity MIN_TRANSLATE_MPS = MetersPerSecond.of(0.01);
         public static final AngularVelocity MIN_ROTATE_RPS = RadiansPerSecond.of(5);
+
+
+    }
+
+    public static class light {
+        public static double kFieldWidth = 420;
+        public static double kFieldHeight = 240;
     }
 }

@@ -1,7 +1,5 @@
 package org.team9140.frc2025.limelight;
 
-import org.team9140.frc2025.limelight.undistort.InterpolatingUndistortMap;
-import org.team9140.frc2025.limelight.undistort.precomputedmaps.*;
 import org.team9140.frc2025.Constants;
 
 //import frc.robot.Constants;
@@ -11,41 +9,21 @@ public class LimelightConstantsFactory {
     public static LimelightConstants getConstantsForId(String id) {
         switch (id) {
             default: // Intentional fall through
-            case "A":
-                // Limelight used to procure target coordinates used in unit test
+            case "back2024":
+                // Limelight 3G because they dont know how to publish software
                 return new LimelightConstants(
-                        "A",
-                        "Limelight A",
-                        1.33296,
-                        Rotation2d.fromDegrees(0.0),
-                        Rotation2d.fromDegrees(-35.0),
+                        "back2024",
+                        "limelight-back",
+                        1.33296, //random
+                        Rotation2d.fromDegrees(0.0), //random
+                        Rotation2d.fromDegrees(-35.0), //random
                         new UndistortConstants(
-                                new double[]{0.15545342, -0.46477633, 0.00277053, 0.0030637, 0.39464241},
-                                new double[][]{{0.79862571, 0., 0.46119489},
-                                        {0., 1.06276288, 0.48098825},
-                                        {0., 0., 1.}}
-                        ),
-                        new InterpolatingUndistortMap((int)Constants.kResolutionWidth, (int)Constants.kResolutionHeight, new UndistortMap_Limelight_A_640x480())
+                                new double[]{0.12554005287488895,-0.2134498176970171,0.0006899014186974819,-0.0001416329438772633,0.06191709384284909},
+                                new double[][]{{737.2322486244727, 0.0, 638.9525014798731},
+                                        {0.0, 736.6301969232578, 390.8846601731128},
+                                        {0.0, 0.0, 1.0}}
+                        )
                 );
-            case "B":
-                // Limelight used to procure target coordinates used in unit test
-                return new LimelightConstants(
-                        "B",
-                        "Limelight B",
-                        // Measured from CAD: 2/25: 133296 cm
-                        1.33296,
-                        Rotation2d.fromDegrees(0),//-2.75),
-                        // Measured from CAD: 40 degrees
-                        Rotation2d.fromDegrees(-35.0),
-                        new UndistortConstants(
-                                new double[]{0.13077097, -0.43223309, 0.00216471, -0.00145679, 0.36181027},
-                                new double[][]{{0.81755082, 0., 0.45041716},
-                                        {0., 1.09093867, 0.52956206},
-                                        {0., 0., 1.}}
-                        ),
-                        new InterpolatingUndistortMap((int)Constants.kResolutionWidth, (int)Constants.kResolutionHeight, new UndistortMap_Limelight_B_640x480())
-                );
-
         }
     }
 

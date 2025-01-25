@@ -1,6 +1,6 @@
 package org.team9140.frc2025;
 
-import org.team9140.frc2025.limelight.VisionPoseAcceptor;
+import edu.wpi.first.apriltag.AprilTagFields;
 import org.team9140.frc2025.subsystems.Limelight.VisionUpdate;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -10,8 +10,7 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.estimator.UnscentedKalmanFilter;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 
-import org.team9140.lib.Util.InterpolatingDouble;
-import org.team9140.lib.Util.MovingAverageTwist2d;
+import org.team9140.lib.MovingAverageTwist2d;
 
 //import com.team254.lib.kalman.UnscentedKalmanFilter;
 //import com.team254.lib.util.InterpolatingDouble; //DNE for wpilib
@@ -34,7 +33,6 @@ public class RobotState {
     private static RobotState mInstance;
     private Optional<VisionUpdate> mLatestVisionUpdate;
     private UnscentedKalmanFilter<N2, N2, N2> mKalmanFilter;
-    private VisionPoseAcceptor mPoseAcceptor;
     private Pose2d mDisplayVisionPose;
     private Pose2d mSetpointPose;
 
@@ -92,7 +90,7 @@ public class RobotState {
     private MovingAverageTwist2d vehicle_velocity_measured_filtered_;
 
     private RobotState() {
-        reset(0.0, Pose2d.identity());
+        reset(0.0, new Pose2d());
     }
 
 
@@ -101,22 +99,21 @@ public class RobotState {
         odom_to_vehicle_.put(new InterpolatingDouble(start_time), initial_odom_to_vehicle);
         field_to_odom_ = new InterpolatingTreeMap<>(kObservationBufferSize);
         field_to_odom_.put(new InterpolatingDouble(start_time), getInitialFieldToOdom().getTranslation());
-        vehicle_velocity_predicted_ = Twist2d.identity();
-        vehicle_velocity_measured_ = Twist2d.identity();
+        vehicle_velocity_predicted_ = new Twist2d();
+        vehicle_velocity_measured_ = new Twist2d();
         vehicle_velocity_measured_filtered_ = new MovingAverageTwist2d(25);
         mLatestVisionUpdate = Optional.empty();
-        mDisplayVisionPose = Pose2d.identity();
-        mSetpointPose = Pose2d.identity();
-        mPoseAcceptor = new VisionPoseAcceptor();
+        mDisplayVisionPose = new Pose2d();
+        mSetpointPose = new Pose2d();
 
         mField2d = new Field2d();
-        mField2d.setRobotPose(Constants.kWidthField2d, Constants.kHeightField2d, new edu.wpi.first.math.geometry.Rotation2d(0));
+        mField2d.setRobotPose(Constants.light.kFieldWidth, Constants.light.kFieldHeight, new edu.wpi.first.math.geometry.Rotation2d(0));
         //mField2d.getObject("vision").setPose(Constants.kWidthField2d, Constants.kHeightField2d, new edu.wpi.first.math.geometry.Rotation2d(0));
         //mField2d.getObject("fused").setPose(Constants.kWidthField2d, Constants.kHeightField2d, new edu.wpi.first.math.geometry.Rotation2d(0));
     }
 
     public synchronized void reset() {
-        reset(Timer.getFPGATimestamp(), Pose2d.identity());
+        reset(Timer.getFPGATimestamp(), new Pose2d());
     }
 
     public synchronized void resetKalmanFilters() {
@@ -254,12 +251,12 @@ public class RobotState {
      * @return
      */
     public synchronized Pose2d getInitialFieldToOdom() {
-        if (initial_field_to_odom_.isEmpty()) return Pose2d.identity();
+        if (initial_field_to_odom_.isEmpty()) return new Pose2d();
         return Pose2d.fromTranslation(initial_field_to_odom_.get());
     }
 
     public synchronized Translation2d getFieldToOdom(double timestamp) {
-        if (initial_field_to_odom_.isEmpty()) return Translation2d.identity();
+        if (initial_field_to_odom_.isEmpty()) return new Translation2d();
         return initial_field_to_odom_.get().inverse().translateBy(field_to_odom_.getInterpolated(new InterpolatingDouble(timestamp)));
     }
 
@@ -285,7 +282,7 @@ public class RobotState {
     }
 
     public synchronized Pose2d getFieldToVehicleAbsolute(double timestamp) {
-        var field_to_odom = initial_field_to_odom_.orElse(Translation2d.identity());
+        var field_to_odom = initial_field_to_odom_.orElse(new Translation2d());
         return Pose2d.fromTranslation(field_to_odom).transformBy(getFieldToVehicle(timestamp));
     }
 
@@ -295,7 +292,7 @@ public class RobotState {
      */
     public synchronized Pose2d getLatestFieldToVehicle() {
         Pose2d odomToVehicle = getLatestOdomToVehicle().getValue();
-        return new Pose2d(getLatestFieldToOdom().getTranslation().add(odomToVehicle.getTranslation()), odomToVehicle.getRotation());
+        return new Pose2d(getLatestFieldToOdom().add(odomToVehicle.getTranslation()), odomToVehicle.getRotation());
     }
 
 
@@ -310,17 +307,17 @@ public class RobotState {
 
         SmartDashboard.putString("Field To Robot", getFieldToVehicle(Timer.getFPGATimestamp()).toString());
 
-        SmartDashboard.putNumber("Field To Robot X", getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().x());
-        double fieldX = getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().x();
-        double odomX = getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().x() + getInitialFieldToOdom().getTranslation().x();
+        SmartDashboard.putNumber("Field To Robot X", getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().getX());
+        double fieldX = getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().getX();
+        double odomX = getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().getX() + getInitialFieldToOdom().getTranslation().getX();
 
         double [] arr = new double[]{fieldX, odomX};
         SmartDashboard.putNumberArray("Poses", arr);
-        SmartDashboard.putNumber("Field To Robot Y", getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().y());
+        SmartDashboard.putNumber("Field To Robot Y", getFieldToVehicle(Timer.getFPGATimestamp()).getTranslation().getY());
         SmartDashboard.putNumber("Field To Robot Theta", getFieldToVehicle(Timer.getFPGATimestamp()).getRotation().getDegrees());
 
-        SmartDashboard.putNumber("Odom X", getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().x());
-        SmartDashboard.putNumber("Odom Y", getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().y());
+        SmartDashboard.putNumber("Odom X", getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().getX());
+        SmartDashboard.putNumber("Odom Y", getOdomToVehicle(Timer.getFPGATimestamp()).getTranslation().getY());
         SmartDashboard.putNumber("Odom Theta", getOdomToVehicle(Timer.getFPGATimestamp()).getRotation().getDegrees());
 
         SmartDashboard.putString("Field to Odom Offset", getLatestFieldToOdom().toString());
@@ -332,14 +329,14 @@ public class RobotState {
         var displayVisionPose = getDisplayVisionPose();
         var fusedPose = getFieldToVehicleAbsolute(timestamp);
         var setpointPose = mSetpointPose;
-        if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
-            mField2d.getObject("vision").setPose(displayVisionPose.getTranslation().x(), displayVisionPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(displayVisionPose.getRotation().getRadians()));
-            mField2d.getObject("fused").setPose(fusedPose.getTranslation().x(), fusedPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(fusedPose.getRotation().getRadians()));
-            mField2d.getObject("setpoint").setPose(setpointPose.getTranslation().x(), setpointPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(setpointPose.getRotation().getRadians()));
+        if (DriverStation.getAlliance().get() == (DriverStation.Alliance.Blue)) {
+            mField2d.getObject("vision").setPose(displayVisionPose.getTranslation().getX(), displayVisionPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(displayVisionPose.getRotation().getRadians()));
+            mField2d.getObject("fused").setPose(fusedPose.getTranslation().getX(), fusedPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(fusedPose.getRotation().getRadians()));
+            mField2d.getObject("setpoint").setPose(setpointPose.getTranslation().getX(), setpointPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(setpointPose.getRotation().getRadians()));
         } else {
-            mField2d.getObject("vision").setPose(Constants.kWidthField2d - displayVisionPose.getTranslation().x(), Constants.kHeightField2d - displayVisionPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(displayVisionPose.getRotation().getRadians() + Math.PI));
-            mField2d.getObject("fused").setPose(Constants.kWidthField2d - fusedPose.getTranslation().x(), Constants.kHeightField2d - fusedPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(fusedPose.getRotation().getRadians() + Math.PI));
-            mField2d.getObject("setpoint").setPose(Constants.kWidthField2d - setpointPose.getTranslation().x(), Constants.kHeightField2d - setpointPose.getTranslation().y(), new edu.wpi.first.math.geometry.Rotation2d(setpointPose.getRotation().getRadians() + Math.PI));
+            mField2d.getObject("vision").setPose(Constants.light.kFieldWidth - displayVisionPose.getTranslation().getX(), Constants.light.kFieldHeight - displayVisionPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(displayVisionPose.getRotation().getRadians() + Math.PI));
+            mField2d.getObject("fused").setPose(Constants.light.kFieldWidth - fusedPose.getTranslation().getX(), Constants.light.kFieldHeight - fusedPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(fusedPose.getRotation().getRadians() + Math.PI));
+            mField2d.getObject("setpoint").setPose(Constants.light.kFieldWidth - setpointPose.getTranslation().getX(), Constants.light.kFieldHeight - setpointPose.getTranslation().getY(), new edu.wpi.first.math.geometry.Rotation2d(setpointPose.getRotation().getRadians() + Math.PI));
         }
         SmartDashboard.putData("field", mField2d);
     }

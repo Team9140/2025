@@ -4,7 +4,6 @@ import java.util.EnumSet;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.field.Field;
 import org.team9140.frc2025.field.AprilTag;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -186,26 +185,6 @@ public class Limelight extends SubsystemBase {
         }
     }
 
-    @Override
-    public void registerEnabledLoops(ILooper mEnabledLooper) {
-        mEnabledLooper.register(new Loop() {
-            @Override
-            public void onStart(double timestamp) {
-                setLed(LedMode.PIPELINE);
-                start();
-            }
-
-            @Override
-            public void onLoop(double timestamp) {
-            }
-
-            @Override
-            public void onStop(double timestamp) {
-                stop();
-            }
-        });
-    }
-
     /**
      * Starts the Listener
      */
@@ -328,8 +307,8 @@ public class Limelight extends SubsystemBase {
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
             double distance = Math.hypot(x, y) * scaling;
-            Rotation2d angle = new Rotation2d(x, y, true);
-            return new Translation2d(distance * angle.cos(), distance * angle.sin());
+            Rotation2d angle = new Rotation2d(x, y);
+            return new Translation2d(distance * angle.getCos(), distance * angle.getSin());
         }
         return null;
     }
