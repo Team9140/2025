@@ -30,7 +30,7 @@ public class RobotContainer
 
     private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
-    CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
 
     CommandXboxController controller = new CommandXboxController(0);
 
