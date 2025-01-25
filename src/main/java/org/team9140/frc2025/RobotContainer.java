@@ -5,9 +5,9 @@
 
 package org.team9140.frc2025;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,9 +15,17 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import org.photonvision.PhotonCamera;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.lib.MazeRunner;
+
+import java.io.IOException;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
