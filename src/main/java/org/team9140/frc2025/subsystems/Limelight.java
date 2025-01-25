@@ -2,12 +2,16 @@ package org.team9140.frc2025.subsystems;
 
 import java.util.EnumSet;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.field.AprilTag;
+import org.team9140.lib.TargetInfo;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTable.TableEventListener;
@@ -36,7 +40,7 @@ public class Limelight extends SubsystemBase {
 
     private final NetworkTable mNetworkTable;
     //Make a field to fix here, look at 254 field.field to make it
-    private static HashMap<Integer, AprilTag> mTagMap = Field.Red.kAprilTagMap;
+    //private static HashMap<Integer, AprilTag> mTagMap = Field.Red.kAprilTagMap;
     private boolean mOutputsHaveChanged = true;
     private int mListenerId = -1;
 
@@ -112,10 +116,9 @@ public class Limelight extends SubsystemBase {
         }
     }
 
-    public void setBlueTagMap() {
-        mTagMap = Field.Blue.kAprilTagMap;
-    }
-
+//    public void setBlueTagMap() {
+//        mTagMap = Field.Blue.kAprilTagMap;
+//    }
 
     public static class PeriodicIO {
 
@@ -163,54 +166,12 @@ public class Limelight extends SubsystemBase {
         }
     }
 
-    @Override
-    public void readPeriodicInputs() {
-    }
-
-    @Override
-    public synchronized void writePeriodicOutputs() {
-        if (mPeriodicIO.givenLedMode != mPeriodicIO.ledMode ||
-                mPeriodicIO.givenPipeline != mPeriodicIO.pipeline) {
-            System.out.println("Table has changed from expected, retrigger!!");
-            mOutputsHaveChanged = true;
-        }
-        if (mOutputsHaveChanged) {
-            mNetworkTable.getEntry("ledMode").setNumber(mPeriodicIO.ledMode);
-            mNetworkTable.getEntry("camMode").setNumber(mPeriodicIO.camMode);
-            mNetworkTable.getEntry("pipeline").setNumber(mPeriodicIO.pipeline);
-            mNetworkTable.getEntry("stream").setNumber(mPeriodicIO.stream);
-            mNetworkTable.getEntry("snapshot").setNumber(mPeriodicIO.snapshot);
-
-            mOutputsHaveChanged = false;
-        }
-    }
-
     /**
      * Starts the Listener
      */
     public synchronized void start() {
         if (mListenerId < 0) {
             mListenerId = mNetworkTable.addListener("json", EnumSet.of(Kind.kValueAll), new Listener());
-        }
-    }
-
-
-    @Override
-    public void stop() { }
-
-    @Override
-    public boolean checkSystem() {
-        return false;
-    }
-
-    public enum LedMode {
-        PIPELINE, OFF, BLINK, ON
-    }
-
-    public synchronized void setLed(LedMode mode) {
-        if (mode.ordinal() != mPeriodicIO.ledMode) {
-            mPeriodicIO.ledMode = mode.ordinal();
-            mOutputsHaveChanged = true;
         }
     }
 
@@ -263,7 +224,7 @@ public class Limelight extends SubsystemBase {
             return null;
         }
         //Project Each Corner into XYZ Space
-        Translation2d cameraToTagTranslation = Translation2d.identity();
+        Translation2d cameraToTagTranslation =  new Translation2d();
         List<Translation2d> cornerTranslations = new ArrayList<>(targetPoints.size());
         for (int i = 0; i < targetPoints.size(); i++) {
             Translation2d cameraToCorner;
@@ -278,11 +239,11 @@ public class Limelight extends SubsystemBase {
                 return null;
             }
             cornerTranslations.add(cameraToCorner);
-            cameraToTagTranslation = cameraToTagTranslation.translateBy(cameraToCorner);
+            cameraToTagTranslation = cameraToTagTranslation.plus(cameraToCorner);
         }
 
         //Divide by 4 to get the average Camera to Goal Translation
-        cameraToTagTranslation = cameraToTagTranslation.scale(0.25);
+        cameraToTagTranslation = cameraToTagTranslation.times(0.25);
 
         return cameraToTagTranslation;
 
@@ -296,14 +257,14 @@ public class Limelight extends SubsystemBase {
      */
     public synchronized Translation2d getCameraToPointTranslation(TargetInfo target, boolean isTopCorner) {
         // Compensate for camera pitch
-        Translation2d xz_plane_translation = new Translation2d(target.getX(), target.getZ()).rotateBy(Rotation2d.fromDegrees(Constants.kLimelightConstants.getHorizontalPlaneToLens().getDegrees()));
-        double x = xz_plane_translation.x();
+        Translation2d xz_plane_translation = new Translation2d(target.getX(), target.getZ()).rotateBy(Rotation2d.fromDegrees(Constants.Camera.kLimelightConstants.getHorizontalPlaneToLens().getDegrees()));
+        double x = xz_plane_translation.getX();
         double y = target.getY();
-        double z = xz_plane_translation.y();
+        double z = xz_plane_translation.getY();
 
-        double offset = isTopCorner ? Units.inches_to_meters(3) : - Units.inches_to_meters(3);
+        double offset = isTopCorner ? Units.inchesToMeters(3) : - Units.inchesToMeters(3);
         // find intersection with the goal
-        double differential_height = mTagMap.get(target.getTagId()).getHeight() - Constants.kLensHeight + offset;
+        double differential_height = mTagMap.get(target.getTagId()).getHeight() - Constants.Camera.kLensHeight + offset;
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
             double distance = Math.hypot(x, y) * scaling;
@@ -314,7 +275,7 @@ public class Limelight extends SubsystemBase {
     }
 
 
-    private static final Comparator<Translation2d> ySort = Comparator.comparingDouble(Translation2d::y);
+    private static final Comparator<Translation2d> ySort = Comparator.comparingDouble(Translation2d::getY);
 
     /**
      * Get the Normalized Corners
@@ -333,7 +294,7 @@ public class Limelight extends SubsystemBase {
         ArrayList<TargetInfo> targetInfos = new ArrayList<>();
 
         for (Translation2d corner : corners) {
-            targetInfos.add(getRawTargetInfo(new Translation2d(corner.x(), corner.y()), getTagId()));
+            targetInfos.add(getRawTargetInfo(new Translation2d(corner.getX(), corner.getY()), getTagId()));
 
         }
 
@@ -352,16 +313,15 @@ public class Limelight extends SubsystemBase {
             return null;
         } else {
             double[] undistortedNormalizedPixelValues;
-            UndistortMap undistortMap = Constants.kLimelightConstants.getUndistortMap();
             if (undistortMap == null) {
                 try {
-                    undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.x() / Constants.kResolutionWidth, desiredTargetPixel.y() / Constants.kResolutionHeight});
+                    undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth, desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight});
                 } catch (Exception e) {
                     DriverStation.reportError("Undistorting Point Throwing Error!", false);
                     return null;
                 }
             } else {
-                undistortedNormalizedPixelValues = undistortMap.pixelToUndistortedNormalized((int) desiredTargetPixel.x(), (int) desiredTargetPixel.y());
+                undistortedNormalizedPixelValues = undistortMap.pixelToUndistortedNormalized((int) desiredTargetPixel.getX(), (int) desiredTargetPixel.getY());
             }
 
             double y_pixels = undistortedNormalizedPixelValues[0];
@@ -417,7 +377,7 @@ public class Limelight extends SubsystemBase {
      * @return
      */
     public double getLensHeight() {
-        return Constants.kLensHeight;
+        return Constants.Camera.kLensHeight;
     }
 
 
@@ -426,7 +386,7 @@ public class Limelight extends SubsystemBase {
      * @return
      */
     public Rotation2d getHorizontalPlaneToLens() {
-        return Constants.kLimelightConstants.getHorizontalPlaneToLens();
+        return Constants.Camera.kLimelightConstants.getHorizontalPlaneToLens();
     }
 
 
