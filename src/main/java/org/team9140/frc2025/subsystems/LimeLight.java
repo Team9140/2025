@@ -52,6 +52,8 @@ public class LimeLight extends SubsystemBase {
     Field2d field = new Field2d();
 
     private class Listener implements TableEventListener {
+        private static int mode = -1;
+
         public void accept(NetworkTable table, String key, NetworkTableEvent event) {
             if (key.equals("json")) {
                 double before = Timer.getFPGATimestamp();
@@ -67,6 +69,12 @@ public class LimeLight extends SubsystemBase {
                 latestResult = vr;
 
                 if (DriverStation.isDisabled()) {
+                    if (mode != 1) {
+                        LimelightHelpers.SetIMUMode(LimeLight.this.name, 1);
+                        mode = 1;
+                        System.out.println("IMU Mode set to 1");
+                    }
+
                     LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimeLight.this.name);
 
                     if (mt1 != null) {
@@ -74,8 +82,6 @@ public class LimeLight extends SubsystemBase {
 
                         reject |= mt1.avgTagArea <= 0.05;
 //                        reject |= mt1.avgTagDist >= 4.0;
-
-                        LimelightHelpers.SetIMUMode(LimeLight.this.name, 1);
 
                         if (!reject) {
                             double thetaStdDev = 5.0;
@@ -92,7 +98,14 @@ public class LimeLight extends SubsystemBase {
                         }
                     }
                 } else {
-                    LimelightHelpers.SetIMUMode(LimeLight.this.name, 2);
+                    if (mode != 2) {
+                        LimelightHelpers.SetIMUMode(LimeLight.this.name, 2);
+                        mode = 2;
+                        System.out.println("IMU Mode set to 2");
+                    }
+
+                    setRobotOrientation(drivetrain.getState().Pose.getRotation());
+
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
 
                     boolean reject = false;
