@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Canndle extends SubsystemBase {
+    private static Canndle instance;
+
     public static final Color8Bit RED = new Color8Bit(255, 0, 0);
     public static final Color8Bit GREEN = new Color8Bit(0, 255, 0);
     public static final Color8Bit BLUE = new Color8Bit(0, 0, 255);
@@ -19,7 +21,11 @@ public class Canndle extends SubsystemBase {
     private CANdle candle;
 
     private Canndle() {
-        this.candle = new CANdle(0, "???");
+        this.candle = new CANdle(0, "moe");
+    }
+
+    public static Canndle getInstance() {
+        return (instance == null) ? instance = new Canndle() : instance;
     }
 
     public Command setColor(Color8Bit color) {
