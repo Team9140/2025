@@ -13,13 +13,13 @@ public class LimelightConstantsFactory {
                 return new LimelightConstants(
                         "back2024",
                         "limelight-back",
-                        1.33296, //random
-                        Rotation2d.fromDegrees(0.0), //random
-                        Rotation2d.fromDegrees(-35.0), //random
+                        0.5,
+                        Rotation2d.fromDegrees(0.0),
+                        Rotation2d.fromDegrees(0.0),
                         new UndistortConstants(
-                                new double[]{0.12554005287488895,-0.2134498176970171,0.0006899014186974819,-0.0001416329438772633,0.06191709384284909},
-                                new double[][]{{737.2322486244727, 0.0, 638.9525014798731},
-                                        {0.0, 736.6301969232578, 390.8846601731128},
+                                new double[]{0.1394220917285037,-0.24654889674484518,-0.0005996899249218598,8.247478330939335e-05,0.08289921803271944},
+                                new double[][]{{745.5524377236715,0.0,655.1438911369394},
+                                        {0.0,745.1406890491054,413.06128159642583},
                                         {0.0, 0.0, 1.0}}
                         )
                 );

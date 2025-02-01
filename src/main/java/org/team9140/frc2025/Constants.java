@@ -17,24 +17,24 @@ import static edu.wpi.first.units.Units.*;
 public class Constants {
     public static class Drive {
         public static final LinearVelocity MIN_TRANSLATE_MPS = MetersPerSecond.of(0.01);
-        public static final AngularVelocity MIN_ROTATE_RPS = RadiansPerSecond.of(5);
+        public static final AngularVelocity MIN_ROTATE_RPS = DegreesPerSecond.of(1);
 
     }
 
     public static class Camera {
         public static final double kResolutionWidth = 1280;
-        public static final double kResolutionHeight = 960;
+        public static final double kResolutionHeight = 800;
 
         public static final String kPracticeBotMACAddress = ""; //limelight MAC address I think
         public static final boolean kPracticeBot = hasMacAddress(kPracticeBotMACAddress);
 
-        public static final String kPracticeLLId = "A";
+        public static final String kPracticeLLId = "back2024";
         public static final String kCompLLId = "B";
 
-        public static final LimelightConstants kLimelightConstants = kPracticeBot ? LimelightConstantsFactory.getConstantsForId(kPracticeLLId) : LimelightConstantsFactory.getConstantsForId(kCompLLId);
+        public static final LimelightConstants kLimelightConstants = LimelightConstantsFactory.getConstantsForId(kPracticeLLId);
         public static final double kLimelightTransmissionTimeLatency = 0.0 / 1000.0; // seconds
         public static final double kImageCaptureLatency = 11.0; // milliseconds
-        public static final double kLensHeight = 1.33296;
+        public static final double kLensHeight = 0.5;
 
         public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 

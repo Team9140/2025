@@ -57,7 +57,7 @@ public class Limelight extends SubsystemBase {
     }
 
     private Limelight() {
-        mNetworkTable = NetworkTableInstance.getDefault().getTable("limelight");
+        mNetworkTable = NetworkTableInstance.getDefault().getTable("limelight-b");
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 mCameraMatrix.put(i, j, Constants.Camera.kLimelightConstants.getUndistortConstants().getCameraMatrix()[i][j]);
@@ -71,12 +71,16 @@ public class Limelight extends SubsystemBase {
     private class Listener implements TableEventListener {
         @Override
         public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-            if (key.equals("json")) {
+            if (key.equals("tcornxy")) {
                 if (!mDisableProcessing) {
                     readInputsAndAddVisionUpdate();
                 }
             }
         }
+    }
+
+    public void start() {
+        NetworkTableInstance.getDefault().getTable("limelight-b").addListener("tcornxy", EnumSet.of(Kind.kValueAll), new Listener());
     }
 
     /**
@@ -144,7 +148,7 @@ public class Limelight extends SubsystemBase {
         mPeriodicIO.givenLedMode = (int) mNetworkTable.getEntry("ledMode").getDouble(1.0);
         mPeriodicIO.corners = mNetworkTable.getEntry("tcornxy").getNumberArray(new Number[] { 0, 0, 0, 0, 0 });
         Translation2d cameraToTarget = getCameraToTargetTranslation();
-        int tagId = mPeriodicIO.tagId;
+        System.out.println(cameraToTarget);
     }
 
     /**
@@ -193,6 +197,7 @@ public class Limelight extends SubsystemBase {
         //Get all Corners Normalized
         List<TargetInfo> targetPoints  = getTarget();
         if (targetPoints == null || targetPoints.size() < 4) {
+            System.out.println("No target points found");
             return null;
         }
         //Project Each Corner into XYZ Space
@@ -208,6 +213,7 @@ public class Limelight extends SubsystemBase {
                 cameraToCorner = getCameraToPointTranslation(targetPoints.get(i), false);
             }
             if (cameraToCorner == null) {
+                System.out.println("No camera to corner found");
                 return null;
             }
             cornerTranslations.add(cameraToCorner);
@@ -233,11 +239,14 @@ public class Limelight extends SubsystemBase {
         double x = xz_plane_translation.getX();
         double y = target.getY();
         double z = xz_plane_translation.getY();
+        System.out.println("z: " + target.getZ());
 
         double offset = isTopCorner ? Units.inchesToMeters(3) : - Units.inchesToMeters(3);
         // find intersection with the goal
         //replace map
         double differential_height = Constants.Camera.FIELD_LAYOUT.getTagPose(target.getTagId()).get().getZ() - Constants.Camera.kLensHeight + offset;
+        System.out.println("differential_height: " + differential_height);
+
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
             double distance = Math.hypot(x, y) * scaling;
@@ -306,7 +315,7 @@ public class Limelight extends SubsystemBase {
 
             double y = nY / mCameraMatrix.get(0, 0)[0];
             double z = nZ / mCameraMatrix.get(1, 1)[0];
-
+            System.out.println("other z: " + z);
             return new TargetInfo(y, z, tagId);
         }
     }

@@ -23,6 +23,8 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+import org.team9140.frc2025.subsystems.Limelight;
+import org.team9140.frc2025.subsystems.TheMatrix;
 import org.team9140.lib.MazeRunner;
 
 import java.io.IOException;
@@ -40,6 +42,12 @@ public class RobotContainer
 
     CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
+    private final Limelight limelight = Limelight.getInstance();
+
+
+
+    TheMatrix theMatrix = new TheMatrix();
+
     CommandXboxController controller = new CommandXboxController(0);
 
     public RobotContainer() {
@@ -55,6 +63,10 @@ public class RobotContainer
                 );
 
         this.autonomousCommand = this.path.gimmeCommand();
+
+        theMatrix.setupVision(this.drivetrain);
+
+        limelight.start();
 
         configureBindings();
     }
