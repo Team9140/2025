@@ -1,5 +1,6 @@
 package org.team9140.lib;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public class Util {
@@ -29,13 +30,14 @@ public class Util {
     }
 
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b, double epsilon) {
-        final double tau = 2 * Math.PI;
-        double theta_a = a.getRadians() < 0 ? tau - (-a.getRadians() % tau): a.getRadians() % tau;
-        double theta_b = b.getRadians() < 0 ? tau - (-b.getRadians() % tau): b.getRadians() % tau;
-        return epsilonEquals(theta_a, theta_b, epsilon);
+        return Math.abs(MathUtil.angleModulus(a.minus(b).getRadians())) <= epsilon;
+//        final double tau = 2 * Math.PI;
+//        double theta_a = a.getRadians() < 0 ? tau - (-a.getRadians() % tau): a.getRadians() % tau;
+//        double theta_b = b.getRadians() < 0 ? tau - (-b.getRadians() % tau): b.getRadians() % tau;
+//        return epsilonEquals(theta_a, theta_b, epsilon);
     }
 
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b) {
-        return epsilonEquals(a.getRadians() % (2*Math.PI), b.getRadians() % (2*Math.PI));
+        return rotationEpsilonEquals(a, b, Math.toRadians(5.0));
     }
 }

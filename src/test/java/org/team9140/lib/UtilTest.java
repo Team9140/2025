@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,6 +45,7 @@ public class UtilTest {
         assertTrue(Util.rotationEpsilonEquals(new Rotation2d(Radians.of(3*Math.PI/2)), new Rotation2d(Radians.of(-Math.PI/2)), 0.0001));
         assertTrue(Util.rotationEpsilonEquals(new Rotation2d(Radians.of(Math.PI*2)), new Rotation2d(Radians.of(Math.PI/2)), Math.PI*2));
         assertTrue(Util.rotationEpsilonEquals(new Rotation2d(Radians.of(5*Math.PI/6)), new Rotation2d(Radians.of(-7*Math.PI/6+0.01)), 0.1));
+        assertTrue(Util.rotationEpsilonEquals(new Rotation2d(Degrees.of(-1.0)), new Rotation2d(Radians.of(0)), Math.toRadians(5)));
     }
 
     @Test

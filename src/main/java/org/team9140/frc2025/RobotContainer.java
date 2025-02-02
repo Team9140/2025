@@ -17,9 +17,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+import org.team9140.frc2025.subsystems.Canndle;
 import org.team9140.lib.MazeRunner;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.*;
 
 
 public class RobotContainer
@@ -34,17 +35,32 @@ public class RobotContainer
 
     CommandXboxController controller = new CommandXboxController(0);
 
+    Canndle candle = Canndle.getInstance();
+
+
     public RobotContainer() {
-        this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
-        this.path.atEventTime("test2").onTrue(new PrintCommand("test2"));
+        this.path = new MazeRunner("realgamestuff", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
+        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
+        this.path.atEventTime("Second_Coral").onTrue((new PrintCommand("Second_Coral")).alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
         this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
-        this.path.atPose(new Pose2d(4.631613731384277, 7.529511451721191, Rotation2d.fromDegrees(90)), 0.05, 0.03).onTrue(
-                new PrintCommand("Pose 4")
+        this.path.atEventTime("Second_Restock").onTrue(new PrintCommand("Second_Restock").alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
+        this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
+        this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
+
+//        this.path.atEventTime("End_Test").onTrue(
+//                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
+//        );
+
+        this.path.atPose(new Pose2d(1.249948263168335, 4.545039176940918, new Rotation2d(0)), 0.1, Degrees.of(5).in(Radians)).onTrue(
+                (new PrintCommand("atPose test")).alongWith(candle.flashColor(Canndle.PINK, 0.1))
         );
-        this.path.atTranslation(new Translation2d(2.885009765625, 5.642167568206787), 0.1).onTrue(
-                        new PrintCommand("Pose 5")
-                );
+
+//        this.path.atPose(new Pose2d(3.7773959636688232, 5.237298011779785, new Rotation2d(-1.016488417575178)), 5, Degrees.of(360).in(Radians)).onTrue(
+//                (new PrintCommand("POSE2D_TEST")).alongWith(candle.flashColor(Canndle.PINK, 0.1))
+//        );
+
+
 
         this.autonomousCommand = this.path.gimmeCommand();
 
@@ -76,7 +92,6 @@ public class RobotContainer
     }
 
     public Command getAutonomousCommand() {
-        this.drivetrain.resetPose(this.path.getInitialPose());
         return autonomousCommand;
     }
 }
