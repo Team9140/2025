@@ -15,6 +15,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
 
 import java.io.IOException;
@@ -77,7 +78,7 @@ public class TheMatrix extends SubsystemBase {
     private void addCameraSim(PhotonCameraSim camera) {
         // Our camera is mounted 0.1 meters forward and 0.5 meters up from the robot pose,
         // (Robot pose is considered the center of rotation at the floor level, or Z = 0)
-        Translation3d robotToCameraTrl = new Translation3d(0.0, 0, 0.5);
+        Translation3d robotToCameraTrl = new Translation3d(0.0, 0, Constants.Camera.kLensHeight);
         // and pitched 15 degrees up.
         Rotation3d robotToCameraRot = new Rotation3d(0, Math.toRadians(0), 0);
         Transform3d robotToCamera = new Transform3d(robotToCameraTrl, robotToCameraRot);

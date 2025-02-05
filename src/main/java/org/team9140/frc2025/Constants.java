@@ -34,7 +34,7 @@ public class Constants {
         public static final LimelightConstants kLimelightConstants = LimelightConstantsFactory.getConstantsForId(kPracticeLLId);
         public static final double kLimelightTransmissionTimeLatency = 0.0 / 1000.0; // seconds
         public static final double kImageCaptureLatency = 11.0; // milliseconds
-        public static final double kLensHeight = 0.5;
+        public static final double kLensHeight = 1.0;
 
         public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 

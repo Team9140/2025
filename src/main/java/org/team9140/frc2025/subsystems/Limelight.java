@@ -159,7 +159,6 @@ public class Limelight extends SubsystemBase {
         if (mode != mPeriodicIO.pipeline) {
             mPeriodicIO.pipeline = mode;
 
-            System.out.println(mPeriodicIO.pipeline + ", " + mode);
             mOutputsHaveChanged = true;
         }
     }
@@ -197,7 +196,6 @@ public class Limelight extends SubsystemBase {
         //Get all Corners Normalized
         List<TargetInfo> targetPoints  = getTarget();
         if (targetPoints == null || targetPoints.size() < 4) {
-            System.out.println("No target points found");
             return null;
         }
         //Project Each Corner into XYZ Space
@@ -213,7 +211,6 @@ public class Limelight extends SubsystemBase {
                 cameraToCorner = getCameraToPointTranslation(targetPoints.get(i), false);
             }
             if (cameraToCorner == null) {
-                System.out.println("No camera to corner found");
                 return null;
             }
             cornerTranslations.add(cameraToCorner);
@@ -239,13 +236,11 @@ public class Limelight extends SubsystemBase {
         double x = xz_plane_translation.getX();
         double y = target.getY();
         double z = xz_plane_translation.getY();
-        System.out.println("z: " + target.getZ());
 
         double offset = isTopCorner ? Units.inchesToMeters(3) : - Units.inchesToMeters(3);
         // find intersection with the goal
         //replace map
         double differential_height = Constants.Camera.FIELD_LAYOUT.getTagPose(target.getTagId()).get().getZ() - Constants.Camera.kLensHeight + offset;
-        System.out.println("differential_height: " + differential_height);
 
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
@@ -276,8 +271,8 @@ public class Limelight extends SubsystemBase {
         ArrayList<TargetInfo> targetInfos = new ArrayList<>();
 
         for (Translation2d corner : corners) {
+            // corner X and Y is pixels, X is side-side and Y is up-down
             targetInfos.add(getRawTargetInfo(new Translation2d(corner.getX(), corner.getY()), getTagId()));
-
         }
 
 
@@ -306,6 +301,8 @@ public class Limelight extends SubsystemBase {
             double y_pixels = undistortedNormalizedPixelValues[0];
             double z_pixels = undistortedNormalizedPixelValues[1];
 
+            //System.out.println("y_pixels: " + y_pixels + " z_pixels: " + z_pixels + " tagId: " + tagId);
+
 
             //Negate OpenCV Undistorted Pixel Values to Match Robot Frame of Reference
             //OpenCV: Positive Downward and Right
@@ -313,9 +310,11 @@ public class Limelight extends SubsystemBase {
             double nY = -(y_pixels - mCameraMatrix.get(0, 2)[0]);// -(y_pixels * 2.0 - 1.0);
             double nZ = -(z_pixels - mCameraMatrix.get(1, 2)[0]);// -(z_pixels * 2.0 - 1.0);
 
-            double y = nY / mCameraMatrix.get(0, 0)[0];
-            double z = nZ / mCameraMatrix.get(1, 1)[0];
-            System.out.println("other z: " + z);
+            double y = -(2 * desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth - 1.0);
+            double z = -(2 * desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight - 1.0);
+//            double y = nY / mCameraMatrix.get(0, 0)[0];
+//            double z = nZ / mCameraMatrix.get(1, 1)[0];
+            //System.out.println( y + " " + z);
             return new TargetInfo(y, z, tagId);
         }
     }
