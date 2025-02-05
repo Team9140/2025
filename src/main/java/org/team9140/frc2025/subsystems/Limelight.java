@@ -237,11 +237,11 @@ public class Limelight extends SubsystemBase {
         double y = target.getY();
         double z = xz_plane_translation.getY();
 
-        double offset = isTopCorner ? Units.inchesToMeters(3) : - Units.inchesToMeters(3);
+        double offset = isTopCorner ? Units.inchesToMeters(3.25) : - Units.inchesToMeters(3.25);
         // find intersection with the goal
         //replace map
+        //field map is in meters
         double differential_height = Constants.Camera.FIELD_LAYOUT.getTagPose(target.getTagId()).get().getZ() - Constants.Camera.kLensHeight + offset;
-
         if ((z > 0.0) == (differential_height > 0.0)) {
             double scaling = differential_height / z;
             double distance = Math.hypot(x, y) * scaling;
@@ -291,7 +291,8 @@ public class Limelight extends SubsystemBase {
         } else {
             double[] undistortedNormalizedPixelValues;
             try {
-                undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth, desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight});
+                //we think undistortFromOpenCV wants pixels not normalized
+                undistortedNormalizedPixelValues = undistortFromOpenCV(new double[]{desiredTargetPixel.getX(), desiredTargetPixel.getY()});
             } catch (Exception e) {
                 DriverStation.reportError("Undistorting Point Throwing Error!", false);
                 return null;
@@ -310,11 +311,12 @@ public class Limelight extends SubsystemBase {
             double nY = -(y_pixels - mCameraMatrix.get(0, 2)[0]);// -(y_pixels * 2.0 - 1.0);
             double nZ = -(z_pixels - mCameraMatrix.get(1, 2)[0]);// -(z_pixels * 2.0 - 1.0);
 
-            double y = -(2 * desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth - 1.0);
-            double z = -(2 * desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight - 1.0);
-//            double y = nY / mCameraMatrix.get(0, 0)[0];
-//            double z = nZ / mCameraMatrix.get(1, 1)[0];
-            //System.out.println( y + " " + z);
+//            double y = -(2 * desiredTargetPixel.getX() / Constants.Camera.kResolutionWidth - 1.0);
+//            double z = -(2 * desiredTargetPixel.getY() / Constants.Camera.kResolutionHeight - 1.0);
+            double y = nY / mCameraMatrix.get(0, 0)[0];
+            double z = nZ / mCameraMatrix.get(1, 1)[0];
+
+            //y and z should be normalized
             return new TargetInfo(y, z, tagId);
         }
     }
