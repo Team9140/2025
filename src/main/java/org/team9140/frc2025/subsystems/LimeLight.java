@@ -24,6 +24,9 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 public class LimeLight extends SubsystemBase {
     public static final LimeLight LIME_B = new LimeLight("limelight-b");
+
+
+    // instead of holding reference to drivetrain, pass in a consumer<VisionMeasurement>
     private static CommandSwerveDrivetrain drivetrain;
 
     private String name;
@@ -44,12 +47,16 @@ public class LimeLight extends SubsystemBase {
         return this.latestResult;
     }
 
+    // call in robotcontainer instead of in listener or smth
     public void setRobotOrientation(Rotation2d direction) {
         LimelightHelpers.SetRobotOrientation(
                 this.name, direction.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0);
     }
 
     Field2d field = new Field2d();
+
+
+    // maybe separate listeners for json and tcornxy???
 
     private class Listener implements TableEventListener {
         private static int mode = -1;
@@ -68,7 +75,11 @@ public class LimeLight extends SubsystemBase {
 
                 latestResult = vr;
 
+                
                 if (DriverStation.isDisabled()) {
+
+
+                    // find a better way to switch IMU modes???
                     if (mode != 1) {
                         LimelightHelpers.SetIMUMode(LimeLight.this.name, 1);
                         mode = 1;
@@ -104,10 +115,12 @@ public class LimeLight extends SubsystemBase {
                         System.out.println("IMU Mode set to 2");
                     }
 
+                    // find a way to delete this dependency on drivetrain
                     setRobotOrientation(drivetrain.getState().Pose.getRotation());
 
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
 
+                    // all this logic to use or reject measurement belongs in drivetrain
                     boolean reject = false;
                     reject |= (Math.abs(drivetrain.getPigeon2().getAngularVelocityZWorld().getValue().in(DegreesPerSecond)) >= 360.0);
                     reject |= mt2.avgTagArea <= 0.05;
@@ -115,6 +128,9 @@ public class LimeLight extends SubsystemBase {
 
                     if (!reject) {
                         double thetaStdDev = 999.0;
+
+
+                        // instead of adding measurement directly, give a VisionMeasurement to the consumer
                         drivetrain.addVisionMeasurement(mt2.pose, Utils.fpgaToCurrentTime(vr.timestamp),
                                 VecBuilder.fill(5.0, 5.0, thetaStdDev));
                     }

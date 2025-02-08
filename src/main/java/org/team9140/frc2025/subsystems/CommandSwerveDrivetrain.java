@@ -11,6 +11,7 @@ import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
 import org.team9140.lib.Util;
+import org.team9140.lib.VisionMeasurement;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -333,6 +334,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command resetGyroCommand() {
         return this.runOnce(this::seedFieldCentric);
+    }
+
+    public void addVisionMeasurement(VisionMeasurement vm) {
+        // use the timestamp of vm and pose buffer + our own yaw rate buffer to decide on std dev
+
+        this.samplePoseAt(0);
     }
 
     private void startSimThread() {
