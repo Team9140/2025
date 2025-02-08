@@ -7,6 +7,7 @@ import org.team9140.frc2025.Constants;
 import org.team9140.lib.TargetInfo;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -148,6 +149,7 @@ public class Limelight extends SubsystemBase {
         mPeriodicIO.givenLedMode = (int) mNetworkTable.getEntry("ledMode").getDouble(1.0);
         mPeriodicIO.corners = mNetworkTable.getEntry("tcornxy").getNumberArray(new Number[] { 0, 0, 0, 0, 0 });
         Translation2d cameraToTarget = getCameraToTargetTranslation();
+
         System.out.println(cameraToTarget);
     }
 
@@ -349,6 +351,11 @@ public class Limelight extends SubsystemBase {
      */
     public int getTagId() {
         return mPeriodicIO.tagId;
+    }
+
+    public Pose3d getTagPosition() {
+        
+        return Constants.Camera.FIELD_LAYOUT.getTagPose(this.getTagId()).orElse(new Pose3d());
     }
 
 

@@ -9,6 +9,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -28,6 +30,7 @@ import org.team9140.frc2025.subsystems.TheMatrix;
 import org.team9140.lib.MazeRunner;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
@@ -50,6 +53,8 @@ public class RobotContainer
 
     CommandXboxController controller = new CommandXboxController(0);
 
+    Field2d camField = new Field2d();
+
     public RobotContainer() {
         this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
         this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
@@ -68,8 +73,26 @@ public class RobotContainer
 
         limelight.start();
 
+        SmartDashboard.putData("camField", camField);
         configureBindings();
     }
+
+    
+
+    public void periodic() {
+        Translation2d camTranslate = limelight.getCameraToTargetTranslation();
+        if (camTranslate == null) {
+            return;
+        }
+        camTranslate = camTranslate.rotateBy(this.drivetrain.getState().Pose.getRotation());
+        Pose3d tagPose = this.limelight.getTagPosition();
+        Translation2d fieldToTag = new Translation2d(tagPose.getX(), tagPose.getY());
+        
+        Pose2d camPose = new Pose2d(fieldToTag.plus(camTranslate.unaryMinus()), this.drivetrain.getState().Pose.getRotation());
+
+        camField.setRobotPose(camPose);
+    }
+    
 
     private void configureBindings() {
         drivetrain

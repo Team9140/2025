@@ -87,6 +87,9 @@ public class TheMatrix extends SubsystemBase {
         this.visionSystem.addCamera(camera, robotToCamera);
     }
     private void writeToTable(PhotonPipelineResult result, NetworkTable table) {
+        if (result.getTargets().size() <= 0) {
+            return;
+        }
         PhotonTrackedTarget target = result.getTargets().get(0);
 
         Double[] ret = {target.detectedCorners.get(0).x, target.detectedCorners.get(0).y, target.detectedCorners.get(1).x, target.detectedCorners.get(1).y,
