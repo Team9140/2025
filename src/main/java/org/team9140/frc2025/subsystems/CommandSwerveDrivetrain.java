@@ -6,7 +6,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule;
-import edu.wpi.first.math.MathUtil;
+import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
+import edu.wpi.first.wpilibj.Timer;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -15,7 +16,6 @@ import org.team9140.lib.swerve.SwerveRequests9140;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -25,7 +25,6 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -34,7 +33,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -46,7 +44,7 @@ import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-    private Field2d m_field = new Field2d();
+    private final Field2d m_field = new Field2d();
 
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -61,9 +59,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Swerve request to apply during field-centric path following */
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
-    private final PIDController m_pathXController = new PIDController(10, 0, 0);
-    private final PIDController m_pathYController = new PIDController(10, 0, 0);
-    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(10, 0, 0);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(10, 0, 0);
+    private final PhoenixPIDController m_pathThetaController = new PhoenixPIDController(7, 0, 0);
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -249,18 +247,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         var pose = getState().Pose;
 
+        double time = Utils.fpgaToCurrentTime(Timer.getFPGATimestamp());
+
         var targetSpeeds = sample.getChassisSpeeds();
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-                pose.getX(), sample.x
+                pose.getX(), sample.x, time
         );
         targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-                pose.getY(), sample.y
+                pose.getY(), sample.y, time
         );
         targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-                pose.getRotation().getRadians(), sample.heading
+                pose.getRotation().getRadians(), sample.heading, time
         );
 
-        setControl(
+        this.setControl(
                 m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
                         .withWheelForceFeedforwardsX(sample.moduleForcesX())
                         .withWheelForceFeedforwardsY(sample.moduleForcesY())
