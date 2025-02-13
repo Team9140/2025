@@ -2,11 +2,12 @@ package org.team9140.frc2025.subsystems;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 
 import com.ctre.phoenix6.Utils;
-import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTable.TableEventListener;
@@ -18,15 +19,13 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.lib.LimelightHelpers;
 import org.team9140.lib.VisionMeasurement;
 
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-
 public class Limelight extends SubsystemBase {
-    //public static final Limelight LIME_B = new Limelight("limelight-b");
-    private Consumer<VisionMeasurement> vision;
+    private Consumer<VisionMeasurement> addVisionMeasurement;
+    private Supplier<Pose2d> getPose;
+    private Supplier<Double> getAV;
 
 
     // instead of holding reference to drivetrain, pass in a consumer<VisionMeasurement>
@@ -36,9 +35,11 @@ public class Limelight extends SubsystemBase {
 
     private String name;
 
-    public Limelight(String nm, Consumer<VisionMeasurement> vm) {
+    public Limelight(String nm, Consumer<VisionMeasurement> visionMeasurement, Supplier<Pose2d> getPose, Supplier<Double> getAV) {
         this.name = nm;
-        this.vision = vm;
+        this.addVisionMeasurement = visionMeasurement;
+        this.getPose = getPose;
+        this.getAV = getAV;
 
         //this.drivetrain = TunerConstants.getDrivetrain();
     }
@@ -103,8 +104,8 @@ public class Limelight extends SubsystemBase {
 
                         if (!reject) {
                             double thetaStdDev = 5.0;
-                            drivetrain.addVisionMeasurement(mt1.pose, Utils.fpgaToCurrentTime(vr.timestamp),
-                                    VecBuilder.fill(5.0, 5.0, thetaStdDev));
+//                          VecBuilder.fill(5.0, 5.0, thetaStdDev)
+                            addVisionMeasurement.accept(new VisionMeasurement(Utils.fpgaToCurrentTime(vr.timestamp), mt1.pose, VisionMeasurement.Kind.MT1));
 
                             field.setRobotPose(mt1.pose);
                             SmartDashboard.putData(field);
@@ -112,7 +113,7 @@ public class Limelight extends SubsystemBase {
                             SignalLogger.writeDoubleArray(Limelight.this.name + " pose",
                                     new double[]{mt1.pose.getX(), mt1.pose.getY(), mt1.pose.getRotation().getDegrees()});
 
-                            setRobotOrientation(drivetrain.getState().Pose.getRotation());
+                            setRobotOrientation(getPose.get().getRotation());
                         }
                     }
                 } else {
@@ -123,23 +124,21 @@ public class Limelight extends SubsystemBase {
                     }
 
                     // find a way to delete this dependency on drivetrain
-                    setRobotOrientation(drivetrain.getState().Pose.getRotation());
+                    setRobotOrientation(getPose.get().getRotation());
 
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Limelight.this.name);
 
                     // all this logic to use or reject measurement belongs in drivetrain
                     boolean reject = false;
-                    reject |= (Math.abs(drivetrain.getPigeon2().getAngularVelocityZWorld().getValue().in(DegreesPerSecond)) >= 360.0);
+                    reject |= (Math.abs(getAV.get()) >= 360.0);
                     reject |= mt2.avgTagArea <= 0.05;
 //                    reject |= mt2.avgTagDist >= 4.0;
 
                     if (!reject) {
                         double thetaStdDev = 999.0;
-
-                        vision.accept(obamna);
                         // instead of adding measurement directly, give a VisionMeasurement to the consumer
-                        drivetrain.addVisionMeasurement(mt2.pose, Utils.fpgaToCurrentTime(vr.timestamp),
-                                VecBuilder.fill(5.0, 5.0, thetaStdDev));
+                        addVisionMeasurement.accept(new VisionMeasurement((Utils.fpgaToCurrentTime(vr.timestamp)), mt2.pose,
+                                VisionMeasurement.Kind.MT2));
                     }
                 }
             }

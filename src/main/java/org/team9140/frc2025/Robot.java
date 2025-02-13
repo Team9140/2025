@@ -9,7 +9,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import org.team9140.frc2025.subsystems.LimeLight;
 
 
 public class Robot extends TimedRobot
@@ -23,13 +22,9 @@ public class Robot extends TimedRobot
         robotContainer = new RobotContainer();
     }
 
-    LimeLight b = LimeLight.LIME_B;
-
     @Override
     public void robotInit() {
         SignalLogger.setPath("/media/sda/logs");
-
-        b.start();
     }
     
     @Override

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
+import org.team9140.frc2025.subsystems.Limelight;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
@@ -36,6 +37,8 @@ public class RobotContainer
     CommandXboxController controller = new CommandXboxController(0);
 
     Canndle candle = Canndle.getInstance();
+
+    Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, () -> drivetrain.getState().Pose, () -> drivetrain.getPigeon2().getAngularVelocityZWorld().getValue().in(DegreesPerSecond));
 
 
     public RobotContainer() {
@@ -63,6 +66,8 @@ public class RobotContainer
 
 
         this.autonomousCommand = this.path.gimmeCommand();
+
+        b.start();
 
         configureBindings();
     }
