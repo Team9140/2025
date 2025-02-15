@@ -5,11 +5,13 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
 import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import org.team9140.frc2025.Constants;
@@ -18,11 +20,11 @@ import static edu.wpi.first.units.Units.Meters;
 
 // make a subsystem
 public class Elevator implements Subsystem {
-// two talonFXs (one main, one follower)     constants?
+    // two talonFXs (one main, one follower)
     TalonFX talonMain = new TalonFX(52);
     TalonFX talonFollower = new TalonFX(52);
     CANdi elevatorCandi = new CANdi(0);
-    private final MotionMagicVoltage voltage;
+    private MotionMagicVoltage MotionMagicVoltage;
 
     public Elevator() {
         // canDI
@@ -37,26 +39,33 @@ public class Elevator implements Subsystem {
         talonMain.getConfigurator().apply(limits);
 
         // set up MotionMagicVoltage control request (see 2024 Arm.java for example)
-        this.voltage = new MotionMagicVoltage(Constants.ArmPositions.INTAKE)
+        this.MotionMagicVoltage = new MotionMagicVoltage(Constants.ArmPositions.INTAKE)
                 .withEnableFOC(true)
                 .withSlot(0)
                 .withFeedForward(Constants.ArmPositions.FEED_FORWARD);
     }
 
-// make up gear ratio for a conversion factor - units to radians
+    // make up gear ratio for a conversion factor - units to radians
     FeedbackConfigs feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(Constants.ArmPositions.SENSOR_TO_MECHANISM_RATIO);
 
-// config current limit
+    // config current limit
     CurrentLimitsConfigs currentLimitConfig = new CurrentLimitsConfigs().withStatorCurrentLimit(Constants.ArmPositions.MAX_CURRENT).withStatorCurrentLimitEnable(true);
 
-// needs command to go to position
-// take a Distance, not a double
+    // needs command to go to position
+    // take a Distance, not a double
     public Command toPostion(Distance distance) {
-        distance.in(Meters);
-        return this.runOnce(() -> this.voltage.withPosition(distance));
+        return this.runOnce(() -> this.MotionMagicVoltage.withPosition(distance.in(Meters)));
+    }
+
+    public Command setVoltage(double voltage) {
+        return this.runOnce(() -> this.talonMain.setControl(new VoltageOut(voltage)));
     }
 
     public Command disable() {
         return this.runOnce(() -> this.talonMain.setControl(new CoastOut()));
     }
+
+//    public Command enable(){
+//        return this.runOnce(() -> this.talonMain.setControl();
+//    }
 }
