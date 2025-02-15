@@ -327,7 +327,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             var vY = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickX.getAsDouble()));
             var omega = RotationsPerSecond.of(2).times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
-            SmartDashboard.putNumber("right stick", rightStickX.getAsDouble());
             this.setControl(this.drive
                     .withVelocityX(vX)
                     .withVelocityY(vY)
