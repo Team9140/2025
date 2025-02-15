@@ -345,55 +345,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void addVisionMeasurement(VisionMeasurement vm) {
-        //has time, pose, and
-        // use the timestamp of vm and pose buffer + our own yaw rate buffer to decide on std dev
-        this.latestVisionMeasurement = vm;
 
-        if (this.latestVisionMeasurement != null)
-        {
-            double visionTimestamp = latestVisionMeasurement.getTimestamp();
-
-            //
-            if (DriverStation.isDisabled()) {
-
-                LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(Limelight.this.name);
-
-                if (mt1 != null) {
-                    boolean reject = false;
-
-                    reject |= mt1.avgTagArea <= 0.05;
-//                        reject |= mt1.avgTagDist >= 4.0;
-
-                    if (!reject) {
-                        double thetaStdDev = 5.0;
-//                          VecBuilder.fill(5.0, 5.0, thetaStdDev)
-
-                        field.setRobotPose(mt1.pose);
-                        SmartDashboard.putData(field);
-
-                        SignalLogger.writeDoubleArray(Limelight.this.name + " pose",
-                                new double[]{mt1.pose.getX(), mt1.pose.getY(), mt1.pose.getRotation().getDegrees()});
-                    }
-                }
-            } else {
-                LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Limelight.this.name);
-
-                // all this logic to use or reject measurement belongs in drivetrain
-                boolean reject = false;
-                //can get angularVelocity from drivetrain probably
-                reject |= Math.abs(angularVelocity.in(DegreesPerSecond)) >= 360.0;
-                reject |= mt2.avgTagArea <= 0.05;
-//                    reject |= mt2.avgTagDist >= 4.0;
-
-                if (!reject) {
-                    double thetaStdDev = 999.0;
-                    // instead of adding measurement directly, give a VisionMeasurement to the consumer
-                }
-            }
-
-
-        }
-        this.samplePoseAt(0);
     }
 
     private void startSimThread() {

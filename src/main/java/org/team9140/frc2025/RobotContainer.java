@@ -19,6 +19,7 @@ import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
 import org.team9140.frc2025.subsystems.Limelight;
+import org.team9140.frc2025.subsystems.TheMatrix;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
@@ -39,6 +40,8 @@ public class RobotContainer
     Canndle candle = Canndle.getInstance();
 
     Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, null, null);
+
+    TheMatrix matrix = new TheMatrix();
 
 
     public RobotContainer() {

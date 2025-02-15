@@ -2,7 +2,6 @@ package org.team9140.frc2025.subsystems;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 
@@ -12,9 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTable.TableEventListener;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
-import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -38,7 +35,7 @@ public class Limelight extends SubsystemBase {
 
     //private static CommandSwerveDrivetrain drivetrain;
 
-    private String name;
+    public String name;
 
     public Limelight(String nm, Consumer<VisionMeasurement> visionMeasurement, Pose2d pose, AngularVelocity angularVelocity) {
         this.name = nm;
@@ -79,7 +76,15 @@ public class Limelight extends SubsystemBase {
 
     // maybe separate listeners for json and tcornxy???
 
-    private class Listener implements TableEventListener {
+    private class tcornxyListener implements TableEventListener {
+
+        @Override
+        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
+
+        }
+    }
+
+    private class LimelightListener implements TableEventListener {
         private static int mode = -1;
 
         public void accept(NetworkTable table, String key, NetworkTableEvent event) {
@@ -97,14 +102,7 @@ public class Limelight extends SubsystemBase {
                 latestResult = vr;
 
 
-                if (DriverStation.isDisabled()) {
-
-                    // find a better way to switch IMU modes???
-                    if (mode != 1) {
-                        LimelightHelpers.SetIMUMode(Limelight.this.name, 1);
-                        mode = 1;
-                        System.out.println("IMU Mode set to 1");
-                    }
+                if(mode == 1){
 
                     LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(Limelight.this.name);
 
@@ -129,12 +127,6 @@ public class Limelight extends SubsystemBase {
                         }
                     }
                 } else {
-                    if (mode != 2) {
-                        LimelightHelpers.SetIMUMode(Limelight.this.name, 2);
-                        mode = 2;
-                        System.out.println("IMU Mode set to 2");
-                    }
-
                     // find a way to delete this dependency on drivetrain
                     setRobotOrientation(pose.getRotation());
 
@@ -170,7 +162,7 @@ public class Limelight extends SubsystemBase {
     public synchronized void start() {
         if (m_listenerID < 0) {
             m_listenerID = NetworkTableInstance.getDefault().getTable(this.name).addListener("json",
-                    EnumSet.of(Kind.kValueAll), new Listener());
+                    EnumSet.of(Kind.kValueAll), new LimelightListener());
         }
     }
 }
