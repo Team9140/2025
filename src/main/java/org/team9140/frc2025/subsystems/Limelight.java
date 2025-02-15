@@ -30,6 +30,7 @@ public class Limelight extends SubsystemBase {
     private final Consumer<VisionMeasurement> addVisionMeasurement;
     private Pose2d pose;
     private AngularVelocity angularVelocity;
+    private int mode = -1;
 
 
     // instead of holding reference to drivetrain, pass in a consumer<VisionMeasurement>
@@ -95,7 +96,7 @@ public class Limelight extends SubsystemBase {
 
                 latestResult = vr;
 
-                
+
                 if (DriverStation.isDisabled()) {
 
                     // find a better way to switch IMU modes???
@@ -141,7 +142,7 @@ public class Limelight extends SubsystemBase {
 
                     // all this logic to use or reject measurement belongs in drivetrain
                     boolean reject = false;
-                    reject |= Math.abs(angularVelocity.in(DegreesPerSecond))  >= 360.0;
+                    reject |= Math.abs(angularVelocity.in(DegreesPerSecond)) >= 360.0;
                     reject |= mt2.avgTagArea <= 0.05;
 //                    reject |= mt2.avgTagDist >= 4.0;
 
@@ -153,6 +154,14 @@ public class Limelight extends SubsystemBase {
                     }
                 }
             }
+        }
+    }
+
+    public void setIMU(int i) {
+        if(i != mode) {
+            LimelightHelpers.SetIMUMode(Limelight.this.name, i);
+            mode = i;
+            System.out.println("IMU Mode set to " + i);
         }
     }
 

@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 public class VisionMeasurement {
     // in CTRE timebase
     double timestamp;
+    int IMU_Mode= - 1;
 
     public enum Kind {
         MT1,
@@ -26,5 +27,11 @@ public class VisionMeasurement {
         this.type = ong;
 
     }
+
+    public double getTimestamp()
+    {
+        return this.timestamp;
+    }
+
 
 }
