@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import org.team9140.frc2025.Constants;
 
 public class AutoAiming {
+    // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
     public enum Branches {
         BlueH,
         BlueI,
@@ -18,7 +19,6 @@ public class AutoAiming {
         BlueE,
         BlueF,
         BlueG,
-        RedA,
         RedB,
         RedC,
         RedD,
@@ -29,21 +29,22 @@ public class AutoAiming {
         RedI,
         RedJ,
         RedK,
-        RedL
+        RedL,
+        RedA,
     }
 
     public static Branches getBranch(Translation2d pose) {
-        // Past Middle
+        // Before Middle
         if (pose.getX() < 17.548225 / 2) {
-            double angle = MathUtil.angleModulus(pose.minus(Constants.FieldItemPoses.REEF_BLUE).getAngle().unaryMinus().getRadians());
+            double angle = MathUtil.inputModulus(pose.minus(Constants.FieldItemPoses.REEF_BLUE).getAngle().getDegrees(), 0, 360);
             Branches[] branches = Branches.values();
 
-            return branches[branches.length / 4 + (int) (branches.length / 2 * angle / (Math.TAU)) - 1];
+            return branches[(int) (angle / 30)];
         } else {
-            double angle = pose.minus(Constants.FieldItemPoses.REEF_BLUE).getAngle().getRadians();
+            double angle = MathUtil.inputModulus(pose.minus(Constants.FieldItemPoses.REEF_RED).getAngle().getDegrees(), 0, 360);
             Branches[] branches = Branches.values();
 
-            return branches[24 - (int) (Math.TAU / branches.length * angle / (Math.TAU))];
+            return branches[12 + (int) (angle / 30)];
         }
     }
 }
