@@ -38,7 +38,7 @@ public class RobotContainer
 
     Canndle candle = Canndle.getInstance();
 
-    Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, () -> drivetrain.getState().Pose, () -> drivetrain.getPigeon2().getAngularVelocityZWorld().getValue().in(DegreesPerSecond));
+    Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, null, null);
 
 
     public RobotContainer() {

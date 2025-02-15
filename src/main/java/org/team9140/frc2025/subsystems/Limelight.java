@@ -12,6 +12,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTable.TableEventListener;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
+import edu.wpi.first.units.AngularVelocityUnit;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.networktables.NetworkTableEvent;
@@ -22,10 +24,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.lib.LimelightHelpers;
 import org.team9140.lib.VisionMeasurement;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 public class Limelight extends SubsystemBase {
-    private Consumer<VisionMeasurement> addVisionMeasurement;
-    private Supplier<Pose2d> getPose;
-    private Supplier<Double> getAV;
+    private final Consumer<VisionMeasurement> addVisionMeasurement;
+    private Pose2d pose;
+    private AngularVelocity angularVelocity;
 
 
     // instead of holding reference to drivetrain, pass in a consumer<VisionMeasurement>
@@ -35,11 +39,11 @@ public class Limelight extends SubsystemBase {
 
     private String name;
 
-    public Limelight(String nm, Consumer<VisionMeasurement> visionMeasurement, Supplier<Pose2d> getPose, Supplier<Double> getAV) {
+    public Limelight(String nm, Consumer<VisionMeasurement> visionMeasurement, Pose2d pose, AngularVelocity angularVelocity) {
         this.name = nm;
         this.addVisionMeasurement = visionMeasurement;
-        this.getPose = getPose;
-        this.getAV = getAV;
+        this.pose = pose;
+        this.angularVelocity = angularVelocity;
 
         //this.drivetrain = TunerConstants.getDrivetrain();
     }
@@ -53,6 +57,14 @@ public class Limelight extends SubsystemBase {
 
     public VisionResult getLatest() {
         return this.latestResult;
+    }
+
+    public void setPose(Pose2d pose) {
+        this.pose = pose;
+    }
+
+    public void setAngularVelocity(AngularVelocity angularVelocity) {
+        this.angularVelocity = angularVelocity;
     }
 
     // call in robotcontainer instead of in listener or smth
@@ -86,7 +98,6 @@ public class Limelight extends SubsystemBase {
                 
                 if (DriverStation.isDisabled()) {
 
-
                     // find a better way to switch IMU modes???
                     if (mode != 1) {
                         LimelightHelpers.SetIMUMode(Limelight.this.name, 1);
@@ -113,7 +124,7 @@ public class Limelight extends SubsystemBase {
                             SignalLogger.writeDoubleArray(Limelight.this.name + " pose",
                                     new double[]{mt1.pose.getX(), mt1.pose.getY(), mt1.pose.getRotation().getDegrees()});
 
-                            setRobotOrientation(getPose.get().getRotation());
+                            setRobotOrientation(pose.getRotation());
                         }
                     }
                 } else {
@@ -124,13 +135,13 @@ public class Limelight extends SubsystemBase {
                     }
 
                     // find a way to delete this dependency on drivetrain
-                    setRobotOrientation(getPose.get().getRotation());
+                    setRobotOrientation(pose.getRotation());
 
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Limelight.this.name);
 
                     // all this logic to use or reject measurement belongs in drivetrain
                     boolean reject = false;
-                    reject |= (Math.abs(getAV.get()) >= 360.0);
+                    reject |= Math.abs(angularVelocity.in(DegreesPerSecond))  >= 360.0;
                     reject |= mt2.avgTagArea <= 0.05;
 //                    reject |= mt2.avgTagDist >= 4.0;
 
