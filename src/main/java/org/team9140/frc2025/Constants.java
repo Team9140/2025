@@ -1,9 +1,12 @@
 package org.team9140.frc2025;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -32,9 +35,16 @@ public class Constants {
     }
 
     public static class Manipulator {
-        public static final double HOLD_VOLTAGE = 0;
-        public static final double INTAKE_VOLTAGE = 0;
-        public static final double OUTTAKE_VOLTAGE = 0;
+        public static final double HOLD_VOLTAGE_ALGAE = 0;
+
+        public static final double INTAKE_VOLTAGE_CORAL = 0;
+        public static final double INTAKE_VOLTAGE_ALGAE = 0;
+
+        public static final double OUTTAKE_VOLTAGE_CORAL = 0;
+        public static final double OUTTAKE_VOLTAGE_ALGAE = 0;
+
         public static final double OFF = 0;
+        public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
+        public static final Time INTAKE_CORAL_TIME = Seconds.of(1);
     }
 }
