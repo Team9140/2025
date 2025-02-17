@@ -30,4 +30,11 @@ public class Constants {
         public static final double METERS_PER_MOTOR_ROTATION = SPOOL_RADIUS.in(Meters) * Math.PI * 2.0 / GEAR_RATIO;
         public static final InvertedValue LEFT_MOTOR_INVERT = InvertedValue.Clockwise_Positive;
     }
+
+    public static class Manipulator {
+        public static final double HOLD_VOLTAGE = 0;
+        public static final double INTAKE_VOLTAGE = 0;
+        public static final double OUTTAKE_VOLTAGE = 0;
+        public static final double OFF = 0;
+    }
 }

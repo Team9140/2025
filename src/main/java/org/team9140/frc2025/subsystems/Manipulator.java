@@ -3,28 +3,41 @@ package org.team9140.frc2025.subsystems;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class Manipulator {
-    WPI_VictorSPX manipulatorMotor = new WPI_VictorSPX(0);
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.team9140.frc2025.Constants;
+
+public class Manipulator extends SubsystemBase {
+    private WPI_VictorSPX manipulatorMotor;
+    private static Manipulator instance;
 
     public Manipulator() {
-
+        this.manipulatorMotor = new WPI_VictorSPX(0);
     }
 
-//    public Command turnOn(){
-//
-//    }
+    public static Manipulator getInstance() {
+        return (instance == null) ? instance = new Manipulator() : instance;
+    }
 
     public Command turnOff(){
-        manipulatorMotor.setVoltage(0);
-        return null;
+        return this.setVoltage(Constants.Manipulator.OFF);
     }
 
-//    public Command moveBack(){
-//
-//    }
+    public Command intake(){
+        return this.setVoltage(
+                Constants.Manipulator.INTAKE_VOLTAGE
+        ).andThen(
+                this.setVoltage(Constants.Manipulator.HOLD_VOLTAGE)
+        );
+    }
+
+    public Command outtake(){
+        return this.setVoltage(Constants.Manipulator.OUTTAKE_VOLTAGE)
+                .andThen(
+                    this.turnOff()
+                );
+    }
 
     public Command setVoltage(double voltage) {
-        manipulatorMotor.setVoltage(voltage);
-        return null;
+        return run(() -> this.manipulatorMotor.setVoltage(voltage));
     }
 }

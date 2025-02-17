@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import org.team9140.frc2025.Constants;
 
 import static edu.wpi.first.units.Units.Meters;
-
 // make a subsystem
 public class Elevator implements Subsystem {
     // two talonFXs (one main, one follower)
@@ -66,6 +65,6 @@ public class Elevator implements Subsystem {
     }
 
 //    public Command enable(){
-//        return this.runOnce(() -> this.talonMain.setControl();
+//        return this.runOnce(() -> this.talonMain.setControl(new CoastOut()));
 //    }
 }
