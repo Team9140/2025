@@ -77,7 +77,7 @@ public class TheMatrix extends SubsystemBase {
     private void addCameraSim(PhotonCameraSim camera) {
         // Our camera is mounted 0.1 meters forward and 0.5 meters up from the robot pose,
         // (Robot pose is considered the center of rotation at the floor level, or Z = 0)
-        Translation3d robotToCameraTrl = new Translation3d(0.0, 0, Constants.Camera.kLensHeight);
+        Translation3d robotToCameraTrl = new Translation3d(0.0, 0, Constants.Camera.kLensHeight.magnitude());
         // and pitched 15 degrees up.
         Rotation3d robotToCameraRot = new Rotation3d(0, Math.toRadians(0), 0);
         Transform3d robotToCamera = new Transform3d(robotToCameraTrl, robotToCameraRot);
@@ -86,15 +86,18 @@ public class TheMatrix extends SubsystemBase {
         this.visionSystem.addCamera(camera, robotToCamera);
     }
     private void writeToTable(PhotonPipelineResult result, NetworkTable table) {
-        PhotonTrackedTarget target = result.getTargets().get(0);
+        if(result.hasTargets()){
+            PhotonTrackedTarget target = result.getTargets().get(0);
 
-        Double[] ret = {target.detectedCorners.get(0).x, target.detectedCorners.get(0).y, target.detectedCorners.get(1).x, target.detectedCorners.get(1).y,
-                target.detectedCorners.get(2).x, target.detectedCorners.get(2).y, target.detectedCorners.get(3).x, target.detectedCorners.get(3).y
-        };
-        NetworkTableValue val = NetworkTableValue.makeDoubleArray(ret);
-        table.putValue("tcornxy", val);
-        NetworkTableValue Joseph = NetworkTableValue.makeDouble(target.fiducialId);
-        table.putValue("tid", Joseph);
+            Double[] ret = {target.detectedCorners.get(0).x, target.detectedCorners.get(0).y, target.detectedCorners.get(1).x, target.detectedCorners.get(1).y,
+                    target.detectedCorners.get(2).x, target.detectedCorners.get(2).y, target.detectedCorners.get(3).x, target.detectedCorners.get(3).y
+            };
+            NetworkTableValue val = NetworkTableValue.makeDoubleArray(ret);
+            table.putValue("tcornxy", val);
+            NetworkTableValue Joseph = NetworkTableValue.makeDouble(target.fiducialId);
+            table.putValue("tid", Joseph);
+        }
+
 
 
 

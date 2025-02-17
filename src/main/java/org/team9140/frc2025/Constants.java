@@ -1,6 +1,7 @@
 package org.team9140.frc2025;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 
 import static edu.wpi.first.units.Units.*;
@@ -8,7 +9,7 @@ import static edu.wpi.first.units.Units.*;
 public class Constants {
     public static class Camera{
 
-        public static double kLensHeight;
+        public static Distance kLensHeight = Meter.of(0.5);
     }
 
     public static class Drive {
