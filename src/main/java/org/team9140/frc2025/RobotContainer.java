@@ -7,13 +7,11 @@ package org.team9140.frc2025;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
@@ -71,8 +69,6 @@ public class RobotContainer
         drivetrain
                 .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
 
-        controller.start().onTrue(drivetrain.resetGyroCommand());
-
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -83,10 +79,10 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
-        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }

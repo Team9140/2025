@@ -6,11 +6,11 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule;
-import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
@@ -25,6 +25,7 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -44,7 +45,7 @@ import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-    private final Field2d m_field = new Field2d();
+    private Field2d m_field = new Field2d();
 
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -59,9 +60,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Swerve request to apply during field-centric path following */
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(10, 0, 0);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(10, 0, 0);
-    private final PhoenixPIDController m_pathThetaController = new PhoenixPIDController(7, 0, 0);
+    private final PIDController m_pathXController = new PIDController(10, 0, 0);
+    private final PIDController m_pathYController = new PIDController(10, 0, 0);
+    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -247,20 +248,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         var pose = getState().Pose;
 
-        double time = Utils.fpgaToCurrentTime(Timer.getFPGATimestamp());
-
         var targetSpeeds = sample.getChassisSpeeds();
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-                pose.getX(), sample.x, time
+                pose.getX(), sample.x
         );
         targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-                pose.getY(), sample.y, time
+                pose.getY(), sample.y
         );
         targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-                pose.getRotation().getRadians(), sample.heading, time
+                pose.getRotation().getRadians(), sample.heading
         );
 
-        this.setControl(
+        setControl(
                 m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
                         .withWheelForceFeedforwardsX(sample.moduleForcesX())
                         .withWheelForceFeedforwardsY(sample.moduleForcesY())
@@ -310,6 +309,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        SmartDashboard.putString("Closest Branch", AutoAiming.getBranch(this.getState().Pose.getTranslation()).toString());
     }
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
