@@ -69,8 +69,6 @@ public class RobotContainer
         drivetrain
                 .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
 
-        controller.start().onTrue(drivetrain.resetGyroCommand());
-
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));

@@ -9,6 +9,7 @@ import com.ctre.phoenix6.swerve.SwerveModule;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
@@ -307,6 +308,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        SmartDashboard.putString("Closest Branch", AutoAiming.getBranch(this.getState().Pose.getTranslation()).toString());
     }
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
