@@ -317,7 +317,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS)
             .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {

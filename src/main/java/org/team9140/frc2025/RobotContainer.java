@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
@@ -74,10 +75,10 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
 
-//        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
-//        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
-//        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
-//        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
+        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
+        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
+        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
+        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
 //        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));

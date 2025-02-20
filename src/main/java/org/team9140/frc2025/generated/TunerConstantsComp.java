@@ -76,7 +76,8 @@ public class TunerConstantsComp {
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
-    private static final double kCoupleRatio = 3.125;
+    private static final double kCoupleRatioMK4n = 50.0 / 16.0;
+    private static final double kCoupleRatioMK4i = 50.0 / 13.0;
 
     private static final double kDriveGearRatioMK4n = 7.125;
     private static final double kSteerGearRatioMK4n = 18.75;
@@ -107,7 +108,7 @@ public class TunerConstantsComp {
             new SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
                     .withDriveMotorGearRatio(kDriveGearRatioMK4n)
                     .withSteerMotorGearRatio(kSteerGearRatioMK4n)
-                    .withCouplingGearRatio(kCoupleRatio)
+                    .withCouplingGearRatio(kCoupleRatioMK4n)
                     .withWheelRadius(kWheelRadius)
                     .withSteerMotorGains(steerGains)
                     .withDriveMotorGains(driveGains)
@@ -130,7 +131,7 @@ public class TunerConstantsComp {
             new SwerveModuleConstantsFactory<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
                     .withDriveMotorGearRatio(kDriveGearRatioMK4i)
                     .withSteerMotorGearRatio(kSteerGearRatioMK4i)
-                    .withCouplingGearRatio(kCoupleRatio)
+                    .withCouplingGearRatio(kCoupleRatioMK4i)
                     .withWheelRadius(kWheelRadius)
                     .withSteerMotorGains(steerGains)
                     .withDriveMotorGains(driveGains)
