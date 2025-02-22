@@ -73,17 +73,6 @@ public class Limelight extends SubsystemBase {
 
     Field2d field = new Field2d();
 
-
-    // maybe separate listeners for json and tcornxy???
-
-    private class tcornxyListener implements TableEventListener {
-
-        @Override
-        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-
-        }
-    }
-
     private class LimelightListener implements TableEventListener {
         private static int mode = -1;
 
@@ -149,6 +138,43 @@ public class Limelight extends SubsystemBase {
         }
     }
 
+    private class TcornxyListener implements TableEventListener {
+        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
+            if (key.equals("tcornxy")) {
+                Number[] corners = table.getEntry(key).getNumberArray(new Number[] {0, 0, 0, 0, 0});
+            }
+        }
+    }
+
+    private class TIDListener implements TableEventListener {
+        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
+            if (key.equals("tid")) {
+                Number id = table.getEntry(key).getNumber(-1);
+                System.out.println(id + "\n \n \n");
+            }
+        }
+    }
+
+    private class CameraSpaceListener implements TableEventListener {
+        double x;
+        double y;
+        double z;
+        double pitch;
+        double yaw;
+        double roll;
+        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
+            if (key.equals("targetpose_cameraspace")) {
+                double[] values = table.getEntry(key).getDoubleArray(new double[] {0, 0, 0, 0, 0});
+                x = values[0];
+                y = values[1];
+                z = values[2];
+                pitch = values[3];
+                yaw = values[4];
+                roll = values[5];
+            }
+        }
+    }
+
     public void setIMU(int i) {
         if(i != mode) {
             LimelightHelpers.SetIMUMode(Limelight.this.name, i);
@@ -158,11 +184,25 @@ public class Limelight extends SubsystemBase {
     }
 
     private int m_listenerID = -1;
+    private int n_listenerID = -1;
+    private int o_listenerID = -1;
+    private int p_listenerID = -1;
 
     public synchronized void start() {
         if (m_listenerID < 0) {
-            m_listenerID = NetworkTableInstance.getDefault().getTable(this.name).addListener("json",
+            m_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("json",
                     EnumSet.of(Kind.kValueAll), new LimelightListener());
+        }
+        if(n_listenerID < 0) {
+            n_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("tcornxy",
+                    EnumSet.of(Kind.kValueAll), new TcornxyListener());
+        }
+        if(o_listenerID < 0) {
+            o_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("tid",
+                    EnumSet.of(Kind.kValueAll), new TIDListener());
+        }if(p_listenerID < 0) {
+            p_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("targetpose_cameraspace",
+                    EnumSet.of(Kind.kValueAll), new CameraSpaceListener());
         }
     }
 }
