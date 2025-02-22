@@ -41,7 +41,7 @@ public class RobotContainer
 
     Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, null, null);
 
-    TheMatrix matrix = new TheMatrix();
+//    TheMatrix matrix = new TheMatrix();
 
 
     public RobotContainer() {
@@ -54,7 +54,8 @@ public class RobotContainer
         this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
         this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
 
-        this.matrix.setupVision(drivetrain);
+        b.start();
+//        this.matrix.setupVision(drivetrain);
 
 //        this.path.atEventTime("End_Test").onTrue(
 //                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
@@ -71,8 +72,6 @@ public class RobotContainer
 
 
         this.autonomousCommand = this.path.gimmeCommand();
-
-        b.start();
 
         configureBindings();
     }

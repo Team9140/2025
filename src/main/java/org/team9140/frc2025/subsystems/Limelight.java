@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTable.TableEventListener;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -20,8 +21,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.lib.LimelightHelpers;
 import org.team9140.lib.VisionMeasurement;
-
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 
 public class Limelight extends SubsystemBase {
     private final Consumer<VisionMeasurement> addVisionMeasurement;
@@ -82,10 +81,13 @@ public class Limelight extends SubsystemBase {
                 LimelightHelpers.LimelightResults llResult = LimelightHelpers.getLatestResults(Limelight.this.name);
                 VisionResult vr = new VisionResult();
 
-                vr.timestamp = before - llResult.latency_pipeline / 1000.0 - llResult.latency_capture / 1000.0;
 
-                if (llResult.targets_Fiducials.length > 0) {
+                vr.timestamp = before - llResult.latency_pipeline / 1000.0 - llResult.latency_capture / 1000.0;
+                SmartDashboard.putNumber("fit", llResult.Fiducial.length);
+                SmartDashboard.putNumber("saulgoodman", llResult.Fiducial[0].corner_points[0][0]);
+                if (llResult.Fiducial.length > 0) {
                     vr.valid = true;
+                    System.out.println(llResult.Fiducial[0]);
                 }
 
                 latestResult = vr;
@@ -117,13 +119,13 @@ public class Limelight extends SubsystemBase {
                     }
                 } else {
                     // find a way to delete this dependency on drivetrain
-                    setRobotOrientation(pose.getRotation());
+                    // setRobotOrientation(pose.getRotation());
 
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(Limelight.this.name);
 
                     // all this logic to use or reject measurement belongs in drivetrain
                     boolean reject = false;
-                    reject |= Math.abs(angularVelocity.in(DegreesPerSecond)) >= 360.0;
+                    // reject |= Math.abs(angularVelocity.in(DegreesPerSecond)) >= 360.0;
                     reject |= mt2.avgTagArea <= 0.05;
 //                    reject |= mt2.avgTagDist >= 4.0;
 
@@ -139,39 +141,29 @@ public class Limelight extends SubsystemBase {
     }
 
     private class TcornxyListener implements TableEventListener {
+//        double[] corners = {728.9579467773438, 503.0422058105469, 763.508056640625, 503.43731689453125, 763.1161499023438, 469.2093811035156, 729.0219116210938, 468.1083984375};
+//        double[] distortionCoefficients = {0.1394220917285037,-0.24654889674484518,-0.0005996899249218598,8.247478330939335e-05,0.08289921803271944};
+//        double[][] intrinsics_matrix = {{745.5524377236715,0.0,655.1438911369394}, {0.0,745.1406890491054,413.06128159642583}, {0.0,0.0,1.0}};
+//        Tupl
+//        double reproerror = 0.548062243424268;
+
+        double[]corners;
+        Number tid;
+        Time tl;
+        Time cl;
+        Time now;
+        Time when;
         public void accept(NetworkTable table, String key, NetworkTableEvent event) {
             if (key.equals("tcornxy")) {
-                Number[] corners = table.getEntry(key).getNumberArray(new Number[] {0, 0, 0, 0, 0});
+                corners = table.getEntry(key).getDoubleArray(new double[0]);
+                if(corners.length > 1){
+                    SmartDashboard.putNumberArray("tcornxy", corners);
+                }
             }
         }
-    }
 
-    private class TIDListener implements TableEventListener {
-        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-            if (key.equals("tid")) {
-                Number id = table.getEntry(key).getNumber(-1);
-                System.out.println(id + "\n \n \n");
-            }
-        }
-    }
+        public void doMath(){
 
-    private class CameraSpaceListener implements TableEventListener {
-        double x;
-        double y;
-        double z;
-        double pitch;
-        double yaw;
-        double roll;
-        public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-            if (key.equals("targetpose_cameraspace")) {
-                double[] values = table.getEntry(key).getDoubleArray(new double[] {0, 0, 0, 0, 0});
-                x = values[0];
-                y = values[1];
-                z = values[2];
-                pitch = values[3];
-                yaw = values[4];
-                roll = values[5];
-            }
         }
     }
 
@@ -186,7 +178,6 @@ public class Limelight extends SubsystemBase {
     private int m_listenerID = -1;
     private int n_listenerID = -1;
     private int o_listenerID = -1;
-    private int p_listenerID = -1;
 
     public synchronized void start() {
         if (m_listenerID < 0) {
@@ -197,12 +188,9 @@ public class Limelight extends SubsystemBase {
             n_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("tcornxy",
                     EnumSet.of(Kind.kValueAll), new TcornxyListener());
         }
-        if(o_listenerID < 0) {
-            o_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("tid",
-                    EnumSet.of(Kind.kValueAll), new TIDListener());
-        }if(p_listenerID < 0) {
-            p_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("targetpose_cameraspace",
-                    EnumSet.of(Kind.kValueAll), new CameraSpaceListener());
-        }
+//        if(o_listenerID < 0) {
+//            o_listenerID = NetworkTableInstance.getDefault().getTable(name).addListener("targetpose_cameraspace",
+//                    EnumSet.of(Kind.kValueAll), new CameraSpaceListener());
+//        }
     }
 }
