@@ -9,6 +9,9 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
@@ -63,17 +66,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Swerve request to apply during field-centric path following */
     private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
-    private final PIDController m_pathXController = new PIDController(10, 0, 0);
-    private final PIDController m_pathYController = new PIDController(10, 0, 0);
-    private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
-
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(10, 0, 0);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(10, 0, 0);
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();
 
-    private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle().withDriveRequestType(DriveRequestType.Velocity).withTargetDirection(new Rotation2d());
-    private final PhoenixPIDController headingController = new PhoenixPIDController(11.0, 0.0, 0.25);
+    private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withTargetDirection(new Rotation2d())
+            .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
+            .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS);
+
+    private final PhoenixPIDController headingController = new PhoenixPIDController(11.0, 0.0, 0); //11.0, 0.0, 0.25
+
 
     private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
             new SysIdRoutineTorqueCurrent.Config(
@@ -261,19 +268,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param sample Sample along the path to follow
      */
     public void followPath(SwerveSample sample) {
-        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
-
         var pose = getState().Pose;
 
         var targetSpeeds = sample.getChassisSpeeds();
+        double currentTime = Utils.getCurrentTimeSeconds();
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-                pose.getX(), sample.x
+                pose.getX(), sample.x, currentTime
         );
         targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-                pose.getY(), sample.y
+                pose.getY(), sample.y, currentTime
         );
-        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-                pose.getRotation().getRadians(), sample.heading
+        targetSpeeds.omegaRadiansPerSecond += headingController.calculate(
+                pose.getRotation().getRadians(), sample.heading, currentTime
         );
 
         setControl(
@@ -336,17 +342,41 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
 
+    public Command goToPose(Pose2d targetPose) {
+        return this.run(() -> {
+            // same for y
+            double currentTime = Utils.getCurrentTimeSeconds();
+            Pose2d currentPose = this.getState().Pose;
+
+            this.setControl(this.centric
+                    .withTargetDirection(targetPose.getRotation())
+                    .withVelocityX(m_pathXController.calculate(currentPose.getX(), targetPose.getX(), currentTime))
+                    .withVelocityY(m_pathYController.calculate(currentPose.getY(), targetPose.getY(), currentTime)));
+
+            SmartDashboard.putNumber("Heading Output", this.headingController.getLastAppliedOutput());
+            SmartDashboard.putNumber("X Output", this.m_pathXController.getLastAppliedOutput());
+            SmartDashboard.putNumber("Y Output", this.m_pathYController.getLastAppliedOutput());
+            SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2) + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
+
+            // same for theta
+//            this.setControl(m_pathApplyFieldSpeeds.withSpeeds(new ChassisSpeeds(
+//                    m_pathXController.calculate(currentPose.getX(), targetPose.getX(), currentTime),
+//                    m_pathYController.calculate(currentPose.getY(), targetPose.getY(), currentTime),
+//                    headingController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians(), currentTime)
+//            )));
+        });
+    }
+
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
             var vX = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickY.getAsDouble()));
             var vY = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickX.getAsDouble()));
             var omega = RotationsPerSecond.of(2).times(Util.applyDeadband(-rightStickX.getAsDouble()));
-            this.centric.withRotationalDeadband(0.06);
-            SmartDashboard.putNumber("heading output", this.headingController.getLastAppliedOutput());
-            this.setControl(this.centric
+
+            this.setControl(this.drive
                     .withVelocityX(vX)
                     .withVelocityY(vY)
-                    .withTargetDirection(new Rotation2d(Util.applyDeadband(-rightStickX.getAsDouble()))));
+                    .withRotationalRate(omega));
         });
     }
 

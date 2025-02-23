@@ -7,6 +7,9 @@ package org.team9140.frc2025;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -80,10 +83,16 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
-        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+
+        Pose2d targetPose = new Pose2d(2.4525387287139893,6.808200359344482, new Rotation2d());
+
+        controller.a().whileTrue(drivetrain.goToPose(targetPose));
+
+        NetworkTableInstance.getDefault().getStructTopic("Target Pose", Pose2d.struct).publish().set(targetPose);
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }
