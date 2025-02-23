@@ -2,16 +2,12 @@ package org.team9140.frc2025.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
@@ -31,7 +27,6 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -39,7 +34,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -51,8 +45,6 @@ import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-    private Field2d m_field = new Field2d();
-
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -65,7 +57,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Swerve request to apply during field-centric path following */
-    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
     private final PhoenixPIDController m_pathXController = new PhoenixPIDController(10, 0, 0);
     private final PhoenixPIDController m_pathYController = new PhoenixPIDController(10, 0, 0);
     /* Swerve requests to apply during SysId characterization */
@@ -79,7 +70,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
             .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS);
 
-    private final PhoenixPIDController headingController = new PhoenixPIDController(11.0, 0.0, 0); //11.0, 0.0, 0.25
+    private final PhoenixPIDController headingController = new PhoenixPIDController(11.0, 0.0, 0.25); //11.0, 0.0, 0.25
 
 
     private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
@@ -268,25 +259,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param sample Sample along the path to follow
      */
     public void followPath(SwerveSample sample) {
-        var pose = getState().Pose;
+        Pose2d pose = getState().Pose;
+        Pose2d target = sample.getPose();
 
-        var targetSpeeds = sample.getChassisSpeeds();
         double currentTime = Utils.getCurrentTimeSeconds();
-        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-                pose.getX(), sample.x, currentTime
-        );
-        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-                pose.getY(), sample.y, currentTime
-        );
-        targetSpeeds.omegaRadiansPerSecond += headingController.calculate(
-                pose.getRotation().getRadians(), sample.heading, currentTime
-        );
 
-        setControl(
-                m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
-                        .withWheelForceFeedforwardsX(sample.moduleForcesX())
-                        .withWheelForceFeedforwardsY(sample.moduleForcesY())
-        );
+        this.setControl(this.centric
+                .withTargetDirection(target.getRotation())
+                .withVelocityX(m_pathXController.calculate(pose.getX(), target.getX(), currentTime))
+                .withVelocityY(m_pathYController.calculate(pose.getY(), target.getY(), currentTime)));
     }
 
     public Command sysIdSteerQ(SysIdRoutine.Direction direction) {
@@ -334,6 +315,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         SmartDashboard.putString("Closest Branch", AutoAiming.getBranch(this.getState().Pose.getTranslation()).toString());
+        SmartDashboard.putNumber("Heading Output", this.headingController.getLastAppliedOutput());
+        SmartDashboard.putNumber("X Output", this.m_pathXController.getLastAppliedOutput());
+        SmartDashboard.putNumber("Y Output", this.m_pathYController.getLastAppliedOutput());
+        SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2) + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
     }
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -344,7 +329,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command goToPose(Pose2d targetPose) {
         return this.run(() -> {
-            // same for y
             double currentTime = Utils.getCurrentTimeSeconds();
             Pose2d currentPose = this.getState().Pose;
 
@@ -352,18 +336,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withTargetDirection(targetPose.getRotation())
                     .withVelocityX(m_pathXController.calculate(currentPose.getX(), targetPose.getX(), currentTime))
                     .withVelocityY(m_pathYController.calculate(currentPose.getY(), targetPose.getY(), currentTime)));
-
-            SmartDashboard.putNumber("Heading Output", this.headingController.getLastAppliedOutput());
-            SmartDashboard.putNumber("X Output", this.m_pathXController.getLastAppliedOutput());
-            SmartDashboard.putNumber("Y Output", this.m_pathYController.getLastAppliedOutput());
-            SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2) + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
-
-            // same for theta
-//            this.setControl(m_pathApplyFieldSpeeds.withSpeeds(new ChassisSpeeds(
-//                    m_pathXController.calculate(currentPose.getX(), targetPose.getX(), currentTime),
-//                    m_pathYController.calculate(currentPose.getY(), targetPose.getY(), currentTime),
-//                    headingController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians(), currentTime)
-//            )));
         });
     }
 

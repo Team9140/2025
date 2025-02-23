@@ -41,14 +41,14 @@ public class RobotContainer
 
 
     public RobotContainer() {
-        this.path = new MazeRunner("realgamestuff", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
-        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
-        this.path.atEventTime("Second_Coral").onTrue((new PrintCommand("Second_Coral")).alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-        this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
-        this.path.atEventTime("Second_Restock").onTrue(new PrintCommand("Second_Restock").alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-        this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
-        this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
+        this.path = new MazeRunner("themaze", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+//        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
+//        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
+//        this.path.atEventTime("Second_Coral").onTrue((new PrintCommand("Second_Coral")).alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
+//        this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
+//        this.path.atEventTime("Second_Restock").onTrue(new PrintCommand("Second_Restock").alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
+//        this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
+//        this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
 
 //        this.path.atEventTime("End_Test").onTrue(
 //                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
@@ -87,12 +87,6 @@ public class RobotContainer
 //        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
-
-        Pose2d targetPose = new Pose2d(2.4525387287139893,6.808200359344482, new Rotation2d());
-
-        controller.a().whileTrue(drivetrain.goToPose(targetPose));
-
-        NetworkTableInstance.getDefault().getStructTopic("Target Pose", Pose2d.struct).publish().set(targetPose);
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }
