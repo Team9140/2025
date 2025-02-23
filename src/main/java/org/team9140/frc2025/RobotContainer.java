@@ -75,15 +75,15 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
 
-        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
-//        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
-//        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
-//        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
-//        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }
