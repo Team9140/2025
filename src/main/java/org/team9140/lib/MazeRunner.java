@@ -10,7 +10,6 @@ import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -32,14 +31,15 @@ import static org.team9140.lib.Util.rotationEpsilonEquals;
 public class MazeRunner {
     private final TreeMap<String, Trigger> eventtimes;
     private final StructPublisher<Pose2d> posePublisher;
-    private Trajectory<SwerveSample> trajectory;
     private final EventLoop loop;
     private final Timer timer;
     private final CommandSwerveDrivetrain drive;
     private final DriverStation.Alliance alliance;
-
-    private boolean active = false;
     private final Trigger activeTrigger;
+
+    private Trajectory<SwerveSample> trajectory;
+    private Pose2d targetPose;
+    private boolean active = false;
 
     public MazeRunner(String name, CommandSwerveDrivetrain drivetrain, DriverStation.Alliance alliance) {
         Choreo.<SwerveSample>loadTrajectory(name).ifPresent(trajectory -> this.trajectory = alliance.equals(DriverStation.Alliance.Blue) ? trajectory : trajectory.flipped());
@@ -127,7 +127,7 @@ public class MazeRunner {
     }
 
     public Command gimmeCommand() {
-        return new FunctionalCommand(
+        return this.drive.goToPose(() -> this.targetPose).raceWith(new FunctionalCommand(
                 () -> {
                     this.timer.restart();
                     this.active = true;
@@ -136,17 +136,15 @@ public class MazeRunner {
                     this.loop.poll();
                     Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), false);
                     sample.ifPresent((swerveSample) -> {
-                        this.drive.followPath(swerveSample);
-                        this.posePublisher.set(swerveSample.getPose());
+                        this.targetPose = swerveSample.getPose();
+                        this.posePublisher.set(this.targetPose);
                     });
                 },
                 interrupted -> {
-                    this.drive.setControl(new SwerveRequest.ApplyFieldSpeeds().withSpeeds(new ChassisSpeeds()));
-
+                    this.targetPose = this.drive.getState().Pose;
                     this.active = false;
                 },
-                () -> this.timer.hasElapsed(this.trajectory.getTotalTime()),
-                this.drive
-        );
+                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())
+        ));
     }
 }

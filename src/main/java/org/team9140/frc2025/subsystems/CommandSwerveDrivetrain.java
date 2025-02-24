@@ -2,18 +2,17 @@ package org.team9140.frc2025.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static org.team9140.frc2025.Constants.Drive.*;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
-import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
@@ -28,7 +27,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
-import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
@@ -47,9 +45,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
 
     // move magic numbers to constants
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(10, 0, 0);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(10, 0, 0);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(11.0, 0.0, 0.25); // 11.0, 0.0, 0.25
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(X_CONTROLLER_P, X_CONTROLLER_I, X_CONTROLLER_D);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(Y_CONTROLLER_P, Y_CONTROLLER_I, Y_CONTROLLER_D);
+    private final PhoenixPIDController headingController = new PhoenixPIDController(HEADING_CONTROLLER_P, HEADING_CONTROLLER_I, HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -83,12 +81,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
             .withDriveRequestType(DriveRequestType.Velocity)
             .withTargetDirection(new Rotation2d())
-            .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
-            .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS);
+            .withRotationalDeadband(Constants.Drive.MIN_ROTATIONAL_SPEED)
+            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED);
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(Constants.Drive.MIN_TRANSLATE_MPS)
-            .withRotationalDeadband(Constants.Drive.MIN_ROTATE_RPS)
+            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED_TELEOP)
+            .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
 
@@ -106,38 +104,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /**
      * Follows the given field-centric path sample with PID.
      *
-     * @param sample Sample along the path to follow
+     * @param poses Provides poses to go to at any given time.
      */
-    public void followPath(SwerveSample sample) {
-        Pose2d pose = getState().Pose;
-        Pose2d target = sample.getPose();
-
-        double currentTime = Utils.getCurrentTimeSeconds();
-
-        this.setControl(this.centric
-                .withTargetDirection(target.getRotation())
-                .withVelocityX(m_pathXController.calculate(pose.getX(), target.getX(), currentTime))
-                .withVelocityY(m_pathYController.calculate(pose.getY(), target.getY(), currentTime)));
-    }
-
-    public Command goToPose(Pose2d targetPose) {
+    public Command goToPose(Supplier<Pose2d> poses) {
         return this.run(() -> {
+            Pose2d target = poses.get();
+
+            if (target == null) return;
+
+            Pose2d pose = getState().Pose;
+
             double currentTime = Utils.getCurrentTimeSeconds();
-            Pose2d currentPose = this.getState().Pose;
 
             this.setControl(this.centric
-                    .withTargetDirection(targetPose.getRotation())
-                    .withVelocityX(m_pathXController.calculate(currentPose.getX(), targetPose.getX(), currentTime))
-                    .withVelocityY(m_pathYController.calculate(currentPose.getY(), targetPose.getY(), currentTime)));
+                    .withTargetDirection(target.getRotation())
+                    .withVelocityX(m_pathXController.calculate(pose.getX(), target.getX(), currentTime))
+                    .withVelocityY(m_pathYController.calculate(pose.getY(), target.getY(), currentTime)));
         });
     }
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
-            var vX = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickY.getAsDouble()));
-            var vY = TunerConstants.kSpeedAt12Volts.times(Util.applyDeadband(-leftStickX.getAsDouble()));
+            var vX = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickY.getAsDouble()));
+            var vY = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickX.getAsDouble()));
             // move magic numbers to constants
-            var omega = RotationsPerSecond.of(2).times(Util.applyDeadband(-rightStickX.getAsDouble()));
+            var omega = MAX_ROTATIONAL_RATE.times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
                 vX = vX.unaryMinus();
