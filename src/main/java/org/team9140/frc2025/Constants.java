@@ -43,8 +43,22 @@ public class Constants {
         public static final double OUTTAKE_VOLTAGE_CORAL = 0;
         public static final double OUTTAKE_VOLTAGE_ALGAE = 0;
 
-        public static final double OFF = 0;
         public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
         public static final Time INTAKE_CORAL_TIME = Seconds.of(1);
+
+        public static final int MANIPULATOR_MOTOR_DEVICE_NUM = 0;
+        public static final int FUNNEL_MOTOR_DEVICE_NUM = 52;
+        public static final int CAN_RANGE_DEVICE_NUM = 0;
+
+        public static final int MIN_SIGNAL_STRENGTH = 5000;
+        public static final double PROXIMITY_HYSTERESIS = 0.05;
+        public static final double PROXIMITY_THRESHOLD = 0.4;
+        public static final double FORWARD_AUTOSET = 0.0;
+
+        public static final int MANIPULATOR_PEAK_CURRENT_LIMIT = 30;
+        public static final int MANIPULATOR_PEAK_CURRENT_DURATION = 100;
+        public static final int MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = 20;
+
+        public static final AngularVelocity FUNNEL_CONTROLLER_VELOCITY = RotationsPerSecond.of(0);
     }
 }
