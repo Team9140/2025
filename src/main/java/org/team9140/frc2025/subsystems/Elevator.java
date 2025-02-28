@@ -1,70 +1,116 @@
 package org.team9140.frc2025.subsystems;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
-import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ForwardLimitSourceValue;
-import com.ctre.phoenix6.signals.ReverseLimitSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
 
 import static edu.wpi.first.units.Units.Meters;
-// make a subsystem
-public class Elevator implements Subsystem {
-    // two talonFXs (one main, one follower)
-    TalonFX talonMain = new TalonFX(52);
-    TalonFX talonFollower = new TalonFX(52);
-    CANdi elevatorCandi = new CANdi(0);
-    private MotionMagicVoltage MotionMagicVoltage;
+import static org.team9140.frc2025.Constants.Elevator.*;
 
-    public Elevator() {
-        // canDI
-        var limits = new HardwareLimitSwitchConfigs();
-        limits.ForwardLimitSource = ForwardLimitSourceValue.RemoteCANdiS1;
-        limits.ReverseLimitSource = ReverseLimitSourceValue.RemoteCANdiS2;
+public class Elevator extends SubsystemBase {
+    private final TalonFX motor;
+    private final TalonFXSimState motor_sim;
+    private final MotionMagicVoltage motionMagic;
+    private Distance targetPosition;
+    private final ElevatorSim elevatorSim = new ElevatorSim(
+            DCMotor.getFalcon500(1), GEARING, MASS_KG, DRUM_RADIUS_METERS,
+            MIN_HEIGHT_METERS, MAX_HEIGHT_METERS, true, BOTTOM.in(Meters));
+    private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
+    private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 10, 0);
+    private final MechanismLigament2d m_elevatorMech2d =
+            m_mech2dRoot.append(
+                    new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
 
-        var feedback = new FeedbackConfigs();
-        feedback.withSensorToMechanismRatio(Constants.Elevator.METERS_PER_MOTOR_ROTATION);
+    public static Elevator instance;
 
-        // use as remote limit switch for main TalonFX motor
-        talonMain.getConfigurator().apply(limits);
+    private Elevator() {
+        motor = new TalonFX(MOTOR_ID);
+        motor_sim = motor.getSimState();
+        SmartDashboard.putData("Elevator Sim", m_mech2d);
 
-        // set up MotionMagicVoltage control request (see 2024 Arm.java for example)
-        this.MotionMagicVoltage = new MotionMagicVoltage(Constants.ArmPositions.INTAKE)
+        Slot0Configs elevatorGains = new Slot0Configs()
+                .withKP(Constants.Elevator.P)
+                .withKI(Constants.Elevator.I)
+                .withKD(Constants.Elevator.D)
+                .withKS(Constants.Elevator.S)
+                .withKV(Constants.Elevator.V)
+                .withKA(Constants.Elevator.A);
+
+        CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
+                .withStatorCurrentLimit(CURRENT_LIMIT)
+                .withStatorCurrentLimitEnable(true);
+
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+                .withMotionMagicCruiseVelocity(Constants.Elevator.CRUISE_VELOCITY)
+                .withMotionMagicAcceleration(Constants.Elevator.ACCELERATION);
+
+        MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake);
+
+        FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
+                .withSensorToMechanismRatio(METERS_PER_MOTOR_ROTATION);
+
+        TalonFXConfiguration motorConfig = new TalonFXConfiguration()
+                .withSlot0(elevatorGains)
+                .withCurrentLimits(currentLimitsConfigs)
+                .withFeedback(feedbackConfigs)
+                .withMotionMagic(motionMagicConfigs)
+                .withMotorOutput(motorOutputConfigs);
+
+        this.motor.getConfigurator().apply(motorConfig);
+        this.motor.setNeutralMode(NeutralModeValue.Brake);
+
+        this.motionMagic = new MotionMagicVoltage(0)
                 .withEnableFOC(true)
-                .withSlot(0)
-                .withFeedForward(Constants.ArmPositions.FEED_FORWARD);
+                .withSlot(0);
+
+        this.targetPosition = BOTTOM;
     }
 
-    // make up gear ratio for a conversion factor - units to radians
-    FeedbackConfigs feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(Constants.ArmPositions.SENSOR_TO_MECHANISM_RATIO);
-
-    // config current limit
-    CurrentLimitsConfigs currentLimitConfig = new CurrentLimitsConfigs().withStatorCurrentLimit(Constants.ArmPositions.MAX_CURRENT).withStatorCurrentLimitEnable(true);
-
-    // needs command to go to position
-    // take a Distance, not a double
-    public Command toPostion(Distance distance) {
-        return this.runOnce(() -> this.MotionMagicVoltage.withPosition(distance.in(Meters)));
+    public static Elevator getInstance() {
+        return (instance == null) ? instance = new Elevator() : instance;
     }
 
-    public Command setVoltage(double voltage) {
-        return this.runOnce(() -> this.talonMain.setControl(new VoltageOut(voltage)));
+    @Override
+    public void periodic() {
+        motor.setControl(motionMagic);
+        SmartDashboard.putNumber("Elevator Current Position", getPosition().in(Meters));
+        SmartDashboard.putNumber("Elevator Target Position", targetPosition.in(Meters));
+        m_elevatorMech2d.setLength(getPosition().in(Meters) * METERS_PER_MOTOR_ROTATION);
     }
 
-    public Command disable() {
-        return this.runOnce(() -> this.talonMain.setControl(new CoastOut()));
+    @Override
+    public void simulationPeriodic() {
+        motor_sim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        elevatorSim.setInput(motor_sim.getMotorVoltage());
+        elevatorSim.update(0.020);
+
     }
 
-//    public Command enable(){
-//        return this.runOnce(() -> this.talonMain.setControl(new CoastOut()));
-//    }
+    public Distance getPosition() {
+        return Meters.of(motor.getPosition().getValueAsDouble());
+    }
+
+    public Command moveToPosition(Distance goalPosition) {
+        return this.run(() -> {
+            targetPosition = goalPosition;
+            motionMagic.withPosition(targetPosition.in(Meters));
+        });
+    }
 }

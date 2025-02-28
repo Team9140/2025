@@ -9,18 +9,23 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
+import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
+import static org.team9140.frc2025.subsystems.Elevator.getInstance;
 
 
 public class RobotContainer
@@ -33,20 +38,18 @@ public class RobotContainer
 
     CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
 
-    CommandXboxController controller = new CommandXboxController(0);
+    Joystick controller = new Joystick(0);
+
+    Elevator elevator;
 
     Canndle candle = Canndle.getInstance();
 
 
     public RobotContainer() {
-        this.path = new MazeRunner("realgamestuff", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
-        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
-        this.path.atEventTime("Second_Coral").onTrue((new PrintCommand("Second_Coral")).alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-        this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
-        this.path.atEventTime("Second_Restock").onTrue(new PrintCommand("Second_Restock").alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-        this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
-        this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
+        this.elevator = Elevator.getInstance();
+        this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
+        this.path.atEventTime("test2").onTrue(new PrintCommand("test2"));
 
 //        this.path.atEventTime("End_Test").onTrue(
 //                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
@@ -69,9 +72,9 @@ public class RobotContainer
 
     private void configureBindings() {
         drivetrain
-                .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
+                .setDefaultCommand(drivetrain.teleopDrive(controller::getX, controller::getY, controller::getTwist));
 
-        controller.start().onTrue(drivetrain.resetGyroCommand());
+        //controller.start().onTrue(drivetrain.resetGyroCommand());
 
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -83,10 +86,10 @@ public class RobotContainer
 //        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdDriveQ(Direction.kReverse));
 
-        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
-        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
-        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
-        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
+//        controller.a().whileTrue(drivetrain.sysIdRotateD(Direction.kForward));
+//        controller.b().whileTrue(drivetrain.sysIdRotateD(Direction.kReverse));
+//        controller.x().whileTrue(drivetrain.sysIdRotateQ(Direction.kForward));
+//        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
     }
