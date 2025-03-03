@@ -7,6 +7,9 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.DriverStation;
+import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -74,4 +77,33 @@ public class Constants {
         public static Distance L3 = Meters.of(0.1);
         public static Distance L4 = Meters.of(0.1);
     }
+
+    public static final class AutonomousPaths {
+        public static MazeRunner firstPoseFirstStationFirst =  new MazeRunner("firstPoseFirstStationFirst", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseFirstStationSecond = new MazeRunner("firstPoseFirstStationSecond", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseFirstStationThird = new MazeRunner("firstPoseFirstStationThird", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseFirstStationFourth = new MazeRunner("firstPoseFirstStationFourth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseFirstStationFifth = new MazeRunner("firstPoseFirstStationFifth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseFirstStationSixth = new MazeRunner("firstPoseFirstStationSixth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationFirst = new MazeRunner("firstPoseSecondStationFirst", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationSecond = new MazeRunner("firstPoseSecondStationSecond", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationThird = new MazeRunner("firstPoseSecondStationThird", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationFourth = new MazeRunner("firstPoseSecondStationFourth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationFifth = new MazeRunner("firstPoseSecondStationFifth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner firstPoseSecondStationSixth = new MazeRunner("firstPoseSecondStationSixth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationFirst = new MazeRunner("secondPoseFirstStationFirst", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationSecond = new MazeRunner("secondPoseFirstStationSecond", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationThird = new MazeRunner("secondPoseFirstStationThird", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationFourth = new MazeRunner("secondPoseFirstStationFourth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationFifth = new MazeRunner("secondPoseFirstStationFifth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseFirstStationSixth = new MazeRunner("secondPoseFirstStationSixth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationFirst = new MazeRunner("secondPoseSecondStationFirst", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationSecond = new MazeRunner("secondPoseSecondStationSecond", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationThird = new MazeRunner("secondPoseSecondStationThird", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationFourth = new MazeRunner("secondPoseSecondStationFourth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationFifth = new MazeRunner("secondPoseSecondStationFifth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        public static MazeRunner secondPoseSecondStationSixth = new MazeRunner("secondPoseSecondStationSixth", TunerConstants.getDrivetrain(), DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+
+    }
+
 }
