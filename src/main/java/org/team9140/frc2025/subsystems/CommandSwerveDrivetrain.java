@@ -2,15 +2,17 @@ package org.team9140.frc2025.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RadiansPerSecond;;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.team9140.frc2025.Constants.Drive.*;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Transform2d;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -49,6 +51,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final PhoenixPIDController m_pathYController = new PhoenixPIDController(Y_CONTROLLER_P, Y_CONTROLLER_I, Y_CONTROLLER_D);
     private final PhoenixPIDController headingController = new PhoenixPIDController(HEADING_CONTROLLER_P, HEADING_CONTROLLER_I, HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
+    private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      *
@@ -69,13 +73,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
-        SmartDashboard.putString("Closest Branch",
-                AutoAiming.getBranch(this.getState().Pose.getTranslation()).toString());
         SmartDashboard.putNumber("Heading Output", this.headingController.getLastAppliedOutput());
         SmartDashboard.putNumber("X Output", this.m_pathXController.getLastAppliedOutput());
         SmartDashboard.putNumber("Y Output", this.m_pathYController.getLastAppliedOutput());
         SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
+
+        this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
     }
 
     private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
@@ -123,11 +127,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
+    public Command reefDrive(BooleanSupplier goLeft, BooleanSupplier goRight) {
+        return this.goToPose(() -> {
+            Pose2d target = this.closestFace.getPose();
+            boolean left = goLeft.getAsBoolean();
+            boolean right = goRight.getAsBoolean();
+
+            if (left && !this.closestFace.isFar() || right && this.closestFace.isFar()) {
+                target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER);
+            }
+
+            if (right && !this.closestFace.isFar() || left && this.closestFace.isFar()) {
+                target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(-1));
+            }
+
+            return target;
+        });
+    }
+
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
             var vX = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickY.getAsDouble()));
             var vY = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickX.getAsDouble()));
-            // move magic numbers to constants
             var omega = MAX_ROTATIONAL_RATE.times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {

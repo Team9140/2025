@@ -4,6 +4,8 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import org.team9140.frc2025.helpers.AutoAiming;
 
 public class Telemetry {
     private final double MaxSpeed;
@@ -39,6 +42,7 @@ public class Telemetry {
     /* Robot swerve drive state */
     private final NetworkTable driveStateTable = inst.getTable("DriveState");
     private final StructPublisher<Pose2d> drivePose = driveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> closestReefPose = driveStateTable.getStructTopic("ClosestReefFace", Pose2d.struct).publish();
     private final StructPublisher<ChassisSpeeds> driveSpeeds = driveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
     private final StructArrayPublisher<SwerveModuleState> driveModuleStates = driveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
     private final StructArrayPublisher<SwerveModuleState> driveModuleTargets = driveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
@@ -85,6 +89,7 @@ public class Telemetry {
     public void telemeterize(SwerveDriveState state) {
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);
+        closestReefPose.set(AutoAiming.getClosestFace(state.Pose.getTranslation()).getPose());
         driveSpeeds.set(state.Speeds);
         driveModuleStates.set(state.ModuleStates);
         driveModuleTargets.set(state.ModuleTargets);
@@ -97,9 +102,9 @@ public class Telemetry {
         m_poseArray[1] = state.Pose.getY();
         m_poseArray[2] = state.Pose.getRotation().getDegrees();
         for (int i = 0; i < 4; ++i) {
-            m_moduleStatesArray[i*2 + 0] = state.ModuleStates[i].angle.getRadians();
+            m_moduleStatesArray[i * 2] = state.ModuleStates[i].angle.getRadians();
             m_moduleStatesArray[i*2 + 1] = state.ModuleStates[i].speedMetersPerSecond;
-            m_moduleTargetsArray[i*2 + 0] = state.ModuleTargets[i].angle.getRadians();
+            m_moduleTargetsArray[i * 2] = state.ModuleTargets[i].angle.getRadians();
             m_moduleTargetsArray[i*2 + 1] = state.ModuleTargets[i].speedMetersPerSecond;
         }
 
