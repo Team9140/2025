@@ -8,6 +8,7 @@ package org.team9140.frc2025;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -16,9 +17,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
+import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
+import static org.team9140.frc2025.subsystems.Elevator.getInstance;
 
 
 public class RobotContainer
@@ -32,11 +35,16 @@ public class RobotContainer
     CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
 
     CommandXboxController controller = new CommandXboxController(0);
+    Elevator elevator;
 
     Canndle candle = Canndle.getInstance();
 
 
     public RobotContainer() {
+        this.elevator = Elevator.getInstance();
+        this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
+        this.path.atEventTime("test2").onTrue(new PrintCommand("test2"));
         this.path = new MazeRunner("themaze", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
 //        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
 //        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
