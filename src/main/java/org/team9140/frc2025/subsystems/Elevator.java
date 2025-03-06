@@ -20,8 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
+import javax.swing.text.StyleContext;
+
+import static edu.wpi.first.units.Units.*;
 import static org.team9140.frc2025.Constants.Elevator.*;
 
 public class Elevator extends SubsystemBase {
@@ -40,7 +41,7 @@ public class Elevator extends SubsystemBase {
     public static Elevator instance;
 
     private Elevator() {
-        motor = new TalonFX(MOTOR_ID);
+        motor = new TalonFX(Constants.Ports.ELEVATOR_MOTOR);
         SmartDashboard.putData("Elevator Sim", m_mech2d);
 
         Slot0Configs elevatorGains = new Slot0Configs()
@@ -81,6 +82,7 @@ public class Elevator extends SubsystemBase {
                 .withSlot(0);
 
         this.targetPosition = BOTTOM;
+        if (Math.abs(this.getPosition().in(Meters)) < Constants.Elevator.INITIAL_VARIANCE.in(Radians)) this.motor.setPosition(BOTTOM.in(Meters));
     }
 
     public static Elevator getInstance() {
@@ -92,11 +94,11 @@ public class Elevator extends SubsystemBase {
         motor.setControl(motionMagic);
         SmartDashboard.putNumber("Elevator Current Position", getPosition().in(Meters));
         SmartDashboard.putNumber("Elevator Target Position", targetPosition.in(Meters));
+        SmartDashboard.putNumber("Elevator Voltage", motor.getMotorVoltage().getValueAsDouble());
     }
 
     @Override
-    public void simulationPeriodic() {
-    }
+    public void simulationPeriodic() {}
 
     public Distance getPosition() {
         return Meters.of(motor.getPosition().getValueAsDouble());

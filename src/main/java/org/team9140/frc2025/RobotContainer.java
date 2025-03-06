@@ -9,13 +9,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import org.team9140.frc2025.generated.TunerConstants;
@@ -39,7 +37,6 @@ public class RobotContainer
     CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
 
     CommandXboxController controller = new CommandXboxController(0);
-
     Elevator elevator;
 
     Canndle candle = Canndle.getInstance();

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import static org.team9140.frc2025.Constants.Manipulator.*;
+import static org.team9140.frc2025.Constants.Ports.*;
 
 public class Manipulator extends SubsystemBase {
     private final TalonSRX manipulatorMotor;
