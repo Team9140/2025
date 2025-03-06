@@ -8,6 +8,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -19,28 +20,27 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.team9140.frc2025.Constants;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static org.team9140.frc2025.Constants.Elevator.*;
 
 public class Elevator extends SubsystemBase {
     private final TalonFX motor;
-    private final TalonFXSimState motor_sim;
     private final MotionMagicVoltage motionMagic;
     private Distance targetPosition;
     private final ElevatorSim elevatorSim = new ElevatorSim(
-            DCMotor.getFalcon500(1), GEARING, MASS_KG, DRUM_RADIUS_METERS,
+            DCMotor.getFalcon500(1), GEAR_RATIO, MASS_KG, DRUM_RADIUS_METERS,
             MIN_HEIGHT_METERS, MAX_HEIGHT_METERS, true, BOTTOM.in(Meters));
     private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
     private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 10, 0);
     private final MechanismLigament2d m_elevatorMech2d =
             m_mech2dRoot.append(
-                    new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), 90));
+                    new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), ElevatorAngle.in(Degrees)));
 
     public static Elevator instance;
 
     private Elevator() {
         motor = new TalonFX(MOTOR_ID);
-        motor_sim = motor.getSimState();
         SmartDashboard.putData("Elevator Sim", m_mech2d);
 
         Slot0Configs elevatorGains = new Slot0Configs()
@@ -92,15 +92,10 @@ public class Elevator extends SubsystemBase {
         motor.setControl(motionMagic);
         SmartDashboard.putNumber("Elevator Current Position", getPosition().in(Meters));
         SmartDashboard.putNumber("Elevator Target Position", targetPosition.in(Meters));
-        m_elevatorMech2d.setLength(getPosition().in(Meters) * METERS_PER_MOTOR_ROTATION);
     }
 
     @Override
     public void simulationPeriodic() {
-        motor_sim.setSupplyVoltage(RobotController.getBatteryVoltage());
-        elevatorSim.setInput(motor_sim.getMotorVoltage());
-        elevatorSim.update(0.020);
-
     }
 
     public Distance getPosition() {
@@ -108,7 +103,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command moveToPosition(Distance goalPosition) {
-        return this.run(() -> {
+        return this.runOnce(() -> {
             targetPosition = goalPosition;
             motionMagic.withPosition(targetPosition.in(Meters));
         });

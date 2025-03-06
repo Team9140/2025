@@ -38,7 +38,7 @@ public class RobotContainer
 
     CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
 
-    Joystick controller = new Joystick(0);
+    CommandXboxController controller = new CommandXboxController(0);
 
     Elevator elevator;
 
@@ -72,8 +72,7 @@ public class RobotContainer
 
     private void configureBindings() {
         drivetrain
-                .setDefaultCommand(drivetrain.teleopDrive(controller::getX, controller::getY, controller::getTwist));
-
+                .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
         //controller.start().onTrue(drivetrain.resetGyroCommand());
 
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
