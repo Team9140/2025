@@ -64,8 +64,8 @@ public class Constants {
 
             
     public static class Funnel {
-        public static final Current STATOR_LIMIT = Amps.of(60);
-        public static final Current SUPPLY_LIMIT = Amps.of(25);
+        public static final Current STATOR_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_LIMIT = Amps.of(30);
         public static final Voltage INTAKE_VOLTAGE = Volts.of(12);
     }
 
@@ -114,19 +114,19 @@ public class Constants {
 
         public static Distance STOW_height = MIN_HEIGHT;
         public static Distance L1_coral_height = Inches.of(24);
-        public static Distance L2_coral_height = Inches.of(36);
-        public static Distance L3_coral_height = Inches.of(48);
-        public static Distance L4_coral_height = Inches.of(77);
+        public static Distance L2_coral_height = Inches.of(30);
+        public static Distance L3_coral_height = Inches.of(46);
+        public static Distance L4_coral_height = Inches.of(73.5);
     }
 
     public static final class AutoAlign {
         // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Meters.of(0.25);
+        private static final Distance reefBranchGap = Inches.of(0.25);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
-        private static final Distance L1setback = Meters.of(0.0);
-        private static final Distance L2setback = Meters.of(0.0);
-        private static final Distance L3setback = Meters.of(0.0);
-        private static final Distance L4setback = Meters.of(0.0);
+        private static final Distance L1setback = Inches.of(18.0);
+        private static final Distance L2setback = Inches.of(18.0); // wall bump
+        private static final Distance L3setback = Inches.of(18.0 + 4.0); // 4 inch behind wall
+        private static final Distance L4setback = Meters.of(18.0 + 11.0); // 11 inch behind wall
 
         // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
         // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot

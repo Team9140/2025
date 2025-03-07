@@ -56,7 +56,7 @@ public class Elevator extends SubsystemBase {
                 rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
 
                 Slot0Configs elevatorGains = new Slot0Configs()
-                                .withKP(3.0)
+                                .withKP(20.0)
                                 .withKI(0)
                                 .withKD(0)
                                 .withKS(0)
