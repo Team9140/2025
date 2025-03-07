@@ -100,24 +100,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double xyStdDev = 9999;
         double thetaStdDev = 9999;
         if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
-            xyStdDev = 2.0;
-            thetaStdDev = 2.0;
+            boolean reject = false;
+
+            reject |= vm.measurement.avgTagDist >= 4;
+            reject |= vm.measurement.avgTagArea < 0.1;
+
+            xyStdDev = 5.0;
+            thetaStdDev = 5.0;
+
+            if (reject) {
+                return;
+            }
+
             this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
                     VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
         } else if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
-            thetaStdDev = 9999.0;
-            
             boolean reject = false;
 
             reject |= this.getPigeon2().getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) >= 0.5;
             reject |= vm.measurement.avgTagDist >= 4;
+            reject |= vm.measurement.avgTagArea < 0.1;
 
             if (reject) {
                 return;
             }
 
             if (this.getState().Speeds.vxMetersPerSecond <= 0.25 && this.getState().Speeds.vxMetersPerSecond <= 0.25) {
-                xyStdDev = 1.0;
+                xyStdDev = 2.0;
             } else {
                 xyStdDev = 5.0;
             }

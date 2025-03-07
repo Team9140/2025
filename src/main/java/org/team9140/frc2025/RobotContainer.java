@@ -94,10 +94,13 @@ public class RobotContainer {
                 Units.inchesToMeters(11.5),
                 Units.inchesToMeters(13.5), 0, -12.5, 16.0);
 
-                LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
                 Units.inchesToMeters(7.5),
-                Units.inchesToMeters(11.5),
+                Units.inchesToMeters(-11.5),
                 Units.inchesToMeters(13.5), 0, -9.5, -13.0);
+
+        limeA.setIMUMode(1);
+        limeB.setIMUMode(1);
 
         configureBindings();
     }
@@ -124,6 +127,8 @@ public class RobotContainer {
         controller.povLeft().onTrue(new PrintCommand("snap L"));
         controller.povRight().onTrue(new PrintCommand("snap R"));
 
+        controller.start().onTrue(this.drivetrain.resetGyroCommand());
+
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
         // controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -145,28 +150,35 @@ public class RobotContainer {
         limeB.start();
         // limeC.start();
 
-        enabledTrigger.onTrue(Commands.runOnce(() -> {
-            System.out.println("enabling");
-            limeA.setIMUMode(2);
-            limeB.setIMUMode(2);
-            // limeC.setIMUMode(2);
-        })).onFalse(Commands.runOnce(() -> {
-            System.out.println("disabling");
-            limeA.setIMUMode(1);
-            limeB.setIMUMode(1);
-            // limeC.setIMUMode(1);
-        }));
+        // enabledTrigger.onTrue(Commands.runOnce(() -> {
+        //     System.out.println("enabling");
+        //     limeA.setIMUMode(2);
+        //     limeB.setIMUMode(2);
+        //     // limeC.setIMUMode(2);
+        // })).onFalse(Commands.runOnce(() -> {
+        //     System.out.println("disabling");
+        //     limeA.setIMUMode(1);
+        //     limeB.setIMUMode(1);
+        //     // limeC.setIMUMode(1);
+        // }));
 
         connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 1.0));
     }
 
     public void periodic() {
+        if (DriverStation.isEnabled()) {
+            limeA.setIMUMode(2);
+            limeB.setIMUMode(2);
+        } else {
+            limeA.setIMUMode(1);
+            limeB.setIMUMode(1);
+        }
         limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
     }
 
     public Command getAutonomousCommand() {
-        return autonomousCommand;
+        return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () -> 0).repeatedly().withTimeout(3.0);
     }
 }
