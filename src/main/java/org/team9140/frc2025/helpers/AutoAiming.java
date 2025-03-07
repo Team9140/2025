@@ -4,32 +4,32 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import org.team9140.frc2025.Constants;
 
-import static edu.wpi.first.units.Units.*;
-
 import java.util.Optional;
 
+import static edu.wpi.first.units.Units.*;
+
+// TODO: Shuffleboard
 public class AutoAiming {
     // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
     public enum ReefFaces {
-        BlueFarMiddle(Constants.FieldItemPoses.REEF_BLUE, Sides.FarMiddle, true),
-        BlueFarLeft(Constants.FieldItemPoses.REEF_BLUE, Sides.FarLeft, true),
-        BlueCloseLeft(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseLeft, false),
-        BlueCloseMiddle(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseMiddle, false),
-        BlueCloseRight(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseRight, false),
-        BlueFarRight(Constants.FieldItemPoses.REEF_BLUE, Sides.FarRight, true),
-        RedCloseMiddle(Constants.FieldItemPoses.REEF_RED, Sides.CloseMiddle, false),
-        RedCloseRight(Constants.FieldItemPoses.REEF_RED, Sides.CloseRight, false),
-        RedFarRight(Constants.FieldItemPoses.REEF_RED, Sides.FarRight, true),
-        RedFarMiddle(Constants.FieldItemPoses.REEF_RED, Sides.FarMiddle, true),
-        RedFarLeft(Constants.FieldItemPoses.REEF_RED, Sides.FarLeft, true),
-        RedCloseLeft(Constants.FieldItemPoses.REEF_RED, Sides.CloseLeft, false);
+        BlueFarMiddle(Constants.FieldItemPoses.REEF_BLUE, Sides.FarMiddle, true, 21),
+        BlueFarLeft(Constants.FieldItemPoses.REEF_BLUE, Sides.FarLeft, true, 20),
+        BlueCloseLeft(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseLeft, false, 19),
+        BlueCloseMiddle(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseMiddle, false, 18),
+        BlueCloseRight(Constants.FieldItemPoses.REEF_BLUE, Sides.CloseRight, false, 17),
+        BlueFarRight(Constants.FieldItemPoses.REEF_BLUE, Sides.FarRight, true, 22),
+        RedCloseMiddle(Constants.FieldItemPoses.REEF_RED, Sides.CloseMiddle, false, 7),
+        RedCloseRight(Constants.FieldItemPoses.REEF_RED, Sides.CloseRight, false, 8),
+        RedFarRight(Constants.FieldItemPoses.REEF_RED, Sides.FarRight, true, 9),
+        RedFarMiddle(Constants.FieldItemPoses.REEF_RED, Sides.FarMiddle, true, 10),
+        RedFarLeft(Constants.FieldItemPoses.REEF_RED, Sides.FarLeft, true, 11),
+        RedCloseLeft(Constants.FieldItemPoses.REEF_RED, Sides.CloseLeft, false, 6);
 
         enum Sides {
             CloseMiddle(Radians.of(Math.PI)),
@@ -59,9 +59,11 @@ public class AutoAiming {
         private Pose2d pose;
         private Rotation2d direction;
         private boolean isFar;
+        private int tagId;
 
-        ReefFaces(Pose2d center, Sides face, boolean isFar) {
+        ReefFaces(Pose2d center, Sides face, boolean isFar, int tagId) {
             this.isFar = isFar;
+            this.tagId = tagId;
 
             if (center.equals(Constants.FieldItemPoses.REEF_RED)) {
                 this.pose = center.plus(
@@ -85,6 +87,10 @@ public class AutoAiming {
         public Rotation2d getDirection() {
             return this.direction;
         }
+
+        public int getTagId() {
+            return this.tagId;
+        }
     }
 
     public static ReefFaces getClosestFace(Translation2d pose) {
@@ -102,31 +108,36 @@ public class AutoAiming {
         }
     }
 
-    // return the tag id# of the apriltag on the closest reef side to given pose
     public static int reefTagFromPose(Pose2d pose) {
-        return 0;
+        return getClosestFace(pose.getTranslation()).getTagId();
     }
 
     public static Optional<Pose2d> snapPose(int tagID, int level, boolean left) {
         // find pose of tag from id#
         // need it as a pose2d with the Z removed
-        // Pose2d tagPose = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getTagPose(tagID).orElse(null);
+        Pose2d tagPose = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getTagPose(tagID).orElse(null).toPose2d();
 
-        // placeholder 
-        Pose2d tagPose = new Pose2d();
+        // placeholder
+        // Pose2d tagPose = new Pose2d();
 
         Translation2d offset = new Translation2d();
 
         if (left) {
-            if (level == 1) {
-                offset = Constants.AutoAlign.leftBranchOffset_L1;
-            } else if (level == 2) {
-                offset = Constants.AutoAlign.leftBranchOffset_L2;
-            } else if  (level == 3) {
-                // bla bla finish this if statement tree
-            }
+            offset = switch (level) {
+                case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
+                case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
+                case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
+                case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
+                default -> offset;
+            };
         } else {
-
+            offset = switch (level) {
+                case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
+                case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
+                case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
+                case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
+                default -> offset;
+            };
         }
 
         // rotate the offset around based on which way the tag points
