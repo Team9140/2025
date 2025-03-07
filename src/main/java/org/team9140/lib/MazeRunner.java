@@ -2,16 +2,21 @@
 
 package org.team9140.lib;
 
+import static org.team9140.lib.Util.rotationEpsilonEquals;
+
+import java.util.Optional;
+import java.util.TreeMap;
+
+import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+
 import choreo.Choreo;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -21,12 +26,6 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
-
-import java.util.Optional;
-import java.util.TreeMap;
-
-import static org.team9140.lib.Util.rotationEpsilonEquals;
 
 public class MazeRunner {
     private final TreeMap<String, Trigger> eventtimes;
