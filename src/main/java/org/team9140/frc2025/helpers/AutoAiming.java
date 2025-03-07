@@ -1,7 +1,10 @@
 package org.team9140.frc2025.helpers;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -9,6 +12,8 @@ import edu.wpi.first.units.measure.Angle;
 import org.team9140.frc2025.Constants;
 
 import static edu.wpi.first.units.Units.*;
+
+import java.util.Optional;
 
 public class AutoAiming {
     // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
@@ -95,5 +100,39 @@ public class AutoAiming {
 
             return branches[6 + (int) (angle / 60)];
         }
+    }
+
+    // return the tag id# of the apriltag on the closest reef side to given pose
+    public static int reefTagFromPose(Pose2d pose) {
+        return 0;
+    }
+
+    public static Optional<Pose2d> snapPose(int tagID, int level, boolean left) {
+        // find pose of tag from id#
+        // need it as a pose2d with the Z removed
+        // Pose2d tagPose = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getTagPose(tagID).orElse(null);
+
+        // placeholder 
+        Pose2d tagPose = new Pose2d();
+
+        Translation2d offset = new Translation2d();
+
+        if (left) {
+            if (level == 1) {
+                offset = Constants.AutoAlign.leftBranchOffset_L1;
+            } else if (level == 2) {
+                offset = Constants.AutoAlign.leftBranchOffset_L2;
+            } else if  (level == 3) {
+                // bla bla finish this if statement tree
+            }
+        } else {
+
+        }
+
+        // rotate the offset around based on which way the tag points
+        offset = offset.rotateBy(tagPose.getRotation());
+
+        // add rotated offset to tag pose
+        return Optional.of(tagPose.plus(new Transform2d(offset, new Rotation2d())));
     }
 }
