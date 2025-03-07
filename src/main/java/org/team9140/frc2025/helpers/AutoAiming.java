@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,8 +34,8 @@ public class AutoAiming {
 
         enum Sides {
             CloseMiddle(Radians.of(Math.PI)),
-            CloseRight(Radians.of(-2*Math.PI / 3)),
-            CloseLeft(Radians.of(2*Math.PI / 3)),
+            CloseRight(Radians.of(-2 * Math.PI / 3)),
+            CloseLeft(Radians.of(2 * Math.PI / 3)),
             FarMiddle(Radians.of(0)),
             FarRight(Radians.of(-Math.PI / 3)),
             FarLeft(Radians.of(Math.PI / 3));
@@ -44,7 +45,9 @@ public class AutoAiming {
 
             Sides(Angle angleToCenter) {
                 this.direction = new Rotation2d(angleToCenter.plus(Radians.of(Math.PI)));
-                this.offset = new Transform2d(new Translation2d(Constants.REEF_RADIUS.in(Meters), new Rotation2d(angleToCenter)), this.direction);
+                this.offset = new Transform2d(
+                        new Translation2d(Constants.REEF_RADIUS.in(Meters), new Rotation2d(angleToCenter)),
+                        this.direction);
             }
 
             public Transform2d getOffset() {
@@ -67,8 +70,7 @@ public class AutoAiming {
 
             if (center.equals(Constants.FieldItemPoses.REEF_RED)) {
                 this.pose = center.plus(
-                        face.getOffset().plus(new Transform2d(0, 0, new Rotation2d(Radians.of(Math.PI))))
-                );
+                        face.getOffset().plus(new Transform2d(0, 0, new Rotation2d(Radians.of(Math.PI)))));
                 this.direction = face.getDirection().plus(new Rotation2d(Math.PI));
             } else {
                 this.pose = center.plus(face.getOffset());
@@ -96,12 +98,16 @@ public class AutoAiming {
     public static ReefFaces getClosestFace(Translation2d pose) {
         // Before Middle
         if (pose.getX() < 17.548225 / 2) {
-            double angle = MathUtil.inputModulus(pose.minus(Constants.FieldItemPoses.REEF_BLUE.getTranslation()).getAngle().getDegrees() + 30, 0, 360);
+            double angle = MathUtil.inputModulus(
+                    pose.minus(Constants.FieldItemPoses.REEF_BLUE.getTranslation()).getAngle().getDegrees() + 30, 0,
+                    360);
             ReefFaces[] branches = ReefFaces.values();
 
             return branches[(int) (angle / 60)];
         } else {
-            double angle = MathUtil.inputModulus(pose.minus(Constants.FieldItemPoses.REEF_RED.getTranslation()).getAngle().getDegrees() + 30, 0, 360);
+            double angle = MathUtil.inputModulus(
+                    pose.minus(Constants.FieldItemPoses.REEF_RED.getTranslation()).getAngle().getDegrees() + 30, 0,
+                    360);
             ReefFaces[] branches = ReefFaces.values();
 
             return branches[6 + (int) (angle / 60)];
@@ -115,35 +121,46 @@ public class AutoAiming {
     public static Optional<Pose2d> snapPose(int tagID, int level, boolean left) {
         // find pose of tag from id#
         // need it as a pose2d with the Z removed
-        Pose2d tagPose = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getTagPose(tagID).orElse(null).toPose2d();
 
-        // placeholder
-        // Pose2d tagPose = new Pose2d();
+        Optional<Pose3d> tagPose3D = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark)
+                .getTagPose(tagID);
 
-        Translation2d offset = new Translation2d();
+        if (tagPose3D.isPresent()) {
+            Pose2d tagPose = tagPose3D.get().toPose2d();
 
-        if (left) {
-            offset = switch (level) {
-                case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
-                case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
-                case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
-                case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
-                default -> offset;
-            };
+            Translation2d offset = new Translation2d();
+
+            if (left) {
+                offset = switch (level) {
+                    case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
+                    case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
+                    case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
+                    case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
+                    default -> offset;
+                };
+            } else {
+                offset = switch (level) {
+                    case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
+                    case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
+                    case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
+                    case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
+                    default -> offset;
+                };
+            }
+
+            // offset = offset.rotateBy(tagPose.getRotation());
+
+            // tagPose = tagPose.rotateBy(new Rotation2d(Math.PI));
+
+            Translation2d tagXY = tagPose.getTranslation();
+
+            Translation2d newPoint = tagXY.plus(offset.rotateBy(tagPose.getRotation()));
+
+            // add rotated offset to tag pose
+            return Optional.of(new Pose2d(newPoint, tagPose.getRotation().plus(new Rotation2d(Math.PI))));
         } else {
-            offset = switch (level) {
-                case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
-                case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
-                case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
-                case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
-                default -> offset;
-            };
+            return Optional.empty();
         }
 
-        // rotate the offset around based on which way the tag points
-        offset = offset.rotateBy(tagPose.getRotation());
-
-        // add rotated offset to tag pose
-        return Optional.of(tagPose.plus(new Transform2d(offset, new Rotation2d())));
     }
 }

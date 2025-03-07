@@ -122,26 +122,26 @@ public class Constants {
 
     public static final class AutoAlign {
         // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Inches.of(0.25);
+        private static final Distance reefBranchGap = Inches.of(13.0);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
         private static final Distance L1setback = Inches.of(18.0);
         private static final Distance L2setback = Inches.of(18.0); // wall bump
         private static final Distance L3setback = Inches.of(18.0 + 4.0); // 4 inch behind wall
-        private static final Distance L4setback = Meters.of(18.0 + 11.0); // 11 inch behind wall
+        private static final Distance L4setback = Inches.of(18.0 + 11.0); // 11 inch behind wall
 
         // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
         // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot
-        public static final Translation2d leftBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(0.5));
-        public static final Translation2d rightBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(-0.5));
+        public static final Translation2d leftBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(-0.5));
+        public static final Translation2d rightBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(0.5));
 
-        public static final Translation2d leftBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(0.5));
-        public static final Translation2d rightBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(-0.5));
+        public static final Translation2d leftBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(-0.5));
+        public static final Translation2d rightBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(0.5));
 
-        public static final Translation2d leftBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(0.5));
-        public static final Translation2d rightBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(-0.5));
+        public static final Translation2d leftBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(-0.5));
+        public static final Translation2d rightBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(0.5));
 
-        public static final Translation2d leftBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(0.5));
-        public static final Translation2d rightBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(-0.5));
+        public static final Translation2d leftBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(-0.5));
+        public static final Translation2d rightBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(0.5));
     }
 
 }

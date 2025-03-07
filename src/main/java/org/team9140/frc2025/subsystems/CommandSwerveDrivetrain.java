@@ -61,6 +61,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     Field2d dashField2d = new Field2d();
+    Field2d targetPoseLeft = new Field2d();
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
@@ -82,7 +83,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         this.centric.HeadingController = headingController;
 
         SmartDashboard.putData(dashField2d);
+        SmartDashboard.putData(targetPoseLeft);
     }
+
+
+    
 
     @Override
     public void periodic() {
@@ -92,8 +97,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
+        SmartDashboard.putNumber("closest tag num", AutoAiming.reefTagFromPose(this.getState().Pose));
+
         dashField2d.setRobotPose(this.getState().Pose);
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+        // targetPoseLeft.setRobotPose(AutoAiming.snapPose(AutoAiming.reefTagFromPose(this.getState().Pose), 4, true).orElse(new Pose2d()));
+        targetPoseLeft.setRobotPose(AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getPose());
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
