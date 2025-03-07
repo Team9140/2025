@@ -107,6 +107,12 @@ public class RobotContainer {
         configureBindings();
     }
 
+    private boolean stickInput() {
+        return Math.abs(this.controller.getLeftX()) > 0.25
+                || Math.abs(this.controller.getLeftY()) > 0.25
+                || Math.abs(this.controller.getRightX()) > 0.25;
+    }
+
     private void configureBindings() {
         this.candle.setDefaultCommand(this.candle.solidAllianceColor());
 
@@ -133,6 +139,11 @@ public class RobotContainer {
 
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
 
+        this.controller.y().and(this.controller.povLeft()).onTrue(new PrintCommand("make snap").until(this::stickInput));
+        // y + right
+        // b + left/right
+        // a + left/right
+
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
         // controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -155,15 +166,15 @@ public class RobotContainer {
         // limeC.start();
 
         // enabledTrigger.onTrue(Commands.runOnce(() -> {
-        //     System.out.println("enabling");
-        //     limeA.setIMUMode(2);
-        //     limeB.setIMUMode(2);
-        //     // limeC.setIMUMode(2);
+        // System.out.println("enabling");
+        // limeA.setIMUMode(2);
+        // limeB.setIMUMode(2);
+        // // limeC.setIMUMode(2);
         // })).onFalse(Commands.runOnce(() -> {
-        //     System.out.println("disabling");
-        //     limeA.setIMUMode(1);
-        //     limeB.setIMUMode(1);
-        //     // limeC.setIMUMode(1);
+        // System.out.println("disabling");
+        // limeA.setIMUMode(1);
+        // limeB.setIMUMode(1);
+        // // limeC.setIMUMode(1);
         // }));
 
         connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 2.0));

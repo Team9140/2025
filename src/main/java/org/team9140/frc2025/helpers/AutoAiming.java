@@ -114,11 +114,17 @@ public class AutoAiming {
         }
     }
 
+    public static Pose2d snapPose(Pose2d currentPose, boolean left) {
+        return null;
+    }
+
+
     public static int reefTagFromPose(Pose2d pose) {
         return getClosestFace(pose.getTranslation()).getTagId();
     }
 
     public static Optional<Pose2d> snapPose(int tagID, int level, boolean left) {
+        
         // find pose of tag from id#
         // need it as a pose2d with the Z removed
 
