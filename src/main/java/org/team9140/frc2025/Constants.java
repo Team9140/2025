@@ -37,7 +37,7 @@ public class Constants {
     public static class Ports {
         public static final int ELEVATOR_MOTOR_LEFT = 10;
         public static final int ELEVATOR_MOTOR_RIGHT = 11;
-        public static final int MANIPULATOR_MOTOR = 0;
+        public static final int MANIPULATOR_MOTOR = 4;
         public static final int FUNNEL_MOTOR = 13;
         public static final int CLIMBER_MOTOR = 12;
         public static final int CANDLE_id = 0;
@@ -64,8 +64,9 @@ public class Constants {
 
             
     public static class Funnel {
-        public static final Current STATOR_LIMIT = Amps.of(20);
-        public static final Voltage INTAKE_VOLTAGE = Volts.of(6);
+        public static final Current STATOR_LIMIT = Amps.of(60);
+        public static final Current SUPPLY_LIMIT = Amps.of(25);
+        public static final Voltage INTAKE_VOLTAGE = Volts.of(12);
     }
 
     public static class Manipulator {
@@ -74,7 +75,7 @@ public class Constants {
         public static final double INTAKE_VOLTAGE_CORAL = 6;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
 
-        public static final double OUTTAKE_VOLTAGE_CORAL = 6;
+        public static final double OUTTAKE_VOLTAGE_CORAL = 8;
         public static final double OUTTAKE_VOLTAGE_ALGAE = -10;
 
         // public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
@@ -93,16 +94,16 @@ public class Constants {
     public static final class Elevator {
         public static final Mass mass = Pounds.of(15.0);
 
-        public static final Current STATOR_LIMIT = Amps.of(100.0);
+        public static final Current STATOR_LIMIT = Amps.of(50.0);
 
         public static final double GEAR_RATIO = 60.0 / 12.0;
         public static final Distance SPOOL_RADIUS = Inches.of(0.75);
         public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
 
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
-                .of(Meters.of(20.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(2.0).div(SPOOL_CIRCUMFERENCE).magnitude());
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
-                .of(Meters.of(80.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(4.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
 
@@ -111,11 +112,11 @@ public class Constants {
 
         public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
 
-        public static Distance STOW_height = Meters.of(0);
-        public static Distance L1_coral_height = Meters.of(0);
-        public static Distance L2_coral_height = Meters.of(0);
-        public static Distance L3_coral_height = Meters.of(0);
-        public static Distance L4_coral_height = Meters.of(0);
+        public static Distance STOW_height = MIN_HEIGHT;
+        public static Distance L1_coral_height = Inches.of(24);
+        public static Distance L2_coral_height = Inches.of(36);
+        public static Distance L3_coral_height = Inches.of(48);
+        public static Distance L4_coral_height = Inches.of(77);
     }
 
     public static final class AutoAlign {

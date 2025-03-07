@@ -1,5 +1,6 @@
 package org.team9140.frc2025.subsystems;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -15,6 +16,7 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -32,8 +34,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class Elevator extends SubsystemBase {
-        private final TalonFX leftMotor;
-        private final TalonFX rightMotor;
+        private TalonFX leftMotor;
+        private TalonFX rightMotor;
 
         private final MotionMagicVoltage motionMagic;
 
@@ -50,11 +52,11 @@ public class Elevator extends SubsystemBase {
                         Constants.Elevator.STOW_height.in(Meters));
 
         private Elevator() {
-                leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT);
-                rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT);
+                leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
+                rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
 
                 Slot0Configs elevatorGains = new Slot0Configs()
-                                .withKP(50.0)
+                                .withKP(3.0)
                                 .withKI(0)
                                 .withKD(0)
                                 .withKS(0)
@@ -70,20 +72,28 @@ public class Elevator extends SubsystemBase {
                                 .withMotionMagicAcceleration(Constants.Elevator.ACCELERATION);
 
                 MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
-                                .withInverted(InvertedValue.CounterClockwise_Positive)
+                                .withInverted(InvertedValue.Clockwise_Positive)
                                 .withNeutralMode(NeutralModeValue.Brake);
 
                 FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
                                 .withSensorToMechanismRatio(Constants.Elevator.GEAR_RATIO);
+
+                SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs()
+                                .withForwardSoftLimitThreshold(Constants.Elevator.L4_coral_height.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude())
+                                .withForwardSoftLimitEnable(true)
+                                .withReverseSoftLimitEnable(true)
+                                .withReverseSoftLimitThreshold(0.0);
 
                 TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                                 .withSlot0(elevatorGains)
                                 .withCurrentLimits(currentLimitsConfigs)
                                 .withFeedback(feedbackConfigs)
                                 .withMotionMagic(motionMagicConfigs)
-                                .withMotorOutput(motorOutputConfigs);
+                                .withMotorOutput(motorOutputConfigs)
+                                .withSoftwareLimitSwitch(softLimits);
 
                 this.leftMotor.getConfigurator().apply(motorConfig);
+                this.leftMotor.getConfigurator().apply(feedbackConfigs);
                 this.leftMotor.setPosition(0.0);
 
                 this.motionMagic = new MotionMagicVoltage(0)
@@ -103,10 +113,11 @@ public class Elevator extends SubsystemBase {
 
         @Override
         public void periodic() {
-                SmartDashboard.putNumber("Elevator Current Position", getPosition().in(Meters));
-                SmartDashboard.putNumber("Elevator Target Position", targetPosition.in(Meters));
+                SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
+                SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
                 SmartDashboard.putNumber("Elevator Voltage", leftMotor.getMotorVoltage().getValueAsDouble());
                 SmartDashboard.putNumber("Elevator Current", leftMotor.getStatorCurrent().getValueAsDouble());
+                SmartDashboard.putNumber("Elevator raw position", leftMotor.getPosition().getValueAsDouble());
                 // SmartDashboard.putNumber("error",
                 // this.leftMotor.getClosedLoopError().getValueAsDouble());
         }

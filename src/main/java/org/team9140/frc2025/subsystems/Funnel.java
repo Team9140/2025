@@ -24,16 +24,18 @@ public class Funnel extends SubsystemBase {
     private VoltageOut output;
 
     private Funnel() {
-        this.motor = new TalonFX(Ports.FUNNEL_MOTOR);
+        this.motor = new TalonFX(Ports.FUNNEL_MOTOR, "sigma");
         this.output = new VoltageOut(0);
 
         this.motor.getConfigurator().apply(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive)
+                .withInverted(InvertedValue.CounterClockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake));
 
         this.motor.getConfigurator().apply(new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(Constants.Funnel.STATOR_LIMIT)
-                .withStatorCurrentLimitEnable(true));
+                .withStatorCurrentLimitEnable(true)
+                .withSupplyCurrentLimit(Constants.Funnel.SUPPLY_LIMIT)
+                .withSupplyCurrentLimitEnable(true));
 
         this.motor.setControl(this.output);
 

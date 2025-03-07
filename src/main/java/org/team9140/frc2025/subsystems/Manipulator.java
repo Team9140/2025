@@ -80,6 +80,6 @@ public class Manipulator extends SubsystemBase {
     }
 
     public Command reverse() {
-        return this.setVoltage(INTAKE_VOLTAGE_CORAL).withName("unstick coral");
+        return this.setVoltage(-INTAKE_VOLTAGE_CORAL).withName("unstick coral");
     }
 }
