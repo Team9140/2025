@@ -74,7 +74,7 @@ public class Constants {
         public static final Distance SPOOL_RADIUS = Inches.of(1);
         public static final Angle MOTOR_ROTATIONS_PER_METER = Meters.of(1).div(SPOOL_RADIUS.times(Math.TAU)).times(Rotations.of(1 / GEAR_RATIO));
         public static final Angle INITIAL_VARIANCE = Degrees.of(5);
-        public static final double P = 2; // TODO
+        public static final double P = 26; // TODO
         public static final double I = 0; // TODO
         public static final double D = 1.54; // TODO
         public static final double S = 0.14178; // TODO

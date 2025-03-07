@@ -7,6 +7,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -39,6 +41,8 @@ public class Elevator extends SubsystemBase {
                     new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), ElevatorAngle.in(Degrees)));
 
     public static Elevator instance;
+    private final PIDController simPID = new PIDController(P, I, D);
+    private final ElevatorFeedforward simFF = new ElevatorFeedforward(S, V, A);
 
     private Elevator() {
         motor = new TalonFX(Constants.Ports.ELEVATOR_MOTOR);
@@ -99,7 +103,25 @@ public class Elevator extends SubsystemBase {
     }
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        double targetPos = targetPosition.in(Meters);
+        double currentPos = elevatorSim.getPositionMeters();
+        double pidOutput = simPID.calculate(currentPos, targetPos);
+        double ffOutput = simFF.calculate(0);
+
+        double outputVoltage = pidOutput + ffOutput;
+        outputVoltage = Math.max(-12.0, Math.min(12.0, outputVoltage));
+
+        elevatorSim.setInput(outputVoltage);
+        elevatorSim.update(0.02);
+        m_elevatorMech2d.setLength(elevatorSim.getPositionMeters());
+
+        // Add simulation telemetry to SmartDashboard
+        SmartDashboard.putNumber("Elevator Sim travel (m)", elevatorSim.getPositionMeters());
+        SmartDashboard.putNumber("ELevator sim travel actual", motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator Sim Velocity (m/s)", elevatorSim.getVelocityMetersPerSecond());
+        SmartDashboard.putNumber("Elevator Sim Applied Voltage", outputVoltage);
+    }
 
     public Distance getPosition() {
         return Meters.of(this.motor.getPosition().getValueAsDouble());
