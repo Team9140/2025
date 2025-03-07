@@ -62,7 +62,7 @@ public class Manipulator extends SubsystemBase {
         return run(() -> funnelMotor.setControl(funnelController.withVelocity(0)));
     }
 
-    public Command turnOff(){
+    public Command turnOff() {
         return this.setVoltage(0).alongWith(stopFunnel());
     }
 

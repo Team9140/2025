@@ -65,7 +65,7 @@ public class Elevator extends SubsystemBase {
                 .withNeutralMode(NeutralModeValue.Brake);
 
         FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(METERS_PER_MOTOR_ROTATION);
+                .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_METER.in(Rotations));
 
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                 .withSlot0(elevatorGains)
@@ -83,6 +83,7 @@ public class Elevator extends SubsystemBase {
 
         this.targetPosition = BOTTOM;
         if (Math.abs(this.getPosition().in(Meters)) < Constants.Elevator.INITIAL_VARIANCE.in(Radians)) this.motor.setPosition(BOTTOM.in(Meters));
+        else System.out.println("WARNING: Arm position not reset due to inaccurate starting height.");
     }
 
     public static Elevator getInstance() {
@@ -101,13 +102,13 @@ public class Elevator extends SubsystemBase {
     public void simulationPeriodic() {}
 
     public Distance getPosition() {
-        return Meters.of(motor.getPosition().getValueAsDouble());
+        return Meters.of(this.motor.getPosition().getValueAsDouble());
     }
 
     public Command moveToPosition(Distance goalPosition) {
         return this.runOnce(() -> {
-            targetPosition = goalPosition;
-            motionMagic.withPosition(targetPosition.in(Meters));
+            this.targetPosition = goalPosition;
+            this.motionMagic.withPosition(this.targetPosition.in(Meters));
         });
     }
 }

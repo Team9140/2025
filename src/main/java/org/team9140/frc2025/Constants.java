@@ -70,10 +70,10 @@ public class Constants {
         public static final double MIN_HEIGHT_METERS = 0.08255;
         public static final double MAX_HEIGHT_METERS = 2.4736437446;
         public static final int CURRENT_LIMIT = 60;
-        public static final double GEAR_RATIO = 1.0; //TODO
+        public static final double GEAR_RATIO = 1.0; // TODO: Output : Input
         public static final Distance SPOOL_RADIUS = Inches.of(1);
-        public static final double METERS_PER_MOTOR_ROTATION = SPOOL_RADIUS.in(Meters) * Math.PI * 2.0 / GEAR_RATIO;
-        public static final Angle INITIAL_VARIANCE = Degrees.of(5);  // Radians
+        public static final Angle MOTOR_ROTATIONS_PER_METER = Meters.of(1).div(SPOOL_RADIUS.times(Math.TAU)).times(Rotations.of(1 / GEAR_RATIO));
+        public static final Angle INITIAL_VARIANCE = Degrees.of(5);
         public static final double P = 2; // TODO
         public static final double I = 0; // TODO
         public static final double D = 1.54; // TODO

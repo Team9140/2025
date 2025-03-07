@@ -9,7 +9,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
-public class TunerConstants extends TunerConstantsTest {
+public class TunerConstants extends TunerConstantsComp {
     /**
      * Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types.
      */
