@@ -200,11 +200,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
+    private double multiplier = 1.0;
+
+    public Command engageSlowMode() {
+        return this.runOnce(() -> this.multiplier = 0.5);
+    }
+
+    public Command disengageSlowMode() {
+        return this.runOnce(() -> this.multiplier = 1.0);
+    }
+
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
-            var vX = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickY.getAsDouble()));
-            var vY = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickX.getAsDouble()));
-            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble()));
+            var vX = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickY.getAsDouble())).times(this.multiplier);
+            var vY = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickX.getAsDouble())).times(this.multiplier);
+            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble())).times(this.multiplier);
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
                 vX = vX.unaryMinus();
@@ -322,4 +332,5 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod.in(Seconds));
     }
+
 }

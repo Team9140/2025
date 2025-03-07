@@ -131,6 +131,8 @@ public class RobotContainer {
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
+        this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
+
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
         // controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -148,7 +150,7 @@ public class RobotContainer {
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
 
-        limeA.start();
+        // limeA.start();
         limeB.start();
         // limeC.start();
 
@@ -164,18 +166,18 @@ public class RobotContainer {
         //     // limeC.setIMUMode(1);
         // }));
 
-        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 1.0));
+        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 2.0));
     }
 
     public void periodic() {
         if (DriverStation.isEnabled()) {
-            limeA.setIMUMode(2);
+            // limeA.setIMUMode(2);
             limeB.setIMUMode(2);
         } else {
-            limeA.setIMUMode(1);
+            // limeA.setIMUMode(1);
             limeB.setIMUMode(1);
         }
-        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        // limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
     }
