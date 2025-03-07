@@ -13,7 +13,7 @@ public class VisionMeasurement {
     public final Kind kind;
     public final Time timestamp;
     public final PoseEstimate measurement;
-
+    
     public VisionMeasurement(Kind k, Time t, PoseEstimate m) {
         this.kind = k;
         this.timestamp = t;

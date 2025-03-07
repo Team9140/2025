@@ -1,14 +1,20 @@
 package org.team9140.frc2025.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-import static org.team9140.frc2025.Constants.Drive.*;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
+import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Transform2d;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -27,6 +33,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
@@ -34,6 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -45,9 +53,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
 
     // move magic numbers to constants
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P, TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P, TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P, TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P,
+            TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P,
+            TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
+    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P,
+            TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+
+    Field2d dashField2d = new Field2d();
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
@@ -67,6 +80,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
         this.centric.HeadingController = headingController;
+
+        SmartDashboard.putData(dashField2d);
     }
 
     @Override
@@ -77,6 +92,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
+        dashField2d.setRobotPose(this.getState().Pose);
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
     }
 
@@ -90,7 +106,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
         } else if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
             thetaStdDev = 9999.0;
-
+            
             boolean reject = false;
 
             reject |= this.getPigeon2().getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) >= 0.5;
@@ -100,7 +116,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return;
             }
 
-            if (this.getState().Speeds.vxMetersPerSecond <= 0.5 && this.getState().Speeds.vxMetersPerSecond <= 0.5) {
+            if (this.getState().Speeds.vxMetersPerSecond <= 0.25 && this.getState().Speeds.vxMetersPerSecond <= 0.25) {
                 xyStdDev = 1.0;
             } else {
                 xyStdDev = 5.0;
@@ -143,7 +159,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> {
             Pose2d target = poses.get();
 
-            if (target == null) return;
+            if (target == null)
+                return;
 
             Pose2d pose = getState().Pose;
 
@@ -196,7 +213,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.runOnce(this::seedFieldCentric);
     }
 
-
     // move all sysid stuff to a new file in lib
 
     private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();
@@ -215,7 +231,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // put back routine for tuning drive motors
 
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     null, // Use default ramp rate (1 V/s)
@@ -235,7 +251,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     /* This is in radians per second², but SysId only supports "volts per second" */
