@@ -46,7 +46,7 @@ public class Elevator extends SubsystemBase {
                         Constants.Elevator.MIN_HEIGHT.in(Meters),
                         Constants.Elevator.MAX_HEIGHT.in(Meters),
                         true,
-                        Constants.Elevator.BOTTOM.in(Meters));
+                        Constants.Elevator.STOW_height.in(Meters));
 
         private Elevator() {
                 leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT);

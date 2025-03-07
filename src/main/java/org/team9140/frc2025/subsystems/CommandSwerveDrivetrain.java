@@ -6,9 +6,9 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static org.team9140.frc2025.Constants.Drive.MAX_ROTATIONAL_RATE;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
-import static org.team9140.frc2025.Constants.Drive.SPEED_AT_12_VOLTS;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -158,9 +158,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
-            var vX = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickY.getAsDouble()));
-            var vY = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickX.getAsDouble()));
-            var omega = MAX_ROTATIONAL_RATE.times(Util.applyDeadband(-rightStickX.getAsDouble()));
+            var vX = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickY.getAsDouble()));
+            var vY = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickX.getAsDouble()));
+            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
                 vX = vX.unaryMinus();
