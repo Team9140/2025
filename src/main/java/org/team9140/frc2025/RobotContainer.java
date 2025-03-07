@@ -8,6 +8,7 @@ package org.team9140.frc2025;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
 import org.team9140.frc2025.subsystems.Canndle;
@@ -101,6 +102,7 @@ public class RobotContainer {
 
         limeA.setIMUMode(1);
         limeB.setIMUMode(1);
+        this.autonomousCommand = AutonomousRoutines.oneCoral(drivetrain);
 
         configureBindings();
     }
