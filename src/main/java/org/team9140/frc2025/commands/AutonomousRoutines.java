@@ -10,11 +10,21 @@ import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.MazeRunner;
 
 public class AutonomousRoutines {
-    private static final Command SCORE_CORAL_L1 = Elevator.getInstance().moveToPosition(Constants.Elevator.L1).andThen(Manipulator.getInstance().outtakeCoral());
+    private static final Command SCORE_CORAL_L4 = Elevator.getInstance().moveToPosition(Constants.Elevator.L4).andThen(new WaitCommand(5.0).deadlineFor(Manipulator.getInstance().outtakeCoral()));
     private static final Command RESET_ARM = Manipulator.getInstance().turnOff().andThen(Elevator.getInstance().moveToPosition(Constants.Elevator.BOTTOM));
+    private static final Command INTAKE_CORAL = Manipulator.getInstance().intakeCoral();
 
     public static Command oneCoral(CommandSwerveDrivetrain drivetrain) {
         MazeRunner path = new MazeRunner("oneCoral", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        return path.gimmeCommand().andThen(new WaitCommand(5.0).deadlineFor(SCORE_CORAL_L1)).andThen(RESET_ARM);
+        return path.gimmeCommand().andThen(new WaitCommand(5.0).deadlineFor(SCORE_CORAL_L4)).andThen(RESET_ARM);
+    }
+
+    public static Command feedOneCoral(CommandSwerveDrivetrain drivetrain) {
+        return oneCoral(drivetrain).andThen(feed(drivetrain));
+    }
+
+    public static Command feed(CommandSwerveDrivetrain drivetrain) {
+        MazeRunner path = new MazeRunner("feed", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
+        return path.gimmeCommand().andThen(INTAKE_CORAL);
     }
 }
