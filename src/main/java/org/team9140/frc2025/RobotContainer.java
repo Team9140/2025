@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.helpers.LimelightHelpers;
 import org.team9140.frc2025.subsystems.Canndle;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Elevator;
@@ -17,6 +18,7 @@ import org.team9140.frc2025.subsystems.LimeLight;
 import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.FollowPath;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -39,7 +41,8 @@ public class RobotContainer {
 
     private final LimeLight limeA = new LimeLight("limelight-a", this.drivetrain::acceptVisionMeasurement);
     private final LimeLight limeB = new LimeLight("limelight-b", this.drivetrain::acceptVisionMeasurement);
-    private final LimeLight limeC = new LimeLight("limelight-c", this.drivetrain::acceptVisionMeasurement);
+    // private final LimeLight limeC = new LimeLight("limelight-c",
+    // this.drivetrain::acceptVisionMeasurement);
 
     Trigger enabledTrigger = new Trigger(DriverStation::isEnabled);
     Trigger connectedTrigger = new Trigger(DriverStation::isDSAttached);
@@ -86,6 +89,16 @@ public class RobotContainer {
 
         // this.autonomousCommand = this.path.gimmeCommand();
 
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
+                Units.inchesToMeters(7.5),
+                Units.inchesToMeters(11.5),
+                Units.inchesToMeters(13.5), 0, -12.5, 16.0);
+
+                LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+                Units.inchesToMeters(7.5),
+                Units.inchesToMeters(11.5),
+                Units.inchesToMeters(13.5), 0, -9.5, -13.0);
+
         configureBindings();
     }
 
@@ -98,8 +111,10 @@ public class RobotContainer {
 
         controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
 
-        controller.rightBumper().whileTrue(this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
-        controller.leftBumper().whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
+        controller.rightBumper().whileTrue(
+                this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
+        controller.leftBumper()
+                .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
 
         controller.y().onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height).withName("go to L4"));
         controller.b().onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height).withName("go to L3"));
@@ -128,18 +143,18 @@ public class RobotContainer {
 
         limeA.start();
         limeB.start();
-        limeC.start();
+        // limeC.start();
 
         enabledTrigger.onTrue(Commands.runOnce(() -> {
             System.out.println("enabling");
             limeA.setIMUMode(2);
             limeB.setIMUMode(2);
-            limeC.setIMUMode(2);
+            // limeC.setIMUMode(2);
         })).onFalse(Commands.runOnce(() -> {
             System.out.println("disabling");
             limeA.setIMUMode(1);
             limeB.setIMUMode(1);
-            limeC.setIMUMode(1);
+            // limeC.setIMUMode(1);
         }));
 
         connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 1.0));
@@ -148,7 +163,7 @@ public class RobotContainer {
     public void periodic() {
         limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
-        limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
     }
 
     public Command getAutonomousCommand() {
