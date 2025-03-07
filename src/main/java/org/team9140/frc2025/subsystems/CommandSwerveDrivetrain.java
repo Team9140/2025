@@ -3,12 +3,13 @@ package org.team9140.frc2025.subsystems;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
-import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
+import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -32,6 +33,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Time;
@@ -50,9 +52,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
 
     // move magic numbers to constants
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P, TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P, TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P, TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P,
+            TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P,
+            TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
+    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P,
+            TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
@@ -86,10 +91,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
+        double xyStdDev = 9999;
+        double thetaStdDev = 9999;
         if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
-
+            xyStdDev = 2.0;
+            thetaStdDev = 2.0;
+            this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
+                    VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
         } else if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
+            thetaStdDev = 9999.0;
+            
+            boolean reject = false;
 
+            reject |= this.getPigeon2().getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) >= 0.5;
+            reject |= vm.measurement.avgTagDist >= 4;
+
+            if (reject) {
+                return;
+            }
+
+            if (this.getState().Speeds.vxMetersPerSecond <= 0.5 && this.getState().Speeds.vxMetersPerSecond <= 0.5) {
+                xyStdDev = 1.0;
+            } else {
+                xyStdDev = 5.0;
+            }
+
+            this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
+                    VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
         }
     }
 
@@ -125,7 +153,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> {
             Pose2d target = poses.get();
 
-            if (target == null) return;
+            if (target == null)
+                return;
 
             Pose2d pose = getState().Pose;
 
@@ -177,7 +206,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Command resetGyroCommand() {
         return this.runOnce(this::seedFieldCentric);
     }
-
 
     // move all sysid stuff to a new file in lib
 

@@ -54,16 +54,20 @@ public class LimeLight extends SubsystemBase {
                     LimelightHelpers.PoseEstimate mt1 = LimelightHelpers
                             .getBotPoseEstimate_wpiBlue(LimeLight.this.name);
 
-                    LimeLight.this.measurementConsumer
-                            .accept(new VisionMeasurement(VisionMeasurement.Kind.MT1, timestamp, mt1));
+                    if (mt1 != null) {
+                        LimeLight.this.measurementConsumer
+                                .accept(new VisionMeasurement(VisionMeasurement.Kind.MT1, timestamp, mt1));
+                    }
 
                 } else {
 
                     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers
                             .getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
 
-                    LimeLight.this.measurementConsumer
-                            .accept(new VisionMeasurement(VisionMeasurement.Kind.MT2, timestamp, mt2));
+                    if (mt2 != null) {
+                        LimeLight.this.measurementConsumer
+                                .accept(new VisionMeasurement(VisionMeasurement.Kind.MT2, timestamp, mt2));
+                    }
 
                 }
             }
