@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -58,6 +59,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
     private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P,
             TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+
+    Field2d dashField2d = new Field2d();
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
@@ -77,6 +80,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
         this.centric.HeadingController = headingController;
+
+        SmartDashboard.putData(dashField2d);
     }
 
     @Override
@@ -87,6 +92,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
+        dashField2d.setRobotPose(this.getState().Pose);
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
     }
 
@@ -110,7 +116,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return;
             }
 
-            if (this.getState().Speeds.vxMetersPerSecond <= 0.5 && this.getState().Speeds.vxMetersPerSecond <= 0.5) {
+            if (this.getState().Speeds.vxMetersPerSecond <= 0.25 && this.getState().Speeds.vxMetersPerSecond <= 0.25) {
                 xyStdDev = 1.0;
             } else {
                 xyStdDev = 5.0;
