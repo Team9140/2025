@@ -78,4 +78,8 @@ public class Manipulator extends SubsystemBase {
     public Command setVoltage(double voltage) {
         return run(() -> this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, voltage / 12.0));
     }
+
+    public Command reverse() {
+        return this.setVoltage(INTAKE_VOLTAGE_CORAL).withName("unstick coral");
+    }
 }

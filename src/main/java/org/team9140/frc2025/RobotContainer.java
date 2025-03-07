@@ -20,6 +20,7 @@ import org.team9140.lib.FollowPath;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -95,13 +96,18 @@ public class RobotContainer {
                 .setDefaultCommand(
                         drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
 
-        controller.rightBumper().whileTrue(this.manipulator.intakeCoral());
         controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
 
-        controller.rightBumper().whileTrue(this.funnel.intakeCoral());
+        controller.rightBumper().whileTrue(this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
+        controller.leftBumper().whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
 
-        controller.y().onTrue(this.elevator.moveToPosition(Meters.of(1.0)));
-        controller.a().onTrue(this.elevator.moveToPosition(Meters.of(0.0)));
+        controller.y().onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height).withName("go to L4"));
+        controller.b().onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height).withName("go to L3"));
+        controller.a().onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height).withName("go to L2"));
+        controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height).withName("go to stow"));
+
+        controller.povLeft().onTrue(new PrintCommand("snap L"));
+        controller.povRight().onTrue(new PrintCommand("snap R"));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));

@@ -64,4 +64,8 @@ public class Funnel extends SubsystemBase {
     public Command setVoltage(Voltage v) {
         return run(() -> this.motor.setControl(this.output.withOutput(v)));
     }
+
+    public Command reverse() {
+        return this.setVoltage(Constants.Funnel.INTAKE_VOLTAGE.unaryMinus()).withName("unstick coral");
+    }
 }

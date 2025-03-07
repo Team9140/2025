@@ -18,6 +18,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -106,6 +108,8 @@ public class Constants {
 
         public static final Distance MIN_HEIGHT = Inches.of(0);
         public static final Distance MAX_HEIGHT = Inches.of(90);
+
+        public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
 
         public static Distance STOW_height = Meters.of(0);
         public static Distance L1_coral_height = Meters.of(0);
