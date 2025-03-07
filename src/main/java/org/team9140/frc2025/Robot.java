@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import static edu.wpi.first.units.Units.Seconds;
 
-import org.team9140.frc2025.subsystems.LimeLight;
-
 public class Robot extends TimedRobot {
     private Command autonomousCommand;
 
@@ -24,18 +22,15 @@ public class Robot extends TimedRobot {
         robotContainer = new RobotContainer();
     }
 
-    LimeLight b = LimeLight.LIME_B;
-
     @Override
     public void robotInit() {
         SignalLogger.setPath("/media/sda/logs");
-
-        b.start();
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        robotContainer.periodic();
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
+import org.team9140.lib.VisionMeasurement;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -82,6 +83,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+    }
+
+    public void acceptVisionMeasurement(VisionMeasurement vm) {
+        if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
+
+        } else if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
+
+        }
     }
 
     private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
