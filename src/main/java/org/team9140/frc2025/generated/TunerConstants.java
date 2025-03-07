@@ -110,18 +110,18 @@ public class TunerConstants {
     // The steer motor uses any SwerveModule.SteerRequestType control request with the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGains = new Slot0Configs()
-            .withKP(100).withKI(0).withKD(0.5)
-            .withKS(0.1).withKV(2.33).withKA(0)
+            .withKP(50.0).withKI(0).withKD(1.0)
+            .withKS(0.2).withKV(2.33).withKA(0)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
     // When using closed-loop control, the drive motor uses the control
     // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
     private static final Slot0Configs driveGains = new Slot0Configs()
-            .withKP(0.1).withKI(0).withKD(0)
-            .withKS(0).withKV(0.124);
+            .withKP(0.22).withKI(0).withKD(0)
+            .withKS(0.1).withKV(0.124).withKA(0.005);
 
     // The closed-loop output type to use for the steer motors;
     // This affects the PID/FF gains for the steer motors
-    private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.TorqueCurrentFOC;
+    private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
     // The closed-loop output type to use for the drive motors;
     // This affects the PID/FF gains for the drive motors
     private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -137,7 +137,7 @@ public class TunerConstants {
 
     // The stator current at which the wheels start to slip;
     // This needs to be tuned to your individual robot
-    private static final Current kSlipCurrent = Amps.of(120.0);
+    private static final Current kSlipCurrent = Amps.of(60.0);
 
     // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
     // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
@@ -162,15 +162,15 @@ public class TunerConstants {
     // This needs to be tuned to your individual robot
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.48);
 
-    public static final double X_CONTROLLER_P = 10.0;
+    public static final double X_CONTROLLER_P = 5.0;
     public static final double X_CONTROLLER_I = 0.0;
-    public static final double X_CONTROLLER_D = 0.0;
-    public static final double Y_CONTROLLER_P = 10.0;
+    public static final double X_CONTROLLER_D = 0.25;
+    public static final double Y_CONTROLLER_P = 5.0;
     public static final double Y_CONTROLLER_I = 0.0;
-    public static final double Y_CONTROLLER_D = 0.0;
-    public static final double HEADING_CONTROLLER_P = 11.0;
+    public static final double Y_CONTROLLER_D = 0.25;
+    public static final double HEADING_CONTROLLER_P = 25.0;
     public static final double HEADING_CONTROLLER_I = 0.0;
-    public static final double HEADING_CONTROLLER_D = 0.25;
+    public static final double HEADING_CONTROLLER_D = 0.5;
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
@@ -289,8 +289,8 @@ public class TunerConstants {
     private static final boolean kBackRightSteerMotorInverted = true;
     private static final boolean kBackRightEncoderInverted = false;
 
-    private static final Distance kBackRightXPos = Inches.of(-11.75);
-    private static final Distance kBackRightYPos = Inches.of(-11.75);
+    private static final Distance kBackRightXPos = Inches.of(-11.875);
+    private static final Distance kBackRightYPos = Inches.of(-11.875);
 
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
