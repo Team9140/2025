@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Transform2d;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
+import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
@@ -47,9 +48,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
 
     // move magic numbers to constants
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(X_CONTROLLER_P, X_CONTROLLER_I, X_CONTROLLER_D);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(Y_CONTROLLER_P, Y_CONTROLLER_I, Y_CONTROLLER_D);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(HEADING_CONTROLLER_P, HEADING_CONTROLLER_I, HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P, TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P, TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
+    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P, TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 

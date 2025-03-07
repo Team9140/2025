@@ -15,7 +15,6 @@ import edu.wpi.first.units.measure.*;
 import static edu.wpi.first.units.Units.*;
 
 public class Constants {
-
     public static class Ports {
         public static final int ELEVATOR_MOTOR = 5;
         public static final int MANIPULATOR_MOTOR_DEVICE_NUM = 0;
@@ -23,6 +22,7 @@ public class Constants {
         public static final int CAN_RANGE_DEVICE_NUM = 0;
 
     }
+
     public static class Drive {
         public static final LinearVelocity SPEED_AT_12_VOLTS = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.0375);
@@ -30,15 +30,6 @@ public class Constants {
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(1);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
         public static final AngularVelocity MAX_ROTATIONAL_RATE = RotationsPerSecond.of(2);
-        public static final double X_CONTROLLER_P = 10.0;
-        public static final double X_CONTROLLER_I = 0.0;
-        public static final double X_CONTROLLER_D = 0.0;
-        public static final double Y_CONTROLLER_P = 10.0;
-        public static final double Y_CONTROLLER_I = 0.0;
-        public static final double Y_CONTROLLER_D = 0.0;
-        public static final double HEADING_CONTROLLER_P = 11.0;
-        public static final double HEADING_CONTROLLER_I = 0.0;
-        public static final double HEADING_CONTROLLER_D = 0.25;
     }
 
     public static class FieldItemPoses {

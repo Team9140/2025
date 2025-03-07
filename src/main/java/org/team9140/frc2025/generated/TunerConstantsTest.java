@@ -74,6 +74,16 @@ public class TunerConstantsTest {
     // This needs to be tuned to your individual robot
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.73);
 
+    public static final double X_CONTROLLER_P = 10.0;
+    public static final double X_CONTROLLER_I = 0.0;
+    public static final double X_CONTROLLER_D = 0.0;
+    public static final double Y_CONTROLLER_P = 10.0;
+    public static final double Y_CONTROLLER_I = 0.0;
+    public static final double Y_CONTROLLER_D = 0.0;
+    public static final double HEADING_CONTROLLER_P = 11.0;
+    public static final double HEADING_CONTROLLER_I = 0.0;
+    public static final double HEADING_CONTROLLER_D = 0.25;
+
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
     private static final double kCoupleRatio = 3.5714285714285716;
