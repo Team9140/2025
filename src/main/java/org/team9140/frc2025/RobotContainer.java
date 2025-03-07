@@ -13,10 +13,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team9140.frc2025.generated.TunerConstants;
-import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
-import org.team9140.frc2025.subsystems.Canndle;
-import org.team9140.frc2025.subsystems.Elevator;
+import org.team9140.frc2025.subsystems.*;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
@@ -30,52 +29,38 @@ public class RobotContainer
 
     private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
-    CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
+    private final CommandXboxController controller = new CommandXboxController(0);
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
+    private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+    private final Elevator elevator = Elevator.getInstance();
+    private final Manipulator manipulator = Manipulator.getInstance();
+    private final Funnel funnel = Funnel.getInstance();
+    private final Canndle candle = Canndle.getInstance();
 
-    CommandXboxController controller = new CommandXboxController(0);
+    private final LimeLight limeA = new LimeLight("limelight-a", this.drivetrain::acceptVisionMeasurement);
+    private final LimeLight limeB = new LimeLight("limelight-b", this.drivetrain::acceptVisionMeasurement);
+    private final LimeLight limeC = new LimeLight("limelight-c", this.drivetrain::acceptVisionMeasurement);
 
-    Elevator elevator;
-
-    Canndle candle = Canndle.getInstance();
-
+    Trigger enabledTrigger = new Trigger(DriverStation::isEnabled);
+    Trigger connectedTrigger = new Trigger(DriverStation::isDSAttached);
 
     public RobotContainer() {
-        this.elevator = Elevator.getInstance();
-        this.path = new MazeRunner("funner", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-        this.path.atEventTime("test1").onTrue(new PrintCommand("test1"));
-        this.path.atEventTime("test2").onTrue(new PrintCommand("test2"));
-        this.path = new MazeRunner("themaze", drivetrain, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue));
-//        this.path.atEventTime("First_Coral").onTrue((new PrintCommand("First_Coral")).alongWith(candle.flashColor(Canndle.ORANGE, 0.1)));
-//        this.path.atEventTime("Restock").onTrue((new PrintCommand("Restock")).alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
-//        this.path.atEventTime("Second_Coral").onTrue((new PrintCommand("Second_Coral")).alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-//        this.path.atTime(2.5).onTrue(new PrintCommand("2.5 seconds"));
-//        this.path.atEventTime("Second_Restock").onTrue(new PrintCommand("Second_Restock").alongWith(candle.flashColor(Canndle.GREEN, 0.1)));
-//        this.path.atEventTime("Third_Coral").onTrue((new PrintCommand("Third_Coral")).alongWith(candle.flashColor(Canndle.RED, 0.1)));
-//        this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
-
-//        this.path.atEventTime("End_Test").onTrue(
-//                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
-//        );
-
-        this.path.atPose(new Pose2d(1.249948263168335, 4.545039176940918, new Rotation2d(0)), 0.1, Degrees.of(5).in(Radians)).onTrue(
-                (new PrintCommand("atPose test")).alongWith(candle.flashColor(Canndle.PINK, 0.1))
-        );
-
-//        this.path.atPose(new Pose2d(3.7773959636688232, 5.237298011779785, new Rotation2d(-1.016488417575178)), 5, Degrees.of(360).in(Radians)).onTrue(
-//                (new PrintCommand("POSE2D_TEST")).alongWith(candle.flashColor(Canndle.PINK, 0.1))
-//        );
-
-
-
-        this.autonomousCommand = this.path.gimmeCommand();
-
         configureBindings();
     }
 
     private void configureBindings() {
-        drivetrain
+        this.candle.setDefaultCommand(this.candle.solidAllianceColor());
+
+        this.drivetrain
                 .setDefaultCommand(drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
 
+        this.controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
+
+        this.controller.rightBumper().whileTrue(this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
+        this.controller.leftBumper().whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
+
+        this.controller.povLeft().onTrue(new PrintCommand("snap L"));
+        this.controller.povRight().onTrue(new PrintCommand("snap R"));
 //        controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
@@ -92,6 +77,30 @@ public class RobotContainer
 //        controller.y().whileTrue(drivetrain.sysIdRotateQ(Direction.kReverse));
 
         this.drivetrain.registerTelemetry(logger::telemeterize);
+
+        limeA.start();
+        limeB.start();
+        limeC.start();
+
+        enabledTrigger.onTrue(Commands.runOnce(() -> {
+            System.out.println("enabling");
+            limeA.setIMUMode(2);
+            limeB.setIMUMode(2);
+            limeC.setIMUMode(2);
+        })).onFalse(Commands.runOnce(() -> {
+            System.out.println("disabling");
+            limeA.setIMUMode(1);
+            limeB.setIMUMode(1);
+            limeC.setIMUMode(1);
+        }));
+
+        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 1.0));
+    }
+
+    public void periodic() {
+        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
     }
 
     public Command getAutonomousCommand() {

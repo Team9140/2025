@@ -1,63 +1,70 @@
 package org.team9140.frc2025.subsystems;
 
-import com.ctre.phoenix6.configs.*;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+
+import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Constants.Ports;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import com.ctre.phoenix6.sim.TalonFXSimState;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.team9140.frc2025.Constants;
-
-import javax.swing.text.StyleContext;
-
-import static edu.wpi.first.units.Units.*;
-import static org.team9140.frc2025.Constants.Elevator.*;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class Elevator extends SubsystemBase {
-    private final TalonFX motor;
-    private final MotionMagicVoltage motionMagic;
-    private Distance targetPosition;
-    private final ElevatorSim elevatorSim = new ElevatorSim(
-            DCMotor.getFalcon500(1), GEAR_RATIO, MASS_KG, DRUM_RADIUS_METERS,
-            MIN_HEIGHT_METERS, MAX_HEIGHT_METERS, true, BOTTOM.in(Meters));
-    private final Mechanism2d m_mech2d = new Mechanism2d(20, 50);
-    private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 10, 0);
-    private final MechanismLigament2d m_elevatorMech2d =
-            m_mech2dRoot.append(
-                    new MechanismLigament2d("Elevator", elevatorSim.getPositionMeters(), ElevatorAngle.in(Degrees)));
+    private TalonFX leftMotor;
+    private TalonFX rightMotor;
 
-    public static Elevator instance;
-    private final PIDController simPID = new PIDController(P, I, D);
-    private final ElevatorFeedforward simFF = new ElevatorFeedforward(S, V, A);
+    private final MotionMagicVoltage motionMagic;
+
+    private Distance targetPosition;
+
+    private final ElevatorSim elevatorSim = new ElevatorSim(
+            DCMotor.getKrakenX60(2),
+            Constants.Elevator.GEAR_RATIO,
+            Constants.Elevator.mass.in(Kilograms),
+            Constants.Elevator.SPOOL_RADIUS.in(Meters),
+            Constants.Elevator.MIN_HEIGHT.in(Meters),
+            Constants.Elevator.MAX_HEIGHT.in(Meters),
+            true,
+            Constants.Elevator.STOW_height.in(Meters));
 
     private Elevator() {
-        motor = new TalonFX(Constants.Ports.ELEVATOR_MOTOR);
-        SmartDashboard.putData("Elevator Sim", m_mech2d);
+        leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
+        rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
 
         Slot0Configs elevatorGains = new Slot0Configs()
-                .withKP(Constants.Elevator.P)
-                .withKI(Constants.Elevator.I)
-                .withKD(Constants.Elevator.D)
-                .withKS(Constants.Elevator.S)
-                .withKV(Constants.Elevator.V)
-                .withKA(Constants.Elevator.A);
+                .withKP(3.0)
+                .withKI(0)
+                .withKD(0)
+                .withKS(0)
+                .withKV(0)
+                .withKA(0);
 
         CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
-                .withStatorCurrentLimit(CURRENT_LIMIT)
+                .withStatorCurrentLimit(Constants.Elevator.STATOR_LIMIT)
                 .withStatorCurrentLimitEnable(true);
 
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
@@ -69,26 +76,36 @@ public class Elevator extends SubsystemBase {
                 .withNeutralMode(NeutralModeValue.Brake);
 
         FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
-                .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_METER.in(Rotations));
+                .withSensorToMechanismRatio(Constants.Elevator.GEAR_RATIO);
+
+        SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs()
+                .withForwardSoftLimitThreshold(Constants.Elevator.L4_coral_height.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude())
+                .withForwardSoftLimitEnable(true)
+                .withReverseSoftLimitEnable(true)
+                .withReverseSoftLimitThreshold(0.0);
 
         TalonFXConfiguration motorConfig = new TalonFXConfiguration()
                 .withSlot0(elevatorGains)
                 .withCurrentLimits(currentLimitsConfigs)
                 .withFeedback(feedbackConfigs)
                 .withMotionMagic(motionMagicConfigs)
-                .withMotorOutput(motorOutputConfigs);
+                .withMotorOutput(motorOutputConfigs)
+                .withSoftwareLimitSwitch(softLimits);
 
-        this.motor.getConfigurator().apply(motorConfig);
-        this.motor.setNeutralMode(NeutralModeValue.Brake);
+        this.leftMotor.getConfigurator().apply(motorConfig);
+        this.leftMotor.getConfigurator().apply(feedbackConfigs);
+        this.leftMotor.setPosition(0.0);
 
         this.motionMagic = new MotionMagicVoltage(0)
                 .withEnableFOC(true)
                 .withSlot(0);
 
-        this.targetPosition = BOTTOM;
-        if (Math.abs(this.getPosition().in(Meters)) < Constants.Elevator.INITIAL_VARIANCE.in(Radians)) this.motor.setPosition(BOTTOM.in(Meters));
-        else System.out.println("WARNING: Arm position not reset due to inaccurate starting height.");
+        this.targetPosition = Constants.Elevator.MIN_HEIGHT;
+
+        this.rightMotor.setControl(new Follower(this.leftMotor.getDeviceID(), true));
     }
+
+    private static Elevator instance;
 
     public static Elevator getInstance() {
         return (instance == null) ? instance = new Elevator() : instance;
@@ -96,41 +113,45 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        motor.setControl(motionMagic);
-        SmartDashboard.putNumber("Elevator Current Position", getPosition().in(Meters));
-        SmartDashboard.putNumber("Elevator Target Position", targetPosition.in(Meters));
-        SmartDashboard.putNumber("Elevator Voltage", motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
+        SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
+        SmartDashboard.putNumber("Elevator Voltage", leftMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator Current", leftMotor.getStatorCurrent().getValueAsDouble());
+        SmartDashboard.putNumber("Elevator raw position", leftMotor.getPosition().getValueAsDouble());
+        // SmartDashboard.putNumber("error",
+        // this.leftMotor.getClosedLoopError().getValueAsDouble());
     }
 
     @Override
     public void simulationPeriodic() {
-        double targetPos = targetPosition.in(Meters);
-        double currentPos = elevatorSim.getPositionMeters();
-        double pidOutput = simPID.calculate(currentPos, targetPos);
-        double ffOutput = simFF.calculate(0);
+        double simvVolts = this.leftMotor.getSimState().getMotorVoltage();
+        this.elevatorSim.setInputVoltage(simvVolts);
+        this.elevatorSim.update(Constants.LOOP_PERIOD.in(Seconds));
 
-        double outputVoltage = pidOutput + ffOutput;
-        outputVoltage = Math.max(-12.0, Math.min(12.0, outputVoltage));
+        Distance simPosition = Meters.of(this.elevatorSim.getPositionMeters());
+        LinearVelocity simVelocity = MetersPerSecond.of(this.elevatorSim.getVelocityMetersPerSecond());
 
-        elevatorSim.setInput(outputVoltage);
-        elevatorSim.update(0.02);
-        m_elevatorMech2d.setLength(elevatorSim.getPositionMeters());
+        this.leftMotor.getSimState().setRawRotorPosition(
+                Rotations.of(simPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()
+                        * Constants.Elevator.GEAR_RATIO));
 
-        // Add simulation telemetry to SmartDashboard
-        SmartDashboard.putNumber("Elevator Sim travel (m)", elevatorSim.getPositionMeters());
-        SmartDashboard.putNumber("ELevator sim travel actual", motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator Sim Velocity (m/s)", elevatorSim.getVelocityMetersPerSecond());
-        SmartDashboard.putNumber("Elevator Sim Applied Voltage", outputVoltage);
+        this.leftMotor.getSimState().setRotorVelocity(
+                RotationsPerSecond
+                        .of(simVelocity.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()
+                                * Constants.Elevator.GEAR_RATIO));
     }
 
     public Distance getPosition() {
-        return Meters.of(this.motor.getPosition().getValueAsDouble());
+        return Constants.Elevator.SPOOL_CIRCUMFERENCE
+                .times(this.leftMotor.getPosition().getValue().in(Rotations));
     }
 
     public Command moveToPosition(Distance goalPosition) {
         return this.runOnce(() -> {
             this.targetPosition = goalPosition;
-            this.motionMagic.withPosition(this.targetPosition.in(Meters));
-        });
+            this.leftMotor.setControl(this.motionMagic.withPosition(
+                    this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
+        }).andThen(new WaitUntilCommand(
+                () -> this.getPosition().isNear(goalPosition, Constants.Elevator.POSITION_epsilon)));
     }
 }

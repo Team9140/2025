@@ -3,6 +3,7 @@ package org.team9140.frc2025;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -15,21 +16,24 @@ import edu.wpi.first.units.measure.*;
 import static edu.wpi.first.units.Units.*;
 
 public class Constants {
-    public static class Ports {
-        public static final int ELEVATOR_MOTOR = 5;
-        public static final int MANIPULATOR_MOTOR_DEVICE_NUM = 0;
-        public static final int FUNNEL_MOTOR_DEVICE_NUM = 52;
-        public static final int CAN_RANGE_DEVICE_NUM = 0;
+    public static final Time LOOP_PERIOD = Milliseconds.of(20.0);
 
+    public static class Ports {
+        public static final int ELEVATOR_MOTOR_LEFT = 10;
+        public static final int ELEVATOR_MOTOR_RIGHT = 11;
+        public static final int MANIPULATOR_MOTOR = 4;
+        public static final int FUNNEL_MOTOR = 13;
+        public static final int CLIMBER_MOTOR = 12;
+        public static final int CANDLE_id = 0;
     }
 
     public static class Drive {
-        public static final LinearVelocity SPEED_AT_12_VOLTS = TunerConstants.kSpeedAt12Volts.times(0.8);
+        public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
+        public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.0375);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(1);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
-        public static final AngularVelocity MAX_ROTATIONAL_RATE = RotationsPerSecond.of(2);
     }
 
     public static class FieldItemPoses {
@@ -38,60 +42,89 @@ public class Constants {
     }
 
     public static final Distance REEF_RADIUS = Meters.of(1.5);
-    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0), Meters.of(0.25), new Rotation2d());
+
+    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
+            Meters.of(0.25), new Rotation2d());
+
+
+    public static class Funnel {
+        public static final Current STATOR_LIMIT = Amps.of(60);
+        public static final Current SUPPLY_LIMIT = Amps.of(25);
+        public static final Voltage INTAKE_VOLTAGE = Volts.of(12);
+    }
 
     public static class Manipulator {
         public static final double HOLD_VOLTAGE_ALGAE = 0;
 
-        public static final double INTAKE_VOLTAGE_CORAL = 10;
+        public static final double INTAKE_VOLTAGE_CORAL = 6;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
 
-        public static final double OUTTAKE_VOLTAGE_CORAL = -10;
+        public static final double OUTTAKE_VOLTAGE_CORAL = 8;
         public static final double OUTTAKE_VOLTAGE_ALGAE = -10;
 
-        public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
-        public static final Time INTAKE_CORAL_TIME = Seconds.of(1);
+//        public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
+//        public static final Time INTAKE_CORAL_TIME = Seconds.of(1);
 
-        public static final int MIN_SIGNAL_STRENGTH = 5000;
-        public static final double PROXIMITY_HYSTERESIS = 0.05;
-        public static final double PROXIMITY_THRESHOLD = 0.4;
-        public static final double FORWARD_AUTOSET = 0.0;
+//        public static final int MIN_SIGNAL_STRENGTH = 5000;
+//        public static final double PROXIMITY_HYSTERESIS = 0.05;
+//        public static final double PROXIMITY_THRESHOLD = 0.4;
+//        public static final double FORWARD_AUTOSET = 0.0;
 
-        public static final int MANIPULATOR_PEAK_CURRENT_LIMIT = 30;
-        public static final int MANIPULATOR_PEAK_CURRENT_DURATION = 100;
-        public static final int MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = 20;
-
-        public static final AngularVelocity FUNNEL_CONTROLLER_VELOCITY = RotationsPerSecond.of(0);
+        public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
+        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(100.0);
+        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(10);
     }
 
     public static final class Elevator {
-        public static final double MASS_KG = Units.lbsToKilograms(20);
-        public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.32) / 2.0; // TODO
-        public static final double MIN_HEIGHT_METERS = 0.08255;
-        public static final double MAX_HEIGHT_METERS = 2.4736437446;
-        public static final int CURRENT_LIMIT = 60;
-        public static final double GEAR_RATIO = 1.0; // TODO: Output : Input
-        public static final Distance SPOOL_RADIUS = Inches.of(1);
-        public static final Angle MOTOR_ROTATIONS_PER_METER = Meters.of(1).div(SPOOL_RADIUS.times(Math.TAU)).times(Rotations.of(1 / GEAR_RATIO));
-        public static final Angle INITIAL_VARIANCE = Degrees.of(5);
-        public static final double P = 26; // TODO
-        public static final double I = 0; // TODO
-        public static final double D = 1.54; // TODO
-        public static final double S = 0.14178; // TODO
-        public static final double V = 0.94316; // TODO
-        public static final double A = 0.07; // TODO
-        public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(24); // TODO
-        public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(36); // TODO
+        public static final Mass mass = Pounds.of(15.0);
+
+        public static final Current STATOR_LIMIT = Amps.of(50.0);
+
+        public static final double GEAR_RATIO = 60.0 / 12.0;
+        public static final Distance SPOOL_RADIUS = Inches.of(0.75);
+        public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
+
+        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
+                .of(Meters.of(2.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
+                .of(Meters.of(4.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
-        public static Distance AlgeDistance = Inches.of(15.023710); //distance from center of algae to ground in base position
-        public static Distance CoralDistance = Inches.of(1.859); //distance from bottom of coral to ground in robot in base position
-        public static Distance BOTTOM = Inches.of(0);
-        public static Distance L1 = Inches.of((18 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L2 = Inches.of((31.218618 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance Algae1 = Inches.of((36.243068 - AlgeDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L3 = Inches.of((46.433366  - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance Algae2 = Inches.of((52.365322 - AlgeDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L4 = Inches.of((71.994600 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
+
+
+        public static final Distance MIN_HEIGHT = Inches.of(0);
+        public static final Distance MAX_HEIGHT = Inches.of(90);
+
+        public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
+
+        public static Distance STOW_height = MIN_HEIGHT;
+        public static Distance L1_coral_height = Inches.of(24);
+        public static Distance L2_coral_height = Inches.of(36);
+        public static Distance L3_coral_height = Inches.of(48);
+        public static Distance L4_coral_height = Inches.of(77);
+    }
+
+    public static final class AutoAlign {
+        // gap between two reef branches on the same face
+        private static final Distance reefBranchGap = Meters.of(0.25);
+        // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
+        private static final Distance L1setback = Meters.of(0.0);
+        private static final Distance L2setback = Meters.of(0.0);
+        private static final Distance L3setback = Meters.of(0.0);
+        private static final Distance L4setback = Meters.of(0.0);
+
+        // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
+        // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot
+        public static final Translation2d leftBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(0.5));
+        public static final Translation2d rightBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(-0.5));
+
+        public static final Translation2d leftBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(0.5));
+        public static final Translation2d rightBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(-0.5));
+
+        public static final Translation2d leftBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(0.5));
+        public static final Translation2d rightBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(-0.5));
+
+        public static final Translation2d leftBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(0.5));
+        public static final Translation2d rightBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(-0.5));
     }
 }

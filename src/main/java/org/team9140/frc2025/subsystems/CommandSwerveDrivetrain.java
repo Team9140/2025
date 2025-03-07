@@ -1,17 +1,13 @@
 package org.team9140.frc2025.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 import static org.team9140.frc2025.Constants.Drive.*;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Transform2d;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Util;
@@ -19,6 +15,7 @@ import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
+import org.team9140.lib.VisionMeasurement;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -81,6 +78,37 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+    }
+
+    public void acceptVisionMeasurement(VisionMeasurement vm) {
+        double xyStdDev = 9999;
+        double thetaStdDev = 9999;
+        if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
+            xyStdDev = 2.0;
+            thetaStdDev = 2.0;
+            this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
+                    VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        } else if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
+            thetaStdDev = 9999.0;
+
+            boolean reject = false;
+
+            reject |= this.getPigeon2().getAngularVelocityZWorld().getValue().abs(RotationsPerSecond) >= 0.5;
+            reject |= vm.measurement.avgTagDist >= 4;
+
+            if (reject) {
+                return;
+            }
+
+            if (this.getState().Speeds.vxMetersPerSecond <= 0.5 && this.getState().Speeds.vxMetersPerSecond <= 0.5) {
+                xyStdDev = 1.0;
+            } else {
+                xyStdDev = 5.0;
+            }
+
+            this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
+                    VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev));
+        }
     }
 
     private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
@@ -148,9 +176,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
         return this.run(() -> {
-            var vX = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickY.getAsDouble()));
-            var vY = SPEED_AT_12_VOLTS.times(Util.applyDeadband(-leftStickX.getAsDouble()));
-            var omega = MAX_ROTATIONAL_RATE.times(Util.applyDeadband(-rightStickX.getAsDouble()));
+            var vX = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickY.getAsDouble()));
+            var vY = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickX.getAsDouble()));
+            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble()));
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
                 vX = vX.unaryMinus();

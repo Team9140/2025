@@ -10,8 +10,8 @@ import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.MazeRunner;
 
 public class AutonomousRoutines {
-    private static final Command SCORE_CORAL_L4 = Elevator.getInstance().moveToPosition(Constants.Elevator.L4).andThen(new WaitCommand(5.0).deadlineFor(Manipulator.getInstance().outtakeCoral()));
-    private static final Command RESET_ARM = Manipulator.getInstance().turnOff().andThen(Elevator.getInstance().moveToPosition(Constants.Elevator.BOTTOM));
+    private static final Command SCORE_CORAL_L4 = Elevator.getInstance().moveToPosition(Constants.Elevator.L4_coral_height).andThen(new WaitCommand(5.0).deadlineFor(Manipulator.getInstance().outtakeCoral()));
+    private static final Command RESET_ARM = Manipulator.getInstance().turnOff().andThen(Elevator.getInstance().moveToPosition(Constants.Elevator.STOW_height));
     private static final Command INTAKE_CORAL = Manipulator.getInstance().intakeCoral();
 
     public static Command oneCoral(CommandSwerveDrivetrain drivetrain) {

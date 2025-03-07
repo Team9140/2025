@@ -21,7 +21,7 @@ public class Canndle extends SubsystemBase {
     private CANdle candle;
 
     private Canndle() {
-        this.candle = new CANdle(0, "moe");
+        this.candle = new CANdle(0);
     }
 
     public static Canndle getInstance() {
