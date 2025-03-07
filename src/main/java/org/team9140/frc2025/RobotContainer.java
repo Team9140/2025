@@ -14,10 +14,8 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Canndle;
@@ -25,7 +23,6 @@ import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.lib.MazeRunner;
 
 import static edu.wpi.first.units.Units.*;
-import static org.team9140.frc2025.subsystems.Elevator.getInstance;
 
 
 public class RobotContainer
@@ -65,7 +62,7 @@ public class RobotContainer
 
 
 
-        this.autonomousCommand = this.path.gimmeCommand();
+        this.autonomousCommand = AutonomousRoutines.oneCoral(drivetrain);
 
         configureBindings();
     }
