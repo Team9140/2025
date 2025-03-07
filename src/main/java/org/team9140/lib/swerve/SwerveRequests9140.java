@@ -21,7 +21,7 @@ public class SwerveRequests9140 {
         private final TorqueCurrentFOC m_steerRequest = new TorqueCurrentFOC(0.0);
 
         @Override
-        public StatusCode apply(SwerveControlParameters parameters, SwerveModule... modulesToApply) {
+        public StatusCode apply(SwerveControlParameters parameters, @SuppressWarnings("rawtypes") SwerveModule... modulesToApply) {
             for (int i = 0; i < modulesToApply.length; ++i) {
                 modulesToApply[i].apply(m_driveRequest, m_steerRequest.withOutput(ampsToApply));
             }

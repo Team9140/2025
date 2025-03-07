@@ -10,7 +10,6 @@ import org.team9140.frc2025.Constants;
 
 import static edu.wpi.first.units.Units.*;
 
-// TODO: Shuffleboard
 public class AutoAiming {
     // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
     public enum ReefFaces {
