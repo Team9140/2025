@@ -1,26 +1,49 @@
 package org.team9140.frc2025;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Centimeters;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.team9140.frc2025.generated.TunerConstants;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
-import org.team9140.frc2025.generated.TunerConstants;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.*;
-
-import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 
 public class Constants {
-    public static class Ports {
-        public static final int ELEVATOR_MOTOR = 5;
-        public static final int MANIPULATOR_MOTOR_DEVICE_NUM = 0;
-        public static final int FUNNEL_MOTOR_DEVICE_NUM = 52;
-        public static final int CAN_RANGE_DEVICE_NUM = 0;
 
+    public static final Time LOOP_PERIOD = Milliseconds.of(20.0);
+
+    public static class Ports {
+        public static final int ELEVATOR_MOTOR_LEFT = 10;
+        public static final int ELEVATOR_MOTOR_RIGHT = 11;
+        public static final int MANIPULATOR_MOTOR = 0;
+        public static final int FUNNEL_MOTOR = 13;
+        public static final int CLIMBER_MOTOR = 12;
     }
 
     public static class Drive {
@@ -38,15 +61,23 @@ public class Constants {
     }
 
     public static final Distance REEF_RADIUS = Meters.of(1.5);
-    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0), Meters.of(0.25), new Rotation2d());
+    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
+            Meters.of(0.25), new Rotation2d());
+
+    public static class Funnel {
+
+        public static final Current STATOR_LIMIT = Amps.of(20);
+        public static final Voltage INTAKE_VOLTAGE = Volts.of(6);
+
+    }
 
     public static class Manipulator {
         public static final double HOLD_VOLTAGE_ALGAE = 0;
 
-        public static final double INTAKE_VOLTAGE_CORAL = 10;
+        public static final double INTAKE_VOLTAGE_CORAL = 6;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
 
-        public static final double OUTTAKE_VOLTAGE_CORAL = -10;
+        public static final double OUTTAKE_VOLTAGE_CORAL = 6;
         public static final double OUTTAKE_VOLTAGE_ALGAE = -10;
 
         public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);
@@ -57,41 +88,31 @@ public class Constants {
         public static final double PROXIMITY_THRESHOLD = 0.4;
         public static final double FORWARD_AUTOSET = 0.0;
 
-        public static final int MANIPULATOR_PEAK_CURRENT_LIMIT = 30;
-        public static final int MANIPULATOR_PEAK_CURRENT_DURATION = 100;
-        public static final int MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = 20;
-
-        public static final AngularVelocity FUNNEL_CONTROLLER_VELOCITY = RotationsPerSecond.of(0);
+        public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
+        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(100.0);
+        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(10);
     }
 
     public static final class Elevator {
-        public static final double MASS_KG = Units.lbsToKilograms(20);
-        public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.32) / 2.0; // TODO
-        public static final double MIN_HEIGHT_METERS = 0.08255;
-        public static final double MAX_HEIGHT_METERS = 2.4736437446;
-        public static final int CURRENT_LIMIT = 60;
-        public static final double GEAR_RATIO = 1.0; // TODO: Output : Input
-        public static final Distance SPOOL_RADIUS = Inches.of(1);
-        public static final Angle MOTOR_ROTATIONS_PER_METER = Meters.of(1).div(SPOOL_RADIUS.times(Math.TAU)).times(Rotations.of(1 / GEAR_RATIO));
-        public static final Angle INITIAL_VARIANCE = Degrees.of(5);
-        public static final double P = 26; // TODO
-        public static final double I = 0; // TODO
-        public static final double D = 1.54; // TODO
-        public static final double S = 0.14178; // TODO
-        public static final double V = 0.94316; // TODO
-        public static final double A = 0.07; // TODO
-        public static final AngularVelocity CRUISE_VELOCITY = RadiansPerSecond.of(24); // TODO
-        public static final AngularAcceleration ACCELERATION = RadiansPerSecondPerSecond.of(36); // TODO
+        public static final Mass mass = Pounds.of(15.0);
+
+        public static final Distance MIN_HEIGHT = Inches.of(0);
+        public static final Distance MAX_HEIGHT = Inches.of(90);
+
+        public static final Current STATOR_LIMIT = Amps.of(100.0);
+
+        public static final double GEAR_RATIO = 60.0 / 12.0;
+        public static final Distance SPOOL_RADIUS = Inches.of(0.75);
+        public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
+
+        public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
+                .of(Meters.of(20.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+        public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
+                .of(Meters.of(80.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
-        public static Distance AlgeDistance = Inches.of(15.023710); //distance from center of algae to ground in base position
-        public static Distance CoralDistance = Inches.of(1.859); //distance from bottom of coral to ground in robot in base position
+
         public static Distance BOTTOM = Inches.of(0);
-        public static Distance L1 = Inches.of((18 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L2 = Inches.of((31.218618 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance Algae1 = Inches.of((36.243068 - AlgeDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L3 = Inches.of((46.433366  - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance Algae2 = Inches.of((52.365322 - AlgeDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
-        public static Distance L4 = Inches.of((71.994600 - CoralDistance.in(Inches)) / Math.sin(ElevatorAngle.in(Radians)));
+
     }
 }
