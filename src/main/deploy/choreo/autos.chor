@@ -4,32 +4,47 @@
  "type":"Swerve",
  "variables":{
   "expressions":{},
-  "poses":{}
+  "poses":{
+   "outer":{
+    "x":{
+     "exp":"7.125 m",
+     "val":7.125
+    },
+    "y":{
+     "exp":"7.581 m",
+     "val":7.581
+    },
+    "heading":{
+     "exp":"-PI rad",
+     "val":-3.141592653589793
+    }
+   }
+  }
  },
  "config":{
   "frontLeft":{
    "x":{
-    "exp":"10 in",
-    "val":0.254
+    "exp":"11.875 in",
+    "val":0.301625
    },
    "y":{
-    "exp":"10 in",
-    "val":0.254
+    "exp":"11.875 in",
+    "val":0.301625
    }
   },
   "backLeft":{
    "x":{
-    "exp":"-10 in",
-    "val":-0.254
+    "exp":"-11.875 in",
+    "val":-0.301625
    },
    "y":{
-    "exp":"10 in",
-    "val":0.254
+    "exp":"11.875 in",
+    "val":0.301625
    }
   },
   "mass":{
-   "exp":"50 lbs",
-   "val":22.6796185
+   "exp":"130 lbs",
+   "val":58.9670081
   },
   "inertia":{
    "exp":"6 kg m ^ 2",
@@ -40,8 +55,8 @@
    "val":7.363636363636365
   },
   "radius":{
-   "exp":"2.167 in",
-   "val":0.055041799999999995
+   "exp":"2 in",
+   "val":0.0508
   },
   "vmax":{
    "exp":"6000 RPM",
@@ -57,16 +72,16 @@
   },
   "bumper":{
    "front":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"18 in",
+    "val":0.4572
    },
    "side":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"18 in",
+    "val":0.4572
    },
    "back":{
-    "exp":"16 in",
-    "val":0.4064
+    "exp":"18 in",
+    "val":0.4572
    }
   },
   "differentialTrackWidth":{
