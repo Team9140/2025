@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
@@ -29,7 +30,6 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
-
 
 public class Constants {
 
@@ -59,9 +59,9 @@ public class Constants {
         public static final Pose2d REEF_RED = new Pose2d(13.058775, 4.0259, new Rotation2d());
     }
 
-    public static final Distance REEF_RADIUS = Meters.of(1.5);
+    public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2)); // TODO: Real robot size
     public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
-            Meters.of(0.25), new Rotation2d());
+            Inches.of(13).div(2), new Rotation2d());
 
             
     public static class Funnel {

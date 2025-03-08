@@ -52,7 +52,7 @@ public class Manipulator extends SubsystemBase {
     }
 
     public Command turnOff() {
-        return this.setVoltage(0).withName("off");
+        return this.runOnce(() -> this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, 0)).withName("off");
     }
 
     public Command intakeCoral() {
