@@ -11,8 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import org.team9140.frc2025.Constants;
 
-import java.util.Optional;
-
 import static edu.wpi.first.units.Units.*;
 
 // TODO: Shuffleboard
@@ -112,61 +110,5 @@ public class AutoAiming {
 
             return branches[6 + (int) (angle / 60)];
         }
-    }
-
-    public static Pose2d snapPose(Pose2d currentPose, boolean left) {
-        return null;
-    }
-
-
-    public static int reefTagFromPose(Pose2d pose) {
-        return getClosestFace(pose.getTranslation()).getTagId();
-    }
-
-    public static Optional<Pose2d> snapPose(int tagID, int level, boolean left) {
-        
-        // find pose of tag from id#
-        // need it as a pose2d with the Z removed
-
-        Optional<Pose3d> tagPose3D = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark)
-                .getTagPose(tagID);
-
-        if (tagPose3D.isPresent()) {
-            Pose2d tagPose = tagPose3D.get().toPose2d();
-
-            Translation2d offset = new Translation2d();
-
-            if (left) {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
-                    default -> offset;
-                };
-            } else {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
-                    default -> offset;
-                };
-            }
-
-            // offset = offset.rotateBy(tagPose.getRotation());
-
-            // tagPose = tagPose.rotateBy(new Rotation2d(Math.PI));
-
-            Translation2d tagXY = tagPose.getTranslation();
-
-            Translation2d newPoint = tagXY.plus(offset.rotateBy(tagPose.getRotation()));
-
-            // add rotated offset to tag pose
-            return Optional.of(new Pose2d(newPoint, tagPose.getRotation().plus(new Rotation2d(Math.PI))));
-        } else {
-            return Optional.empty();
-        }
-
     }
 }

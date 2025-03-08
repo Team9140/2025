@@ -48,7 +48,7 @@ public class Constants {
         public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.0375);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.005);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(1);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
@@ -117,7 +117,7 @@ public class Constants {
         public static Distance L1_coral_height = Inches.of(24);
         public static Distance L2_coral_height = Inches.of(30);
         public static Distance L3_coral_height = Inches.of(46);
-        public static Distance L4_coral_height = Inches.of(73.5);
+        public static Distance L4_coral_height = Inches.of(72);
     }
 
     public static final class AutoAlign {
@@ -127,7 +127,7 @@ public class Constants {
         private static final Distance L1setback = Inches.of(18.0);
         private static final Distance L2setback = Inches.of(18.0); // wall bump
         private static final Distance L3setback = Inches.of(18.0 + 4.0); // 4 inch behind wall
-        private static final Distance L4setback = Inches.of(18.0 + 11.0); // 11 inch behind wall
+        private static final Distance L4setback = Inches.of(18.0 + 10.0); // 11 inch behind wall
 
         // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
         // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot

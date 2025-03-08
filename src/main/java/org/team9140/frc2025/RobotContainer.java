@@ -108,9 +108,9 @@ public class RobotContainer {
     }
 
     private boolean stickInput() {
-        return Math.abs(this.controller.getLeftX()) > 0.25
-                || Math.abs(this.controller.getLeftY()) > 0.25
-                || Math.abs(this.controller.getRightX()) > 0.25;
+        return Math.abs(this.controller.getLeftX()) > 0.75
+                || Math.abs(this.controller.getLeftY()) > 0.75
+                || Math.abs(this.controller.getRightX()) > 0.75;
     }
 
     private void configureBindings() {
@@ -127,22 +127,44 @@ public class RobotContainer {
         controller.leftBumper()
                 .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
 
-        controller.y().onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height).withName("go to L4"));
-        controller.b().onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height).withName("go to L3"));
-        controller.a().onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height).withName("go to L2"));
-        controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height).withName("go to stow"));
+        this.controller.y().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(4, true)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                        .until(this::stickInput));
+        this.controller.y().and(this.controller.povRight())
+                .onTrue(this.drivetrain.coralReefDrive(4, false)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                        .until(this::stickInput));
+        this.controller.y().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
 
-        controller.povLeft().onTrue(new PrintCommand("snap L"));
-        controller.povRight().onTrue(new PrintCommand("snap R"));
+        this.controller.b().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(3, true)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                        .until(this::stickInput));
+        this.controller.b().and(this.controller.povRight())
+                .onTrue(this.drivetrain.coralReefDrive(3, false)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                        .until(this::stickInput));
+        this.controller.b().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+
+        this.controller.a().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(2, true)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                        .until(this::stickInput));
+        this.controller.a().and(this.controller.povRight())
+                .onTrue(this.drivetrain.coralReefDrive(2, false)
+                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                        .until(this::stickInput));
+        this.controller.a().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+
+        this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
-
-        this.controller.y().and(this.controller.povLeft()).onTrue(new PrintCommand("make snap").until(this::stickInput));
-        // y + right
-        // b + left/right
-        // a + left/right
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));

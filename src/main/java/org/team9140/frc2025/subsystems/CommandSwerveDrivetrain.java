@@ -13,6 +13,7 @@ import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.team9140.frc2025.Constants;
@@ -33,9 +34,14 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -61,7 +67,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     Field2d dashField2d = new Field2d();
-    Field2d targetPoseLeft = new Field2d();
 
     private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
@@ -82,12 +87,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
         this.centric.HeadingController = headingController;
 
-        SmartDashboard.putData(dashField2d);
-        SmartDashboard.putData(targetPoseLeft);
+        SmartDashboard.putData("field", dashField2d);
+
+        SmartDashboard.putNumberArray("drive target pose", new double[]{0, 0, 0});
     }
-
-
-    
 
     @Override
     public void periodic() {
@@ -97,12 +100,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
                 + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
 
-        SmartDashboard.putNumber("closest tag num", AutoAiming.reefTagFromPose(this.getState().Pose));
-
         dashField2d.setRobotPose(this.getState().Pose);
         this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
-        // targetPoseLeft.setRobotPose(AutoAiming.snapPose(AutoAiming.reefTagFromPose(this.getState().Pose), 4, true).orElse(new Pose2d()));
-        targetPoseLeft.setRobotPose(AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getPose());
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
@@ -134,7 +133,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return;
             }
 
-            if (this.getState().Speeds.vxMetersPerSecond <= 0.25 && this.getState().Speeds.vxMetersPerSecond <= 0.25) {
+            if (Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25 && Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25) {
                 xyStdDev = 2.0;
             } else {
                 xyStdDev = 5.0;
@@ -177,6 +176,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> {
             Pose2d target = poses.get();
 
+            SmartDashboard.putNumberArray("drive target pose", new double[]{target.getX(), target.getY(), target.getRotation().getRadians()});
+
+            SignalLogger.writeDoubleArray("drive target pose", new double[]{target.getX(), target.getY(), target.getRotation().getRadians()});
+
             if (target == null)
                 return;
 
@@ -191,22 +194,63 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
-    public Command reefDrive(BooleanSupplier goLeft, BooleanSupplier goRight) {
+    // public Command reefDrive(int level, IntSupplier which) {
+    //     return this.goToPose(() -> {
+    //         Pose2d target = this.closestFace.getPose();
+    //         boolean left = goLeft.getAsBoolean();
+    //         boolean right = goRight.getAsBoolean();
+
+    //         if (left && !this.closestFace.isFar() || right && this.closestFace.isFar()) {
+    //             target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER);
+    //         }
+
+    //         if (right && !this.closestFace.isFar() || left && this.closestFace.isFar()) {
+    //             target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(-1));
+    //         }
+
+    //         return target;
+    //     });
+    // }
+
+    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+
+    public Command coralReefDrive(int level, boolean lefty) {
         return this.goToPose(() -> {
-            Pose2d target = this.closestFace.getPose();
-            boolean left = goLeft.getAsBoolean();
-            boolean right = goRight.getAsBoolean();
-
-            if (left && !this.closestFace.isFar() || right && this.closestFace.isFar()) {
-                target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER);
+            boolean left = lefty;
+            int closestTag = AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getTagId();
+            
+            if (closestTag >= 9 && closestTag <= 11 || closestTag >= 20 && closestTag <= 22) {
+                left = !left;
             }
 
-            if (right && !this.closestFace.isFar() || left && this.closestFace.isFar()) {
-                target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(-1));
+            Pose2d tagXY = layout.getTagPose(closestTag).orElse(new Pose3d()).toPose2d();
+
+            Translation2d offset = new Translation2d();
+
+            if (left) {
+                offset = switch (level) {
+                    case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
+                    case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
+                    case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
+                    case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
+                    default -> offset;
+                };
+            } else {
+                offset = switch (level) {
+                    case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
+                    case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
+                    case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
+                    case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
+                    default -> offset;
+                };
             }
 
-            return target;
+            return tagXY.plus(new Transform2d(offset, new Rotation2d(Math.PI)));
         });
+    }
+
+    public Command algaeReefDrive(int level) {
+        return null;
     }
 
     private double multiplier = 1.0;
@@ -223,7 +267,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.run(() -> {
             var vX = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickY.getAsDouble())).times(this.multiplier);
             var vY = MAX_teleop_velocity.times(Util.applyDeadband(-leftStickX.getAsDouble())).times(this.multiplier);
-            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble())).times(this.multiplier);
+            var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble()))
+                    .times(this.multiplier);
 
             if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
                 vX = vX.unaryMinus();
