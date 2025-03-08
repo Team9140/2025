@@ -56,7 +56,7 @@ public class Funnel extends SubsystemBase {
     }
 
     public Command turnOff() {
-        return this.setVoltage(Volts.of(0)).withName("off");
+        return this.runOnce(() -> this.motor.setControl(output.withOutput(Volts.of(0)))).withName("off");
     }
 
     public Command intakeCoral() {

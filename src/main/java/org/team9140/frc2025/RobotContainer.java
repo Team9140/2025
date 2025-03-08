@@ -5,7 +5,6 @@
 
 package org.team9140.frc2025;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
@@ -102,7 +101,6 @@ public class RobotContainer {
 
         limeA.setIMUMode(1);
         limeB.setIMUMode(1);
-        this.autonomousCommand = AutonomousRoutines.oneCoral(drivetrain);
 
         configureBindings();
     }
@@ -216,6 +214,8 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () -> 0).repeatedly().withTimeout(3.0);
+//        return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () -> 0).repeatedly().withTimeout(3.0);
+        AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
+        return routines.threeCoral();
     }
 }
