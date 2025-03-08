@@ -111,6 +111,8 @@ public class RobotContainer {
                 || Math.abs(this.controller.getRightX()) > 0.75;
     }
 
+    private Trigger exitAutoAlign = new Trigger(this::stickInput);
+
     private void configureBindings() {
         this.candle.setDefaultCommand(this.candle.solidAllianceColor());
 
@@ -128,10 +130,14 @@ public class RobotContainer {
         this.controller.y().and(this.controller.povLeft())
                 .onTrue(this.drivetrain.coralReefDrive(4, true)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 4L")
                         .until(this::stickInput));
         this.controller.y().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(4, false)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 4R")
                         .until(this::stickInput));
         this.controller.y().and(this.controller.povCenter())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
@@ -139,10 +145,14 @@ public class RobotContainer {
         this.controller.b().and(this.controller.povLeft())
                 .onTrue(this.drivetrain.coralReefDrive(3, true)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 3L")
                         .until(this::stickInput));
         this.controller.b().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(3, false)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 3R")
                         .until(this::stickInput));
         this.controller.b().and(this.controller.povCenter())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
@@ -150,10 +160,14 @@ public class RobotContainer {
         this.controller.a().and(this.controller.povLeft())
                 .onTrue(this.drivetrain.coralReefDrive(2, true)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 2L")
                         .until(this::stickInput));
         this.controller.a().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(2, false)
                         .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
+                        .withName("coral auto score 2R")
                         .until(this::stickInput));
         this.controller.a().and(this.controller.povCenter())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
@@ -163,6 +177,10 @@ public class RobotContainer {
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
+
+        this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
+
+        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, 0.1, 0.5));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));

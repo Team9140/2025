@@ -17,11 +17,11 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.Util;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.lib.SysIdRoutineTorqueCurrent;
+import org.team9140.lib.Util;
 import org.team9140.lib.VisionMeasurement;
 import org.team9140.lib.swerve.SwerveRequests9140;
 
@@ -51,6 +51,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
@@ -68,7 +69,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     Field2d dashField2d = new Field2d();
 
-    private AutoAiming.ReefFaces closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+    private Pose2d targetPose = new Pose2d();
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -89,19 +90,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         SmartDashboard.putData("field", dashField2d);
 
-        SmartDashboard.putNumberArray("drive target pose", new double[]{0, 0, 0});
+        SmartDashboard.putNumberArray("drive target pose", new double[] { 0, 0, 0 });
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Heading Output", this.headingController.getLastAppliedOutput());
-        SmartDashboard.putNumber("X Output", this.m_pathXController.getLastAppliedOutput());
-        SmartDashboard.putNumber("Y Output", this.m_pathYController.getLastAppliedOutput());
-        SmartDashboard.putNumber("Linear Output", Math.sqrt(Math.pow(this.m_pathXController.getLastAppliedOutput(), 2)
-                + Math.pow(this.m_pathYController.getLastAppliedOutput(), 2)));
-
         dashField2d.setRobotPose(this.getState().Pose);
-        this.closestFace = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
+
+        SignalLogger.writeString("drivetrain command", this.getCurrentCommand().toString());
+        SmartDashboard.putString("drivetrain command", this.getCurrentCommand().toString());
+
+        if (this.targetPose != null) {
+            SmartDashboard.putNumberArray("drive target pose", new double[] { this.targetPose.getX(),
+                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
+            SignalLogger.writeDoubleArray("drive target pose", new double[] { this.targetPose.getX(),
+                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
+        } else {
+            SmartDashboard.putNumberArray("drive target pose", new double[] { -1, -1, -1 });
+            SignalLogger.writeDoubleArray("drive target pose", new double[] { -1, -1, -1 });
+        }
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
@@ -133,7 +140,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return;
             }
 
-            if (Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25 && Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25) {
+            if (Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25
+                    && Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25) {
                 xyStdDev = 2.0;
             } else {
                 xyStdDev = 5.0;
@@ -174,43 +182,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public Command goToPose(Supplier<Pose2d> poses) {
         return this.run(() -> {
-            Pose2d target = poses.get();
+            this.targetPose = poses.get();
 
-            SmartDashboard.putNumberArray("drive target pose", new double[]{target.getX(), target.getY(), target.getRotation().getRadians()});
-
-            SignalLogger.writeDoubleArray("drive target pose", new double[]{target.getX(), target.getY(), target.getRotation().getRadians()});
-
-            if (target == null)
+            if (this.targetPose == null)
                 return;
 
             Pose2d pose = getState().Pose;
-
             double currentTime = Utils.getCurrentTimeSeconds();
-
             this.setControl(this.centric
-                    .withTargetDirection(target.getRotation())
-                    .withVelocityX(m_pathXController.calculate(pose.getX(), target.getX(), currentTime))
-                    .withVelocityY(m_pathYController.calculate(pose.getY(), target.getY(), currentTime)));
+                    .withTargetDirection(this.targetPose.getRotation())
+                    .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
+                    .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
         });
     }
 
-    // public Command reefDrive(int level, IntSupplier which) {
-    //     return this.goToPose(() -> {
-    //         Pose2d target = this.closestFace.getPose();
-    //         boolean left = goLeft.getAsBoolean();
-    //         boolean right = goRight.getAsBoolean();
-
-    //         if (left && !this.closestFace.isFar() || right && this.closestFace.isFar()) {
-    //             target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER);
-    //         }
-
-    //         if (right && !this.closestFace.isFar() || left && this.closestFace.isFar()) {
-    //             target = target.plus(Constants.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(-1));
-    //         }
-
-    //         return target;
-    //     });
-    // }
+    public final Trigger reachedPose = new Trigger(
+            () -> this.targetPose != null
+                    && !this.targetPose.equals(new Pose2d())
+                    && Util.epsilonEquals(this.targetPose, this.getState().Pose));
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
@@ -218,7 +207,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.goToPose(() -> {
             boolean left = lefty;
             int closestTag = AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getTagId();
-            
+
             if (closestTag >= 9 && closestTag <= 11 || closestTag >= 20 && closestTag <= 22) {
                 left = !left;
             }
@@ -279,7 +268,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withVelocityX(vX)
                     .withVelocityY(vY)
                     .withRotationalRate(omega));
-        });
+        }).withName("regular drive");
     }
 
     public Command resetGyroCommand() {
