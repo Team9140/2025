@@ -16,21 +16,14 @@ import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.frc2025.subsystems.Funnel;
 import org.team9140.frc2025.subsystems.LimeLight;
 import org.team9140.frc2025.subsystems.Manipulator;
-import org.team9140.lib.FollowPath;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
-    private Command autonomousCommand = Commands.print("No autonomous sequence has been set.");
-
-    private FollowPath path;
-
     private final CommandXboxController controller = new CommandXboxController(0);
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
     private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));

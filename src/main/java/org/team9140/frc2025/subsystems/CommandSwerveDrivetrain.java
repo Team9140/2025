@@ -11,9 +11,7 @@ import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.team9140.frc2025.Constants;

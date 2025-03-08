@@ -59,7 +59,7 @@ public class Constants {
         public static final Pose2d REEF_RED = new Pose2d(13.058775, 4.0259, new Rotation2d());
     }
 
-    public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2)); // TODO: Real robot size
+    public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2));
     public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
             Inches.of(13).div(2), new Rotation2d());
 
