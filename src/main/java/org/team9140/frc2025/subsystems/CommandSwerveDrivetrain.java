@@ -95,8 +95,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
-        SignalLogger.writeString("drivetrain command", this.getCurrentCommand().toString());
-        SmartDashboard.putString("drivetrain command", this.getCurrentCommand().toString());
+        SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
+
+        if (this.getCurrentCommand() != null) {
+            SignalLogger.writeString("drivetrain command", this.getCurrentCommand().getName());
+            SmartDashboard.putString("drivetrain command", this.getCurrentCommand().getName());
+        } else {
+            SignalLogger.writeString("drivetrain command", "N/A");
+            SmartDashboard.putString("drivetrain command", "N/A");
+        }
 
         if (this.targetPose != null) {
             SmartDashboard.putNumberArray("drive target pose", new double[] { this.targetPose.getX(),
@@ -233,7 +240,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
 
             return tagXY.plus(new Transform2d(offset, new Rotation2d(Math.PI)));
-        });
+        }).withName("coral drive");
     }
 
     public Command algaeReefDrive(int level) {
@@ -243,11 +250,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double multiplier = 1.0;
 
     public Command engageSlowMode() {
-        return this.runOnce(() -> this.multiplier = 0.5);
+        return this.runOnce(() -> this.multiplier = 0.5).asProxy();
     }
 
     public Command disengageSlowMode() {
-        return this.runOnce(() -> this.multiplier = 1.0);
+        return this.runOnce(() -> this.multiplier = 1.0).asProxy();
     }
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
@@ -267,6 +274,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     .withVelocityY(vY)
                     .withRotationalRate(omega));
         }).withName("regular drive");
+    }
+
+    public Command stop() {
+        return this.runOnce(() -> this.setControl(new SwerveRequest.Idle()));
     }
 
     public Command resetGyroCommand() {

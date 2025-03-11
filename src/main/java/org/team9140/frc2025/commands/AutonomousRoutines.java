@@ -17,7 +17,8 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
-    private static final Time INTAKE_TIME = Seconds.of(1);
+    private static final Time INTAKE_TIME = Seconds.of(2);
+    private static final Time THROW_TIME = Seconds.of(0.5);
     private final CommandSwerveDrivetrain drivetrain;
     private final DriverStation.Alliance alliance;
 
@@ -30,24 +31,30 @@ public class AutonomousRoutines {
         this.drivetrain = drivetrain;
         this.alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
         this.SCORE_CORAL_L4 = () -> Elevator.getInstance().moveToPosition(Constants.Elevator.L4_coral_height)
-                .andThen(new WaitCommand(3.0).deadlineFor(Manipulator.getInstance().outtakeCoral()));
+                .andThen(new WaitCommand(2.0))
+                .andThen(Manipulator.getInstance().outtakeCoral().withTimeout(THROW_TIME));
         this.RESET_ARM = () -> Manipulator.getInstance().turnOff()
                 .andThen(Elevator.getInstance().moveToPosition(Constants.Elevator.STOW_height));
-        this.INTAKE_CORAL = () -> new WaitCommand(INTAKE_TIME)
-                .deadlineFor(Manipulator.getInstance().intakeCoral().alongWith(Funnel.getInstance().intakeCoral()));
+        this.INTAKE_CORAL = () -> Manipulator.getInstance().intakeCoral()
+                .alongWith(Funnel.getInstance().intakeCoral())
+                .withTimeout(INTAKE_TIME);
         this.STOP_INTAKE = () -> Manipulator.getInstance().turnOff().alongWith(Funnel.getInstance().turnOff());
     }
 
     public Command oneCoral() {
         FollowPath path = new FollowPath("oneCoral", drivetrain, alliance);
         return path.gimmeCommand()
+                .andThen(this.drivetrain.stop())
+                .andThen(new PrintCommand("finished path"))
+                .andThen(drivetrain.coralReefDrive(4, false).withName("final alignment")).withTimeout(Seconds.of(2))
+                .andThen(drivetrain.stop())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get())
-                .andThen(new PrintCommand("test"));
+                .andThen(new PrintCommand("done scoring 1 coral"));
     }
 
     public Command oneCoralFeed() {
-        return oneCoral().andThen(hToFeed());
+        return oneCoral().andThen(hToFeed()).andThen(drivetrain.stop());
     }
 
     public Command hToFeed() {
@@ -56,20 +63,29 @@ public class AutonomousRoutines {
     }
 
     public Command threeCoral() {
-        FollowPath feedToD = new FollowPath("feedToD", drivetrain, alliance);
-        FollowPath dToFeed = new FollowPath("dToFeed", drivetrain, alliance);
-        FollowPath feedToC = new FollowPath("feedToC", drivetrain, alliance);
+        FollowPath feedToCloseRight = new FollowPath("feedToCloseRight", drivetrain, alliance);
+        FollowPath closeRightToFeed = new FollowPath("closeRightToFeed", drivetrain, alliance);
 
         return oneCoralFeed()
                 .andThen(STOP_INTAKE.get())
-                .andThen(feedToD.gimmeCommand())
+                .andThen(feedToCloseRight.gimmeCommand())
+                .andThen(drivetrain.coralReefDrive(4, true).until(drivetrain.reachedPose::getAsBoolean)
+                        .withName("final alignment"))
+                .andThen(this.drivetrain.stop())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get())
-                .andThen(dToFeed.gimmeCommand())
+                .andThen(closeRightToFeed.gimmeCommand())
                 .andThen(INTAKE_CORAL.get())
                 .andThen(STOP_INTAKE.get())
-                .andThen(feedToC.gimmeCommand())
+                .andThen(feedToCloseRight.gimmeCommand())
+                .andThen(drivetrain.coralReefDrive(4, false).until(drivetrain.reachedPose::getAsBoolean)
+                        .withName("final alignment"))
+                .andThen(this.drivetrain.stop())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get());
+    }
+
+    public Command testScore() {
+        return this.SCORE_CORAL_L4.get().andThen(this.RESET_ARM.get());
     }
 }

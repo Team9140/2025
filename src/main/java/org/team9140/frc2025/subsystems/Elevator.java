@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.Constants.Ports;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -31,7 +32,6 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Elevator extends SubsystemBase {
@@ -43,13 +43,13 @@ public class Elevator extends SubsystemBase {
     private Distance targetPosition;
 
     private final ElevatorSim elevatorSim = new ElevatorSim(
-            DCMotor.getKrakenX60(2),
-            Constants.Elevator.GEAR_RATIO,
+            DCMotor.getKrakenX60(20),
+            Constants.Elevator.GEAR_RATIO * 10,
             Constants.Elevator.mass.in(Kilograms),
             Constants.Elevator.SPOOL_RADIUS.in(Meters),
             Constants.Elevator.MIN_HEIGHT.in(Meters),
             Constants.Elevator.MAX_HEIGHT.in(Meters),
-            true,
+            false,
             Constants.Elevator.STOW_height.in(Meters));
 
     private Elevator() {
@@ -120,6 +120,7 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Voltage", leftMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("Elevator Current", leftMotor.getStatorCurrent().getValueAsDouble());
         SmartDashboard.putNumber("Elevator raw position", leftMotor.getPosition().getValueAsDouble());
+        SmartDashboard.putBoolean("Elevator at target", this.atPosition.getAsBoolean());
         // SmartDashboard.putNumber("error",
         // this.leftMotor.getClosedLoopError().getValueAsDouble());
     }
@@ -153,9 +154,9 @@ public class Elevator extends SubsystemBase {
             this.targetPosition = goalPosition;
             this.leftMotor.setControl(this.motionMagic.withPosition(
                     this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
-        }).andThen(new WaitUntilCommand(
-                () -> this.getPosition().isNear(goalPosition, Constants.Elevator.POSITION_epsilon)));
+        });
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Inches.of(12)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Inches.of(6)));
+    public final Trigger atPosition = new Trigger(() -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon) || Robot.isSimulation());
 }

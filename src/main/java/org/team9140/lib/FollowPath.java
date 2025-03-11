@@ -5,6 +5,7 @@ import static org.team9140.lib.Util.rotationEpsilonEquals;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 
 import choreo.Choreo;
@@ -39,7 +40,9 @@ public class FollowPath {
     private boolean active = false;
 
     public FollowPath(String name, CommandSwerveDrivetrain drivetrain, DriverStation.Alliance alliance) {
-        Choreo.<SwerveSample>loadTrajectory(name).ifPresent(trajectory -> this.trajectory = alliance.equals(DriverStation.Alliance.Blue) ? trajectory : trajectory.flipped());
+        Choreo.<SwerveSample>loadTrajectory(name)
+                .ifPresent(trajectory -> this.trajectory = alliance.equals(DriverStation.Alliance.Blue) ? trajectory
+                        : trajectory.flipped());
         this.drive = drivetrain;
 
         this.loop = new EventLoop();
@@ -50,11 +53,13 @@ public class FollowPath {
 
         this.activeTrigger = new Trigger(loop, () -> this.active);
 
-        NetworkTableInstance.getDefault().getStructArrayTopic("trajectory", Pose2d.struct).publish().set(this.trajectory.getPoses());
+        NetworkTableInstance.getDefault().getStructArrayTopic("trajectory", Pose2d.struct).publish()
+                .set(this.trajectory.getPoses());
 
-        for(EventMarker e : this.trajectory.events()) {
+        for (EventMarker e : this.trajectory.events()) {
             if (this.eventtimes.containsKey(e.event))
-                ChoreoAlert.alert("YO MR. HICE SPICE SAYS NOT TO HAVE TWO EVENTS WITH THE SAME NAME, goofus.", Alert.AlertType.kWarning);
+                ChoreoAlert.alert("YO MR. HICE SPICE SAYS NOT TO HAVE TWO EVENTS WITH THE SAME NAME, goofus.",
+                        Alert.AlertType.kWarning);
 
             this.eventtimes.put(e.event, atTime(e.timestamp));
             System.out.println("Added event " + e.event + " at time " + e.timestamp);
@@ -86,12 +91,10 @@ public class FollowPath {
                 loop,
                 () -> {
                     final Pose2d currentPose = this.drive.getState().Pose;
-                    boolean transValid =
-                            currentPose.getTranslation().getDistance(pose.getTranslation())
-                                    < toleranceMeters;
-                    boolean rotValid =
-                            rotationEpsilonEquals(
-                                    currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+                    boolean transValid = currentPose.getTranslation()
+                            .getDistance(pose.getTranslation()) < toleranceMeters;
+                    boolean rotValid = rotationEpsilonEquals(
+                            currentPose.getRotation(), pose.getRotation(), toleranceRadians);
                     return transValid && rotValid;
                 })
                 .and(activeTrigger);
@@ -123,9 +126,16 @@ public class FollowPath {
         return this.trajectory.getInitialPose(false).get();
     }
 
+    public Pose2d getFinalPose() {
+        return this.trajectory.getFinalPose(false).get();
+    }
+
     public Command gimmeCommand() {
         return this.drive.goToPose(() -> this.targetPose).raceWith(new FunctionalCommand(
                 () -> {
+                    if (Robot.isSimulation()) {
+                        this.drive.resetPose(this.getInitialPose());
+                    }
                     this.timer.restart();
                     this.active = true;
                 },
@@ -141,7 +151,6 @@ public class FollowPath {
                     this.targetPose = this.drive.getState().Pose;
                     this.active = false;
                 },
-                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())
-        ));
+                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())));
     }
 }

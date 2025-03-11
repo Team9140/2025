@@ -48,9 +48,9 @@ public class Constants {
         public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.005);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.06);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(1);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
     }
 
@@ -93,7 +93,7 @@ public class Constants {
     }
 
     public static final class Elevator {
-        public static final Mass mass = Pounds.of(15.0);
+        public static final Mass mass = Pounds.of(0.1);
 
         public static final Current STATOR_LIMIT = Amps.of(50.0);
 
@@ -118,6 +118,8 @@ public class Constants {
         public static Distance L2_coral_height = Inches.of(30);
         public static Distance L3_coral_height = Inches.of(46);
         public static Distance L4_coral_height = Inches.of(72);
+
+        public static Distance L3_ALGAE_height = Inches.of(39);
     }
 
     public static final class AutoAlign {

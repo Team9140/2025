@@ -99,9 +99,9 @@ public class RobotContainer {
     }
 
     private boolean stickInput() {
-        return Math.abs(this.controller.getLeftX()) > 0.75
-                || Math.abs(this.controller.getLeftY()) > 0.75
-                || Math.abs(this.controller.getRightX()) > 0.75;
+        return Math.abs(this.controller.getLeftX()) > 0.35
+                || Math.abs(this.controller.getLeftY()) > 0.35
+                || Math.abs(this.controller.getRightX()) > 0.35;
     }
 
     private Trigger exitAutoAlign = new Trigger(this::stickInput);
@@ -120,56 +120,54 @@ public class RobotContainer {
         controller.leftBumper()
                 .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
 
-        this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(4, true)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 4L")
-                        .until(this::stickInput));
+
         this.controller.y().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(4, false)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 4R")
-                        .until(this::stickInput));
-        this.controller.y().and(this.controller.povCenter())
+                .onTrue(this.drivetrain.coralReefDrive(4, false).until(this::stickInput).withName("high coral R"));
+        this.controller.y().and(this.controller.povRight())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
 
-        this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(3, true)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 3L")
-                        .until(this::stickInput));
+        this.controller.y().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(4, true).until(this::stickInput));
+        this.controller.y().and(this.controller.povLeft())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+
+
+
+
+
         this.controller.b().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(3, false)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 3R")
-                        .until(this::stickInput));
-        this.controller.b().and(this.controller.povCenter())
+                .onTrue(this.drivetrain.coralReefDrive(3, false).until(this::stickInput));
+        this.controller.b().and(this.controller.povRight())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
 
-        this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(2, true)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 2L")
-                        .until(this::stickInput));
+        this.controller.b().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(3, true).until(this::stickInput));
+        this.controller.b().and(this.controller.povLeft())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+
+        this.controller.b().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_ALGAE_height));
+
+
+
+
         this.controller.a().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(2, false)
-                        .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
-                        .alongWith(this.candle.changeColors(Canndle.PURPLE, Canndle.OFF, 0.1))
-                        .withName("coral auto score 2R")
-                        .until(this::stickInput));
-        this.controller.a().and(this.controller.povCenter())
+                .onTrue(this.drivetrain.coralReefDrive(2, false).until(this::stickInput));
+        this.controller.a().and(this.controller.povRight())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+
+        this.controller.a().and(this.controller.povLeft())
+                .onTrue(this.drivetrain.coralReefDrive(2, true).until(this::stickInput));
+        this.controller.a().and(this.controller.povLeft())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+
+
 
         this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
-        this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
+        // this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
@@ -225,8 +223,9 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-//        return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () -> 0).repeatedly().withTimeout(3.0);
+        // return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () ->
+        // 0).repeatedly().withTimeout(3.0);
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.threeCoral();
+        return routines.oneCoralFeed();
     }
 }

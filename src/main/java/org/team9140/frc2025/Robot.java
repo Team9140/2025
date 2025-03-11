@@ -35,10 +35,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
+        
     }
 
     @Override
     public void disabledPeriodic() {
+        
     }
 
     @Override
@@ -52,6 +54,8 @@ public class Robot extends TimedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
         }
+
+        SignalLogger.start();
     }
 
     @Override
