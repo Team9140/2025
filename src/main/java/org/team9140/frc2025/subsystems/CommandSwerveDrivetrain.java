@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -96,6 +97,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         dashField2d.setRobotPose(this.getState().Pose);
 
         SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
+        SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
+        SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
+        SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
 
         if (this.getCurrentCommand() != null) {
             SignalLogger.writeString("drivetrain command", this.getCurrentCommand().getName());
@@ -250,11 +254,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double multiplier = 1.0;
 
     public Command engageSlowMode() {
-        return this.runOnce(() -> this.multiplier = 0.5).asProxy();
+        // intentionally don't require subsystem
+        return Commands.runOnce(() -> this.multiplier = 0.5);
     }
 
     public Command disengageSlowMode() {
-        return this.runOnce(() -> this.multiplier = 1.0).asProxy();
+        // intentionally don't require subsystem
+        return Commands.runOnce(() -> this.multiplier = 1.0);
     }
 
     public Command teleopDrive(DoubleSupplier leftStickX, DoubleSupplier leftStickY, DoubleSupplier rightStickX) {
@@ -300,7 +306,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     null,
                     this));
 
-    // put back routine for tuning drive motors
+    private final SwerveRequest.SysIdSwerveTranslation m_driveSysID = new SwerveRequest.SysIdSwerveTranslation();
+
+    private final SysIdRoutine m_driveRoutine = new SysIdRoutine(
+            new SysIdRoutine.Config(
+                    Volts.of(1.0).per(Second),
+                    Volts.of(4.0),
+                    Seconds.of(10),
+                    state -> SignalLogger.writeString("sysIdDrive_state", state.toString())),
+            new SysIdRoutine.Mechanism(output -> setControl(m_driveSysID.withVolts(output)), null, this));
 
     // @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -363,11 +377,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command sysIdDriveQ(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineTranslation.quasistatic(direction);
+        return m_driveRoutine.quasistatic(direction);
     }
 
     public Command sysIdDriveD(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineTranslation.dynamic(direction);
+        return m_driveRoutine.dynamic(direction);
     }
 
     private void startSimThread() {
