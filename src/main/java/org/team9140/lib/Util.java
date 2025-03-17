@@ -63,7 +63,11 @@ public class Util {
         return rotationEpsilonEquals(a, b, Math.toRadians(5.0));
     }
 
+    public static boolean epsilonEquals(Translation2d a, Translation2d b, double epsilon) {
+        return epsilonEquals(a.getX(), b.getX(), epsilon) && epsilonEquals(a.getY(), b.getY(), epsilon);
+    }
+
     public static boolean epsilonEquals(Translation2d a, Translation2d b) {
-        return epsilonEquals(a.getX(), b.getX()) && epsilonEquals(a.getY(), b.getY());
+        return epsilonEquals(a, b, EPSILON);
     }
 }
