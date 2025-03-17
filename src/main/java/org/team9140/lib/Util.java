@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
@@ -60,5 +61,9 @@ public class Util {
 
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b) {
         return rotationEpsilonEquals(a, b, Math.toRadians(5.0));
+    }
+
+    public static boolean epsilonEquals(Translation2d a, Translation2d b) {
+        return epsilonEquals(a.getX(), b.getX()) && epsilonEquals(a.getY(), b.getY());
     }
 }
