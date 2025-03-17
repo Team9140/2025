@@ -31,13 +31,13 @@ public class Canndle extends SubsystemBase {
     }
 
     public Command setColor(Color8Bit color) {
-        return this.runOnce(() -> this.candle.setLEDs(color.red, color.green, color.blue));
+        return this.runOnce(() -> this.candle.setLEDs(color.red, color.green, color.blue)).asProxy();
     }
 
     public Command solidAllianceColor() {
         return new ConditionalCommand(this.setColor(RED), this.setColor(BLUE),
                 () -> DriverStation.getAlliance().isPresent()
-                        && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get()));
+                        && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get())).asProxy();
     }
 
     public Color8Bit getAllianceColor() {
@@ -62,6 +62,10 @@ public class Canndle extends SubsystemBase {
 
     public Command blinkColorEndsColor(Color8Bit color, double wait, double timeout) {
         return this.changeColors(color, OFF, wait, timeout, color);
+    }
+
+    public Command blinkColorForever(Color8Bit color, double wait) {
+        return this.changeColorsForever(color, OFF, wait);
     }
 
     public Command switchTwoColorsEndsAlliance(Color8Bit firstColor, Color8Bit secondColor, double wait, double timeout) {
