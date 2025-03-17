@@ -1,18 +1,5 @@
 package org.team9140.frc2025;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
-
 import org.team9140.frc2025.generated.TunerConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -30,6 +17,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+
+import static edu.wpi.first.units.Units.*;
 
 public class Constants {
 
@@ -58,11 +47,6 @@ public class Constants {
         public static final Pose2d REEF_BLUE = new Pose2d(4.48945, 4.0259, new Rotation2d());
         public static final Pose2d REEF_RED = new Pose2d(13.058775, 4.0259, new Rotation2d());
     }
-
-    public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2));
-    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
-            Inches.of(13).div(2), new Rotation2d());
-
             
     public static class Funnel {
         public static final Current STATOR_LIMIT = Amps.of(70);
@@ -122,7 +106,30 @@ public class Constants {
         public static Distance L3_ALGAE_height = Inches.of(39);
     }
 
+    public enum ElevatorHeights {
+        NONE(Inches.of(0)),
+        L1(Inches.of(18.0)),
+        L2(Inches.of(18.0)),
+        L3(Inches.of(18.0 + 4.0)),
+        L4(Inches.of(18.0 + 10.0));
+
+        ElevatorHeights(Distance setback) {
+            this.setbackinator = new Transform2d(setback.unaryMinus(), Meters.of(0), new Rotation2d());
+        }
+
+        private final Transform2d setbackinator;
+
+        public Transform2d getSetbackinator() {
+            return setbackinator;
+        }
+    }
+
     public static final class AutoAlign {
+        public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2));
+
+        public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
+                Inches.of(13).div(2), new Rotation2d());
+
         // gap between two reef branches on the same face
         private static final Distance reefBranchGap = Inches.of(13.0);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
