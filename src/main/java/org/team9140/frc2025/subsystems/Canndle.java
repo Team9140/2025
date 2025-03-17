@@ -1,6 +1,7 @@
 package org.team9140.frc2025.subsystems;
 
 import com.ctre.phoenix.led.CANdle;
+import edu.wpi.first.units.TimeUnit;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,7 +49,7 @@ public class Canndle extends SubsystemBase {
     }
 
     public Command turnOff() {
-        return this.setColor(new Color8Bit(0, 0, 0));
+        return this.setColor(new Color8Bit(0, 0, 0)).asProxy();
     }
 
     public Command blinkColorEndsAlliance(Color8Bit color, double wait, double timeout) {
@@ -92,17 +93,15 @@ public class Canndle extends SubsystemBase {
     }
 
     public Command changeColors(Color8Bit firstColor, Color8Bit secondColor, double wait, double timeout, Color8Bit finalColor) {
-        return this.setColor(firstColor).andThen(Commands.waitSeconds(wait)).andThen(setColor(secondColor)).andThen(Commands.waitSeconds(wait)).repeatedly().withTimeout(timeout).andThen(setColor(finalColor));
-
+        return this.setColor(firstColor).andThen(Commands.waitSeconds(wait)).andThen(setColor(secondColor)).andThen(Commands.waitSeconds(wait)).repeatedly().withTimeout(timeout).andThen(setColor(finalColor)).asProxy();
     }
 
-    public Command changeColors(Color8Bit firstColor, Color8Bit secondColor, double wait) {
-        return this.setColor(firstColor).andThen(Commands.waitSeconds(wait)).andThen(setColor(secondColor)).andThen(Commands.waitSeconds(wait)).repeatedly();
-
+    public Command changeColorsForever(Color8Bit firstColor, Color8Bit secondColor, double wait) {
+        return this.setColor(firstColor).andThen(Commands.waitSeconds(wait)).andThen(setColor(secondColor)).andThen(Commands.waitSeconds(wait)).repeatedly().asProxy();
     }
 
     public Command flashColor(Color8Bit color, double holdTime) {
-        return this.setColor(color).andThen(Commands.waitSeconds(holdTime)).andThen(this.turnOff());
+        return this.setColor(color).andThen(Commands.waitSeconds(holdTime)).andThen(this.turnOff()).asProxy();
     }
 }
 
