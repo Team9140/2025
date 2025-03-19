@@ -178,6 +178,29 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /**
+     * Follows the given field-centric path sample with PID and applies any velocities as feed forwards.
+     *
+     * @param samples Provides samples to execute at any given time.
+     */
+    public Command applySwerveSample(Supplier<SwerveSample> samples) {
+        return this.run(() -> {
+            SwerveSample sample = samples.get();
+            this.targetPose = sample.getPose();
+
+            if (this.targetPose == null)
+                return;
+
+            Pose2d pose = getState().Pose;
+            double currentTime = Utils.getCurrentTimeSeconds();
+            this.setControl(this.drive
+                    .withRotationalRate(sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
+                    .withVelocityX(sample.vx + m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
+                    .withVelocityY(sample.vy + m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
+        });
+    }
+
+
+    /**
      * Follows the given field-centric path sample with PID.
      *
      * @param poses Provides poses to go to at any given time.

@@ -22,6 +22,7 @@ public class AutonomousRoutines {
     private final CommandSwerveDrivetrain drivetrain;
     private final DriverStation.Alliance alliance;
 
+    // TODO: Align while raising elevator
     private final Supplier<Command> SCORE_CORAL_L4;
     private final Supplier<Command> RESET_ARM;
     private final Supplier<Command> INTAKE_CORAL;
@@ -44,17 +45,15 @@ public class AutonomousRoutines {
     public Command oneCoral() {
         FollowPath path = new FollowPath("oneCoral", drivetrain, alliance);
         return path.gimmeCommand()
-                .andThen(this.drivetrain.stop())
                 .andThen(new PrintCommand("finished path"))
-                .andThen(drivetrain.coralReefDrive(4, false).withName("final alignment")).withTimeout(Seconds.of(2))
-                .andThen(drivetrain.stop())
-                .andThen(SCORE_CORAL_L4.get())
+                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("final alignment")).withTimeout(Seconds.of(2))
+                .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("continuous alignment")))
                 .andThen(RESET_ARM.get())
                 .andThen(new PrintCommand("done scoring 1 coral"));
     }
 
     public Command oneCoralFeed() {
-        return oneCoral().andThen(hToFeed()).andThen(drivetrain.stop());
+        return oneCoral().andThen(hToFeed());
     }
 
     public Command hToFeed() {
@@ -69,18 +68,16 @@ public class AutonomousRoutines {
         return oneCoralFeed()
                 .andThen(STOP_INTAKE.get())
                 .andThen(feedToCloseRight.gimmeCommand())
-                .andThen(drivetrain.coralReefDrive(4, true).until(drivetrain.reachedPose::getAsBoolean)
+                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, true).until(drivetrain.reachedPose)
                         .withName("final alignment"))
-                .andThen(this.drivetrain.stop())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get())
                 .andThen(closeRightToFeed.gimmeCommand())
                 .andThen(INTAKE_CORAL.get())
                 .andThen(STOP_INTAKE.get())
                 .andThen(feedToCloseRight.gimmeCommand())
-                .andThen(drivetrain.coralReefDrive(4, false).until(drivetrain.reachedPose::getAsBoolean)
+                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).until(drivetrain.reachedPose)
                         .withName("final alignment"))
-                .andThen(this.drivetrain.stop())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get());
     }

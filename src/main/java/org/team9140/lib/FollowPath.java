@@ -36,7 +36,7 @@ public class FollowPath {
     private final Trigger activeTrigger;
 
     private Trajectory<SwerveSample> trajectory;
-    private Pose2d targetPose;
+    private SwerveSample sample;
     private boolean active = false;
 
     public FollowPath(String name, CommandSwerveDrivetrain drivetrain, DriverStation.Alliance alliance) {
@@ -131,7 +131,9 @@ public class FollowPath {
     }
 
     public Command gimmeCommand() {
-        return this.drive.goToPose(() -> this.targetPose).raceWith(new FunctionalCommand(
+        this.sample = this.trajectory.sampleAt(0, false).get();
+
+        return this.drive.applySwerveSample(() -> this.sample).raceWith(new FunctionalCommand(
                 () -> {
                     if (Robot.isSimulation()) {
                         this.drive.resetPose(this.getInitialPose());
@@ -143,14 +145,12 @@ public class FollowPath {
                     this.loop.poll();
                     Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), false);
                     sample.ifPresent((swerveSample) -> {
-                        this.targetPose = swerveSample.getPose();
-                        this.posePublisher.set(this.targetPose);
+                        this.sample = swerveSample;
+                        this.posePublisher.set(swerveSample.getPose());
                     });
                 },
-                interrupted -> {
-                    this.targetPose = this.drive.getState().Pose;
-                    this.active = false;
-                },
-                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())));
+                interrupted -> this.active = false,
+                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())))
+                .andThen(this.drive.stop());
     }
 }
