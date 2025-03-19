@@ -112,29 +112,33 @@ public class RobotContainer {
 
         drivetrain
                 .setDefaultCommand(
-                        drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
+                        drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
+                                controller::getRightX));
 
         controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
 
         controller.rightBumper().and(elevator.isStowed).whileTrue(
-                this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
+                this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral())
+                        .withName("intake coral"));
         controller.leftBumper()
-                .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
+                .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse())
+                        .withName("unstick coral"));
 
         this.controller.rightBumper().and(elevator.isUp)
                 .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
 
-
         this.controller.y().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(4, false).until(this::stickInput).withName("high coral R"));
-        this.controller.y().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(4, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("high coral R"));
 
         this.controller.y().and(this.controller.povLeft())
                 .onTrue(this.drivetrain.coralReefDrive(4, true).until(this::stickInput));
         this.controller.y().and(this.controller.povLeft())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
-
 
         this.controller.b().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(3, false).until(this::stickInput));
@@ -163,7 +167,7 @@ public class RobotContainer {
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
-        // this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
+        this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
