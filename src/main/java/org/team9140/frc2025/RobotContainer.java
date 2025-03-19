@@ -136,32 +136,38 @@ public class RobotContainer {
                         .withName("high coral R"));
 
         this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(4, true).until(this::stickInput));
-        this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(4, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L4_coral_height))
+                        .until(this::stickInput));
 
         this.controller.b().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(3, false).until(this::stickInput));
-        this.controller.b().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(3, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L3_coral_height))
+                        .until(this::stickInput));
 
         this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(3, true).until(this::stickInput));
-        this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(3, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L3_coral_height))
+                        .until(this::stickInput));
 
         this.controller.b().and(this.controller.povCenter())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_ALGAE_height));
+                .onTrue(this.elevator
+                        .moveToPosition(Constants.Elevator.L3_ALGAE_height));
 
         this.controller.a().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(2, false).until(this::stickInput));
-        this.controller.a().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(2, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L2_coral_height))
+                        .until(this::stickInput));
 
         this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(2, true).until(this::stickInput));
-        this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(2, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L2_coral_height))
+                        .until(this::stickInput));
 
         this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
