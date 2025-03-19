@@ -6,6 +6,7 @@
 package org.team9140.frc2025;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -166,7 +167,7 @@ public class RobotContainer {
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
-        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, 0.1, 0.5));
+        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(0.5)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -201,7 +202,7 @@ public class RobotContainer {
         // // limeC.setIMUMode(1);
         // }));
 
-        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 2.0));
+        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
     }
 
     public void periodic() {
