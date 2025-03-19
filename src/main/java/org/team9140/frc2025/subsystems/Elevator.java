@@ -67,7 +67,7 @@ public class Elevator extends SubsystemBase {
                 .withMotionMagicAcceleration(Constants.Elevator.ACCELERATION);
 
         MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive)
+                .withInverted(InvertedValue.CounterClockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake);
 
         FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
