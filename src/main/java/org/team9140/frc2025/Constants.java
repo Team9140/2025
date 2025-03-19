@@ -106,14 +106,14 @@ public class Constants {
         public static Distance L3_ALGAE_height = Inches.of(39);
     }
 
-    public enum ElevatorHeights {
+    public enum ElevatorSetbacks {
         NONE(Inches.of(0)),
         L1(Inches.of(18.0)),
         L2(Inches.of(18.0)),
         L3(Inches.of(18.0 + 4.0)),
         L4(Inches.of(18.0 + 10.0));
 
-        ElevatorHeights(Distance setback) {
+        ElevatorSetbacks(Distance setback) {
             this.setbackinator = new Transform2d(setback.unaryMinus(), Meters.of(0), new Rotation2d());
         }
 

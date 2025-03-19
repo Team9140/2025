@@ -3,7 +3,7 @@ package org.team9140.frc2025.helpers;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 
-import org.team9140.frc2025.Constants.ElevatorHeights;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.Constants.FieldItemPoses;
 import org.team9140.frc2025.Constants.AutoAlign;
 
@@ -71,17 +71,17 @@ public class AutoAiming {
             this.direction = face.getDirection();
         }
 
-        public Pose2d getCenter(ElevatorHeights height) {
+        public Pose2d getCenter(ElevatorSetbacks height) {
             return this.pose.plus(height.getSetbackinator());
         }
 
-        public Pose2d getLeft(ElevatorHeights height) {
+        public Pose2d getLeft(ElevatorSetbacks height) {
             return this.pose
                     .plus(AutoAlign.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(this.isFar ? -1 : 1))
                     .plus(height.getSetbackinator());
         }
 
-        public Pose2d getRight(ElevatorHeights height) {
+        public Pose2d getRight(ElevatorSetbacks height) {
             return this.pose
                     .plus(AutoAlign.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(this.isFar ? 1 : -1))
                     .plus(height.getSetbackinator());
