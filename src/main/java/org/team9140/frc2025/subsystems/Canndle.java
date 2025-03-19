@@ -38,9 +38,12 @@ public class Canndle extends SubsystemBase {
     }
 
     public Command solidAllianceColor() {
-        return new ConditionalCommand(this.setColor(RED), this.setColor(BLUE),
+        Command command = new ConditionalCommand(this.setColor(RED), this.setColor(BLUE),
                 () -> DriverStation.getAlliance().isPresent()
-                        && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get())).asProxy();
+                        && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get()));
+        command.addRequirements(this);
+        
+        return command;
     }
 
     public Color8Bit getAllianceColor() {
