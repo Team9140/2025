@@ -128,7 +128,7 @@ public class RobotContainer {
                 .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
 
         this.controller.y().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(4, false)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L4_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
@@ -136,7 +136,7 @@ public class RobotContainer {
                         .withName("high coral R"));
 
         this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(4, true)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, true)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L4_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
@@ -144,7 +144,7 @@ public class RobotContainer {
                         .withName("high coral L"));
 
         this.controller.b().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(3, false)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L3, false)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L3_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
@@ -152,7 +152,7 @@ public class RobotContainer {
                         .withName("highish (level 3) coral R"));
 
         this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(3, true)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L3, true)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L3_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
@@ -167,7 +167,7 @@ public class RobotContainer {
                                 .withName("highish (level 3) coral center"));
 
         this.controller.a().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(2, false)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, false)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L2_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
@@ -175,7 +175,7 @@ public class RobotContainer {
                         .withName("mid coral R"));
 
         this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(2, true)
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, true)
                         .alongWith(this.elevator
                                 .moveToPosition(Constants.Elevator.L2_coral_height))
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))

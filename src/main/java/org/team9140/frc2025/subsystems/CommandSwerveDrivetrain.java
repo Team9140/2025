@@ -11,6 +11,9 @@ import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
+import choreo.trajectory.SwerveSample;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -202,43 +205,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
-    public Command coralReefDrive(int level, boolean lefty) {
+    public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {
-            boolean left = lefty;
-            int closestTag = AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getTagId();
+            AutoAiming.ReefFaces closestReef = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
-            if (closestTag >= 9 && closestTag <= 11 || closestTag >= 20 && closestTag <= 22) {
-                left = !left;
-            }
-
-            Pose2d tagXY = layout.getTagPose(closestTag).orElse(new Pose3d()).toPose2d();
-
-            Translation2d offset = new Translation2d();
-
-            if (left) {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
-                    default -> offset;
-                };
-            } else {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
-                    default -> offset;
-                };
-            }
-
-            return tagXY.plus(new Transform2d(offset, new Rotation2d(Math.PI)));
+            return lefty ? closestReef.getLeft(level) : closestReef.getRight(level);
         }).withName("coral drive");
     }
 
-    public Command algaeReefDrive(int level) {
-        return null;
+    public Command algaeReefDrive(ElevatorSetbacks level) {
+        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level)).withName("coral drive");
     }
 
     private double multiplier = 1.0;
