@@ -151,6 +151,7 @@ public class Elevator extends SubsystemBase {
         });
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Inches.of(6)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));
     public final Trigger atPosition = new Trigger(() -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon) || Robot.isSimulation());
+    public final Trigger isStowed = new Trigger(() -> this.getPosition().lt(Inches.of(6)));
 }
