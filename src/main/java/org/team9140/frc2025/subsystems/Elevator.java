@@ -37,13 +37,13 @@ public class Elevator extends SubsystemBase {
     private Distance targetPosition;
 
     private final ElevatorSim elevatorSim = new ElevatorSim(
-            DCMotor.getKrakenX60(20),
-            Constants.Elevator.GEAR_RATIO * 10,
+            DCMotor.getKrakenX60Foc(2),
+            Constants.Elevator.GEAR_RATIO,
             Constants.Elevator.mass.in(Kilograms),
             Constants.Elevator.SPOOL_RADIUS.in(Meters),
             Constants.Elevator.MIN_HEIGHT.in(Meters),
             Constants.Elevator.MAX_HEIGHT.in(Meters),
-            false,
+            true,
             Constants.Elevator.STOW_height.in(Meters));
 
     private Elevator() {
