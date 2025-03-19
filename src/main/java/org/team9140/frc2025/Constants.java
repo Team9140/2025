@@ -124,6 +124,7 @@ public class Constants {
         }
     }
 
+
     public static final class AutoAlign {
         public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2));
 
