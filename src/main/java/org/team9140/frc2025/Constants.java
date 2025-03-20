@@ -129,7 +129,7 @@ public class Constants {
 
 
     public static final class AutoAlign {
-        public static final Distance REEF_RADIUS = Feet.of(7).plus(Inches.of(9.5)).div(2).plus(Inches.of(29).div(2));
+        public static final Distance REEF_RADIUS = Feet.of(5).plus(Inches.of(5.5)).plus(Inches.of(29)).div(2);
 
         public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
                 Inches.of(13).div(2), new Rotation2d());
