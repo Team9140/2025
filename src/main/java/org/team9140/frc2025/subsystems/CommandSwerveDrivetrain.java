@@ -14,6 +14,7 @@ import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.*;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -35,11 +36,6 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -85,7 +81,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
-        this.centric.HeadingController = headingController;
 
         SmartDashboard.putData("field", dashField2d);
 
@@ -161,12 +156,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withTargetDirection(new Rotation2d())
-            .withRotationalDeadband(Constants.Drive.MIN_ROTATIONAL_SPEED)
-            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED);
-
+    // TODO: Potentially use SwerveRequest.ApplyFieldSpeeds or SwerveRequest.ApplyRobotSpeeds
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED_TELEOP)
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
@@ -198,8 +188,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             Pose2d pose = getState().Pose;
             double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.centric
-                    .withTargetDirection(this.targetPose.getRotation())
+            this.setControl(this.drive
+                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
                     .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
                     .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
         });

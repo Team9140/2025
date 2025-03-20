@@ -6,6 +6,7 @@
 package org.team9140.frc2025;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -104,7 +105,7 @@ public class RobotContainer {
                 || Math.abs(this.controller.getRightX()) > 0.35;
     }
 
-    private Trigger exitAutoAlign = new Trigger(this::stickInput);
+    private final Trigger exitAutoAlign = new Trigger(this::stickInput);
 
     private void configureBindings() {
         this.candle.setDefaultCommand(this.candle.solidAllianceColor());
@@ -115,10 +116,13 @@ public class RobotContainer {
 
         controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
 
-        controller.rightBumper().whileTrue(
+        controller.rightBumper().and(elevator.isStowed).whileTrue(
                 this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
         controller.leftBumper()
                 .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
+
+        this.controller.rightBumper().and(elevator.isUp)
+                .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
 
 
         this.controller.y().and(this.controller.povRight())
@@ -130,9 +134,6 @@ public class RobotContainer {
                 .onTrue(this.drivetrain.coralReefDrive(4, true).until(this::stickInput));
         this.controller.y().and(this.controller.povLeft())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
-
-
-
 
 
         this.controller.b().and(this.controller.povRight())
@@ -148,9 +149,6 @@ public class RobotContainer {
         this.controller.b().and(this.controller.povCenter())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_ALGAE_height));
 
-
-
-
         this.controller.a().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(2, false).until(this::stickInput));
         this.controller.a().and(this.controller.povRight())
@@ -161,8 +159,6 @@ public class RobotContainer {
         this.controller.a().and(this.controller.povLeft())
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
 
-
-
         this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
@@ -171,7 +167,7 @@ public class RobotContainer {
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
-        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, 0.1, 0.5));
+        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(0.5)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -206,7 +202,7 @@ public class RobotContainer {
         // // limeC.setIMUMode(1);
         // }));
 
-        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 2.0));
+        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
     }
 
     public void periodic() {
