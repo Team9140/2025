@@ -103,7 +103,10 @@ public class Constants {
         public static Distance L3_coral_height = Inches.of(46);
         public static Distance L4_coral_height = Inches.of(72);
 
+        public static Distance L2_ALGAE_height = Inches.of(24); // TODO: Actual Value
         public static Distance L3_ALGAE_height = Inches.of(39);
+
+        public static Distance NET_HEIGHT = Inches.of(80); // TODO: Actual Value
     }
 
     public enum ElevatorSetbacks {

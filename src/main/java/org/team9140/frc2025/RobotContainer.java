@@ -143,6 +143,10 @@ public class RobotContainer {
                         .until(this::stickInput)
                         .withName("high coral L"));
 
+        this.controller.y().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.NET_HEIGHT)
+                        .withName("net height"));
+
         this.controller.b().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L3, false)
                         .alongWith(this.elevator
@@ -164,7 +168,7 @@ public class RobotContainer {
                         .moveToPosition(Constants.Elevator.L3_ALGAE_height)
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
                                 .until(this::stickInput)
-                                .withName("highish (level 3) coral center"));
+                                .withName("highish (level 3) algae center"));
 
         this.controller.a().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, false)
@@ -181,6 +185,13 @@ public class RobotContainer {
                         .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
                         .until(this::stickInput)
                         .withName("mid coral L"));
+
+        this.controller.a().and(this.controller.povCenter())
+                .onTrue(this.elevator
+                        .moveToPosition(Constants.Elevator.L2_ALGAE_height)
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE, Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("mid (level 2) algae center"));
 
         this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
