@@ -135,9 +135,6 @@ public class FollowPath {
 
         return this.drive.applySwerveSample(() -> this.sample).raceWith(new FunctionalCommand(
                 () -> {
-                    if (Robot.isSimulation()) {
-                        this.drive.resetPose(this.getInitialPose());
-                    }
                     this.timer.restart();
                     this.active = true;
                 },

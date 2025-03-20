@@ -2,10 +2,9 @@ package org.team9140.frc2025.commands;
 
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.frc2025.subsystems.Funnel;
@@ -44,7 +43,12 @@ public class AutonomousRoutines {
 
     public Command oneCoral() {
         FollowPath path = new FollowPath("oneCoral", drivetrain, alliance);
-        return path.gimmeCommand()
+
+        return Commands.runOnce(() -> {
+            if (Robot.isSimulation()) {
+                this.drivetrain.resetPose(path.getInitialPose());
+            }
+        }).andThen(path.gimmeCommand())
                 .andThen(new PrintCommand("finished path"))
                 .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("final alignment")).withTimeout(Seconds.of(2))
                 .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("continuous alignment")))
