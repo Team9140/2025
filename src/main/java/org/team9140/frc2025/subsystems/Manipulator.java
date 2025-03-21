@@ -20,6 +20,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Manipulator extends SubsystemBase {
     private enum Holdables {
@@ -58,15 +59,18 @@ public class Manipulator extends SubsystemBase {
                 this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
     }
 
+    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
+    public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdables.ALGAE));
+
     public Command off() {
-        return this.runOnce(() -> {
+        return this.run(() -> {
             switch (currentItem) {
                 case CORAL:
                 case WATER:
                     this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, 0);
                     break;
                 case ALGAE:
-                    this.setVoltage(HOLD_VOLTAGE_ALGAE).withName("hold algae");
+                    this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, HOLD_VOLTAGE_ALGAE / 12.0);
                     break;
             }
         }).withName("off");

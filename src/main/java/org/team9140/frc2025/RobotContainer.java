@@ -102,7 +102,8 @@ public class RobotContainer {
                         drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
                                 controller::getRightX));
 
-        controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
+        controller.rightTrigger().and(manipulator.hasCoral).onTrue(this.manipulator.outtakeCoral().until(this.controller.rightTrigger().negate()));
+        controller.rightTrigger().and(manipulator.hasAlgae).onTrue(this.manipulator.outtakeAlgae().until(this.controller.rightTrigger().negate()));
 
         controller.rightBumper().and(elevator.isStowed).whileTrue(
                 this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral())
@@ -111,7 +112,7 @@ public class RobotContainer {
                 .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse())
                         .withName("unstick coral"));
 
-        this.controller.rightBumper().and(elevator.isUp)
+        this.controller.rightBumper().and(elevator.isStowed.negate())
                 .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
 
         this.controller.y().and(this.controller.povRight())
@@ -185,8 +186,11 @@ public class RobotContainer {
                         .withName("mid (level 2) algae center"));
 
         this.controller.x()
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height))
-                .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis, this.controller.getHID()::getRightTriggerAxis));
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+
+        this.controller.x()
+                .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis,
+                        this.controller.getHID()::getRightTriggerAxis));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
@@ -196,7 +200,7 @@ public class RobotContainer {
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
         this.drivetrain.reachedPose
-                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(0.5)));
+                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -251,7 +255,7 @@ public class RobotContainer {
         // Right Side
         LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
                 Units.inchesToMeters(7.794), // Forward+
-                Units.inchesToMeters(-10.347), // Left+
+                Units.inchesToMeters(10.347), // Right+??
                 Units.inchesToMeters(9.637), // Up+
                 0, 0, 15.0);
 
@@ -264,7 +268,7 @@ public class RobotContainer {
         // Top Camera
         LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
                 Units.inchesToMeters(1.739), // Forward+
-                Units.inchesToMeters(0), // Left+
+                Units.inchesToMeters(0), // Right+???
                 Units.inchesToMeters(34.677), // Up+
                 0, 10.118, -180.0);
 
@@ -280,6 +284,6 @@ public class RobotContainer {
         // return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () ->
         // 0).repeatedly().withTimeout(3.0);
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.threeCoral();
+        return routines.oneCoralFeed();
     }
 }
