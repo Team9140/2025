@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+// TODO: Support path splits
 public class FollowPath {
     private final TreeMap<String, Trigger> eventtimes;
     private final StructPublisher<Pose2d> posePublisher;
