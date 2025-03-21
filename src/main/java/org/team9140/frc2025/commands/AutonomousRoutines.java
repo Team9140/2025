@@ -46,12 +46,12 @@ public class AutonomousRoutines {
                 .andThen(new WaitCommand(0.2))
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
         this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
-        this.RESET_ARM = () -> manipulator.turnOff()
+        this.RESET_ARM = () -> manipulator.off()
                 .andThen(elevator.moveToPosition(Constants.Elevator.STOW_height));
         this.INTAKE_CORAL = () -> new WaitUntilCommand(elevator.isStowed).andThen(manipulator.intakeCoral()
                 .alongWith(funnel.intakeCoral())
                 .withTimeout(INTAKE_TIME));
-        this.STOP_INTAKE = () -> manipulator.turnOff().alongWith(funnel.turnOff());
+        this.STOP_INTAKE = () -> manipulator.off().alongWith(funnel.turnOff());
         // this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) ->
         // drivetrain.coralReefDrive(ElevatorSetbacks.L4,
         // lefty).until(drivetrain.reachedPose).withName("final alignment")

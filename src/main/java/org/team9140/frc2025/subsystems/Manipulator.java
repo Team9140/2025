@@ -41,7 +41,7 @@ public class Manipulator extends SubsystemBase {
         this.manipulatorMotor.configContinuousCurrentLimit((int) MANIPULATOR_CONTINUOUS_CURRENT_LIMIT.in(Amps));
         this.manipulatorMotor.enableCurrentLimit(true);
 
-        this.setDefaultCommand(this.turnOff());
+        this.setDefaultCommand(this.off());
     }
 
     private static Manipulator instance;
@@ -58,7 +58,7 @@ public class Manipulator extends SubsystemBase {
                 this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
     }
 
-    public Command turnOff() {
+    public Command off() {
         return this.runOnce(() -> {
             switch (currentItem) {
                 case CORAL:
