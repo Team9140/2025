@@ -305,7 +305,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     state -> SignalLogger.writeString("sysIdDrive_state", state.toString())),
             new SysIdRoutine.Mechanism(output -> setControl(m_driveSysID.withVolts(output)), null, this));
 
-    // @SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     null, // Use default ramp rate (1 V/s)

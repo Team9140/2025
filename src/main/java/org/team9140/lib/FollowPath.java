@@ -5,7 +5,6 @@ import static org.team9140.lib.Util.rotationEpsilonEquals;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 
 import choreo.Choreo;

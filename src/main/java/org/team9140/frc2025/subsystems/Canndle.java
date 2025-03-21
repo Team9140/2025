@@ -1,6 +1,7 @@
 package org.team9140.frc2025.subsystems;
 
 import com.ctre.phoenix.led.CANdle;
+
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -9,9 +10,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.awt.*;
-import java.util.concurrent.TimeUnit;
 
 public class Canndle extends SubsystemBase {
     private static Canndle instance;

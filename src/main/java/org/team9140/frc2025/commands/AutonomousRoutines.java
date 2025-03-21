@@ -1,9 +1,9 @@
 package org.team9140.frc2025.commands;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.*;
+import static edu.wpi.first.units.Units.Seconds;
+
+import java.util.function.Supplier;
+
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
@@ -12,9 +12,13 @@ import org.team9140.frc2025.subsystems.Funnel;
 import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.FollowPath;
 
-import java.util.function.Supplier;
-
-import static edu.wpi.first.units.Units.Seconds;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class AutonomousRoutines {
     private static final Time INTAKE_TIME = Seconds.of(2.0);
@@ -28,7 +32,7 @@ public class AutonomousRoutines {
     private final Supplier<Command> INTAKE_CORAL;
     private final Supplier<Command> STOP_INTAKE;
     private final Supplier<Command> ARM_HALFWAY;
-//    private final Function<Boolean, Command> REEF_DRIVE_THEN_SCORE_L4;
+    // private final Function<Boolean, Command> REEF_DRIVE_THEN_SCORE_L4;
 
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
@@ -39,7 +43,6 @@ public class AutonomousRoutines {
         Funnel funnel = Funnel.getInstance();
 
         this.SCORE_CORAL_L4 = () -> elevator.moveToPosition(Constants.Elevator.L4_coral_height)
-                .andThen(new WaitUntilCommand(elevator.atPosition))
                 .andThen(new WaitCommand(0.2))
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
         this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
@@ -49,8 +52,11 @@ public class AutonomousRoutines {
                 .alongWith(funnel.intakeCoral())
                 .withTimeout(INTAKE_TIME));
         this.STOP_INTAKE = () -> manipulator.turnOff().alongWith(funnel.turnOff());
-//        this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) -> drivetrain.coralReefDrive(ElevatorSetbacks.L4, lefty).until(drivetrain.reachedPose).withName("final alignment")
-//                .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(ElevatorSetbacks.L4, lefty)));
+        // this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) ->
+        // drivetrain.coralReefDrive(ElevatorSetbacks.L4,
+        // lefty).until(drivetrain.reachedPose).withName("final alignment")
+        // .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(ElevatorSetbacks.L4,
+        // lefty)));
     }
 
     public Command oneCoral() {
