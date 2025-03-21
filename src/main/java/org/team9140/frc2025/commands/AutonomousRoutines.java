@@ -103,6 +103,19 @@ public class AutonomousRoutines {
     }
 
     public Command testScore() {
-        return this.SCORE_CORAL_L4.get().andThen(this.RESET_ARM.get());
+        FollowPath testForward = new FollowPath("test_1", drivetrain, alliance);
+        FollowPath testToFeed = new FollowPath("test_2", drivetrain, alliance);
+        FollowPath feedToScore = new FollowPath("test_3", drivetrain, alliance);
+
+        return Commands.runOnce(() -> this.drivetrain.resetPose(testForward.getInitialPose()))
+                .andThen(this.ARM_HALFWAY.get().alongWith(testForward.gimmeCommand()))
+                .andThen(SCORE_CORAL_L4.get())
+                .andThen(RESET_ARM.get())
+                .andThen(testToFeed.gimmeCommand())
+                .andThen(INTAKE_CORAL.get())
+                .andThen(STOP_INTAKE.get())
+                .andThen(feedToScore.gimmeCommand())
+                .andThen(SCORE_CORAL_L4.get())
+                .andThen(RESET_ARM.get());
     }
 }
