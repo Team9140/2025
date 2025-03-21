@@ -43,7 +43,7 @@ public class AutonomousRoutines {
         Funnel funnel = Funnel.getInstance();
 
         this.SCORE_CORAL_L4 = () -> elevator.moveToPosition(Constants.Elevator.L4_coral_height)
-                .andThen(new WaitCommand(0.2))
+                .andThen(new WaitCommand(0.25))
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
         this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
         this.RESET_ARM = () -> manipulator.off()
@@ -111,14 +111,6 @@ public class AutonomousRoutines {
         FollowPath feedToScore = new FollowPath("test_3", drivetrain, alliance);
 
         return Commands.runOnce(() -> this.drivetrain.resetPose(testForward.getInitialPose()))
-                .andThen(this.ARM_HALFWAY.get().alongWith(testForward.gimmeCommand()))
-                .andThen(SCORE_CORAL_L4.get())
-                .andThen(RESET_ARM.get())
-                .andThen(testToFeed.gimmeCommand())
-                .andThen(INTAKE_CORAL.get())
-                .andThen(STOP_INTAKE.get())
-                .andThen(feedToScore.gimmeCommand())
-                .andThen(SCORE_CORAL_L4.get())
-                .andThen(RESET_ARM.get());
+                .andThen(testForward.gimmeCommand());
     }
 }
