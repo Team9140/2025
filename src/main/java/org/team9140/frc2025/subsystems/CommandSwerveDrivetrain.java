@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
+import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
 import choreo.trajectory.SwerveSample;
@@ -165,6 +166,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
+        
+    private final SwerveRequest.FieldCentric auton = new SwerveRequest.FieldCentric()
+            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED)
+            .withRotationalDeadband(MIN_ROTATIONAL_SPEED)
+            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     /**
      * Returns a command that applies the specified control request to this swerve
@@ -192,10 +199,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             Pose2d pose = getState().Pose;
             double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.drive
-                    .withRotationalRate(sample.omega + this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
-                    .withVelocityX(sample.vx + m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
-                    .withVelocityY(sample.vy + m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
+            this.setControl(this.auton
+                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
+                    .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
+                    .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
         });
     }
 
@@ -214,7 +221,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             Pose2d pose = getState().Pose;
             double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.drive
+            this.setControl(this.auton
                     .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
                     .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
                     .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
