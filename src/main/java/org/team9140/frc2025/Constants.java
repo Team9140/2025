@@ -38,10 +38,10 @@ public class Constants {
         public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.06);
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.06);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.1);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(5);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(5);
     }
 
     public static class FieldItemPoses {
@@ -144,10 +144,10 @@ public class Constants {
         public static final Distance REEF_RADIUS = Feet.of(5).plus(Inches.of(5.5)).div(2);
 
         public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
-                Inches.of(14).div(2), new Rotation2d());
+                Inches.of(13).div(2), new Rotation2d());
 
         // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Inches.of(14.0);
+        private static final Distance reefBranchGap = Inches.of(13.0);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
         private static final Distance L1setback = Inches.of(18.0);
         private static final Distance L2setback = Inches.of(18.0); // wall bump
