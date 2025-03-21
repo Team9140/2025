@@ -53,7 +53,6 @@ public class Climber extends SubsystemBase {
                 .withSoftwareLimitSwitch(softLimits);
 
         this.rightMotor.getConfigurator().apply(motorConfig);
-        this.rightMotor.getConfigurator().apply(feedbackConfigs);
         this.rightMotor.setPosition(0.0);
 
         this.controller = new VoltageOut(0.0)
@@ -70,7 +69,7 @@ public class Climber extends SubsystemBase {
 
     public Command climb(Supplier<Double> leftTrigger, Supplier<Double> rightTrigger) {
         return this.run(() -> {
-            this.rightMotor.setControl(this.controller.withOutput(Constants.Climber.MAX_OUTPUT.times(leftTrigger.get() - rightTrigger.get())));
+            this.rightMotor.setControl(this.controller.withOutput(Constants.Climber.MAX_OUTPUT.times(leftTrigger.get() - rightTrigger.get() / 4.0)));
         });
     }
 
