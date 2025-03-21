@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (autonomousCommand == null && DriverStation.getAlliance().isPresent())
+        if (autonomousCommand == null && DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent())
             autonomousCommand = robotContainer.getAutonomousCommand();
     }
 
