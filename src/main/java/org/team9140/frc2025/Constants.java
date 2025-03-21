@@ -29,8 +29,8 @@ public class Constants {
         public static final int ELEVATOR_MOTOR_RIGHT = 11;
         public static final int MANIPULATOR_MOTOR = 4;
         public static final int FUNNEL_MOTOR = 13;
-        public static final int CLIMBER_MOTOR_RIGHT = 12;
-        public static final int CLIMBER_MOTOR_LEFT = 14;
+        public static final int CLIMBER_MOTOR_RIGHT = 14;
+        public static final int CLIMBER_MOTOR_LEFT = 12;
         public static final int CANDLE_id = 0;
     }
 
@@ -39,9 +39,9 @@ public class Constants {
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.06);
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.06);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
     }
 
     public static class FieldItemPoses {
@@ -56,9 +56,9 @@ public class Constants {
     }
 
     public static class Manipulator {
-        public static final double HOLD_VOLTAGE_ALGAE = 0;
+        public static final double HOLD_VOLTAGE_ALGAE = 3.0;
 
-        public static final double INTAKE_VOLTAGE_CORAL = 6;
+        public static final double INTAKE_VOLTAGE_CORAL = 7.0;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
 
         public static final double OUTTAKE_VOLTAGE_CORAL = 8;
@@ -141,13 +141,13 @@ public class Constants {
 
 
     public static final class AutoAlign {
-        public static final Distance REEF_RADIUS = Feet.of(5).plus(Inches.of(5.5)).plus(Inches.of(29)).div(2);
+        public static final Distance REEF_RADIUS = Feet.of(5).plus(Inches.of(5.5)).div(2);
 
         public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
-                Inches.of(13).div(2), new Rotation2d());
+                Inches.of(14).div(2), new Rotation2d());
 
         // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Inches.of(13.0);
+        private static final Distance reefBranchGap = Inches.of(14.0);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
         private static final Distance L1setback = Inches.of(18.0);
         private static final Distance L2setback = Inches.of(18.0); // wall bump
