@@ -125,7 +125,8 @@ public class RobotContainer {
                         .withName("unstick coral"));
 
         this.controller.rightBumper().and(elevator.isUp)
-                .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
+                .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"))
+                .onFalse(this.manipulator.holdAlgae().withName("hold algae"));
 
         this.controller.y().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false)
