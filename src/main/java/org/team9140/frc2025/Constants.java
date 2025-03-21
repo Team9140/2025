@@ -29,7 +29,8 @@ public class Constants {
         public static final int ELEVATOR_MOTOR_RIGHT = 11;
         public static final int MANIPULATOR_MOTOR = 4;
         public static final int FUNNEL_MOTOR = 13;
-        public static final int CLIMBER_MOTOR = 12;
+        public static final int CLIMBER_MOTOR_RIGHT = 12;
+        public static final int CLIMBER_MOTOR_LEFT = 14;
         public static final int CANDLE_id = 0;
     }
 
@@ -109,6 +110,15 @@ public class Constants {
         public static Distance NET_HEIGHT = Inches.of(80); // TODO: Actual Value
 
         public static Distance SOFT_LIMIT = Inches.of(81);
+    }
+
+    public static final class Climber {
+        public static final Current STATOR_LIMIT = Amps.of(80.0);
+        public static final double GEAR_RATIO = 400.0;
+        public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
+        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.7);
+
+        public static final Voltage MAX_OUTPUT = Volts.of(12.0);
     }
 
     public enum ElevatorSetbacks {

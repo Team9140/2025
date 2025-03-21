@@ -11,12 +11,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
-import org.team9140.frc2025.subsystems.Canndle;
-import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
-import org.team9140.frc2025.subsystems.Elevator;
-import org.team9140.frc2025.subsystems.Funnel;
-import org.team9140.frc2025.subsystems.LimeLight;
-import org.team9140.frc2025.subsystems.Manipulator;
+import org.team9140.frc2025.subsystems.*;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -32,6 +27,7 @@ public class RobotContainer {
     private final Manipulator manipulator = Manipulator.getInstance();
     private final Funnel funnel = Funnel.getInstance();
     private final Canndle candle = Canndle.getInstance();
+    private final Climber climber = Climber.getInstance();
 
     private final LimeLight limeA = new LimeLight("limelight-a", this.drivetrain::acceptVisionMeasurement);
     private final LimeLight limeB = new LimeLight("limelight-b", this.drivetrain::acceptVisionMeasurement);
@@ -99,6 +95,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         this.candle.setDefaultCommand(this.candle.solidAllianceColor());
+        this.climber.setDefaultCommand(this.climber.off());
 
         drivetrain
                 .setDefaultCommand(
@@ -188,7 +185,9 @@ public class RobotContainer {
                         .until(this::stickInput)
                         .withName("mid (level 2) algae center"));
 
-        this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+        this.controller.x()
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height))
+                .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis, this.controller.getHID()::getRightTriggerAxis));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
 
