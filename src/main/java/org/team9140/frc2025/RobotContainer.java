@@ -256,6 +256,6 @@ public class RobotContainer {
         // return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () ->
         // 0).repeatedly().withTimeout(3.0);
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.oneCoralFeed();
+        return routines.threeCoral();
     }
 }

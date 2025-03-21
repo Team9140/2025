@@ -1,7 +1,6 @@
 package org.team9140.frc2025.subsystems;
 
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.Constants.Ports;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -152,6 +151,6 @@ public class Elevator extends SubsystemBase {
     }
 
     public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));
-    public final Trigger atPosition = new Trigger(() -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon) || Robot.isSimulation());
+    public final Trigger atPosition = new Trigger(() -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
     public final Trigger isStowed = new Trigger(() -> this.getPosition().lt(Inches.of(0.5)));
 }

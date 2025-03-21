@@ -1,5 +1,6 @@
 package org.team9140.frc2025.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
-    private static final Time INTAKE_TIME = Seconds.of(2);
+    private static final Time INTAKE_TIME = Seconds.of(2.0);
     private static final Time THROW_TIME = Seconds.of(0.5);
     private final CommandSwerveDrivetrain drivetrain;
     private final DriverStation.Alliance alliance;
@@ -26,19 +27,30 @@ public class AutonomousRoutines {
     private final Supplier<Command> RESET_ARM;
     private final Supplier<Command> INTAKE_CORAL;
     private final Supplier<Command> STOP_INTAKE;
+    private final Supplier<Command> ARM_HALFWAY;
+//    private final Function<Boolean, Command> REEF_DRIVE_THEN_SCORE_L4;
 
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
         this.alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-        this.SCORE_CORAL_L4 = () -> Elevator.getInstance().moveToPosition(Constants.Elevator.L4_coral_height)
-                .andThen(new WaitCommand(2.0))
-                .andThen(Manipulator.getInstance().outtakeCoral().withTimeout(THROW_TIME));
-        this.RESET_ARM = () -> Manipulator.getInstance().turnOff()
-                .andThen(Elevator.getInstance().moveToPosition(Constants.Elevator.STOW_height));
-        this.INTAKE_CORAL = () -> Manipulator.getInstance().intakeCoral()
-                .alongWith(Funnel.getInstance().intakeCoral())
-                .withTimeout(INTAKE_TIME);
-        this.STOP_INTAKE = () -> Manipulator.getInstance().turnOff().alongWith(Funnel.getInstance().turnOff());
+
+        Elevator elevator = Elevator.getInstance();
+        Manipulator manipulator = Manipulator.getInstance();
+        Funnel funnel = Funnel.getInstance();
+
+        this.SCORE_CORAL_L4 = () -> elevator.moveToPosition(Constants.Elevator.L4_coral_height)
+                .andThen(new WaitUntilCommand(elevator.atPosition))
+                .andThen(new WaitCommand(0.2))
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
+        this.RESET_ARM = () -> manipulator.turnOff()
+                .andThen(elevator.moveToPosition(Constants.Elevator.STOW_height));
+        this.INTAKE_CORAL = () -> new WaitUntilCommand(elevator.isStowed).andThen(manipulator.intakeCoral()
+                .alongWith(funnel.intakeCoral())
+                .withTimeout(INTAKE_TIME));
+        this.STOP_INTAKE = () -> manipulator.turnOff().alongWith(funnel.turnOff());
+//        this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) -> drivetrain.coralReefDrive(ElevatorSetbacks.L4, lefty).until(drivetrain.reachedPose).withName("final alignment")
+//                .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(ElevatorSetbacks.L4, lefty)));
     }
 
     public Command oneCoral() {
@@ -48,10 +60,8 @@ public class AutonomousRoutines {
             if (Robot.isSimulation()) {
                 this.drivetrain.resetPose(path.getInitialPose());
             }
-        }).andThen(path.gimmeCommand())
-                .andThen(new PrintCommand("finished path"))
-                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("final alignment")).withTimeout(Seconds.of(2))
-                .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).withName("continuous alignment")))
+        }).andThen(this.ARM_HALFWAY.get().alongWith(path.gimmeCommand()))
+                .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get())
                 .andThen(new PrintCommand("done scoring 1 coral"));
     }
@@ -66,22 +76,22 @@ public class AutonomousRoutines {
     }
 
     public Command threeCoral() {
-        FollowPath feedToCloseRight = new FollowPath("feedToCloseRight", drivetrain, alliance);
-        FollowPath closeRightToFeed = new FollowPath("closeRightToFeed", drivetrain, alliance);
+        FollowPath farLeftToFeed = new FollowPath("farLeftToFeed", drivetrain, alliance);
+        FollowPath closeLeftToFeed = new FollowPath("closeLeftToFeed", drivetrain, alliance);
+        FollowPath feedToCloseLeftLeft = new FollowPath("feedToCloseLeftLeft", drivetrain, alliance);
+        FollowPath feedToCloseLeftRight = new FollowPath("feedToCloseLeftRight", drivetrain, alliance);
 
-        return oneCoralFeed()
-                .andThen(STOP_INTAKE.get())
-                .andThen(feedToCloseRight.gimmeCommand())
-                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, true).until(drivetrain.reachedPose)
-                        .withName("final alignment"))
-                .andThen(SCORE_CORAL_L4.get())
-                .andThen(RESET_ARM.get())
-                .andThen(closeRightToFeed.gimmeCommand())
+        return oneCoral()
+                .andThen(farLeftToFeed.gimmeCommand())
                 .andThen(INTAKE_CORAL.get())
                 .andThen(STOP_INTAKE.get())
-                .andThen(feedToCloseRight.gimmeCommand())
-                .andThen(drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false).until(drivetrain.reachedPose)
-                        .withName("final alignment"))
+                .andThen(feedToCloseLeftLeft.gimmeCommand())
+                .andThen(SCORE_CORAL_L4.get())
+                .andThen(RESET_ARM.get())
+                .andThen(closeLeftToFeed.gimmeCommand())
+                .andThen(INTAKE_CORAL.get())
+                .andThen(STOP_INTAKE.get())
+                .andThen(feedToCloseLeftRight.gimmeCommand())
                 .andThen(SCORE_CORAL_L4.get())
                 .andThen(RESET_ARM.get());
     }
