@@ -147,7 +147,7 @@ public class FollowPath {
                     });
                 },
                 interrupted -> this.active = false,
-                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())))
+                () -> (this.timer.hasElapsed(this.trajectory.getTotalTime())) && Util.epsilonEquals(this.drive.getState().Pose, getFinalPose())))
                 .andThen(this.drive.stop());
     }
 }
