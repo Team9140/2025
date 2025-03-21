@@ -73,7 +73,10 @@ public class AutonomousRoutines {
     }
 
     public Command oneCoralFeed() {
-        return oneCoral().andThen(hToFeed());
+        FollowPath farLeftToFeed = new FollowPath("farLeftToFeed", drivetrain, alliance);
+        return oneCoral()
+        .andThen(farLeftToFeed.gimmeCommand())
+        .andThen(INTAKE_CORAL.get());
     }
 
     public Command hToFeed() {
