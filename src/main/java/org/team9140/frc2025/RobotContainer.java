@@ -83,25 +83,6 @@ public class RobotContainer {
 
         // this.autonomousCommand = this.path.gimmeCommand();
 
-        // Right Side
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
-                Units.inchesToMeters(7.794), // Forward
-                Units.inchesToMeters(-10.347), // Side
-                Units.inchesToMeters(9.637), // Up
-                0, 0, 15.0);
-
-        // Left Side
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
-                Units.inchesToMeters(7.794),
-                Units.inchesToMeters(10.347),
-                Units.inchesToMeters(9.637), 0, 0, -15.0);
-
-        // Top Camera
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
-                Units.inchesToMeters(1.739),
-                Units.inchesToMeters(0),
-                Units.inchesToMeters(34.677), 0, 10.118, -180.0);
-
         limeA.setIMUMode(1);
         limeB.setIMUMode(1);
 
@@ -258,15 +239,43 @@ public class RobotContainer {
 
     public void periodic() {
         if (DriverStation.isEnabled()) {
-            // limeA.setIMUMode(2);
+            limeA.setIMUMode(2);
             limeB.setIMUMode(2);
         } else {
-            // limeA.setIMUMode(1);
+            limeA.setIMUMode(1);
             limeB.setIMUMode(1);
         }
-        // limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+
+        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+
+        // Right Side
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
+                Units.inchesToMeters(7.794), // Forward+
+                Units.inchesToMeters(-10.347), // Left+
+                Units.inchesToMeters(9.637), // Up+
+                0, 0, 15.0);
+
+        // Left Side
+        // LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
+        // Units.inchesToMeters(7.794),
+        // Units.inchesToMeters(10.347),
+        // Units.inchesToMeters(9.637), 0, 0, -15.0);
+
+        // Top Camera
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+                Units.inchesToMeters(1.739), // Forward+
+                Units.inchesToMeters(0), // Left+
+                Units.inchesToMeters(34.677), // Up+
+                0, 10.118, -180.0);
+
+        // only use reef tags for pose on low camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
+                new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
+
+        // only use coral station tags for pose on back camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
     }
 
     public Command getAutonomousCommand() {
