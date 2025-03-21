@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.*;
@@ -73,7 +74,7 @@ public class Elevator extends SubsystemBase {
                 .withSensorToMechanismRatio(Constants.Elevator.GEAR_RATIO);
 
         SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs()
-                .withForwardSoftLimitThreshold(Constants.Elevator.L4_coral_height
+                .withForwardSoftLimitThreshold(Constants.Elevator.SOFT_LIMIT
                         .div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude())
                 .withForwardSoftLimitEnable(true)
                 .withReverseSoftLimitEnable(true)
@@ -147,7 +148,7 @@ public class Elevator extends SubsystemBase {
             this.targetPosition = goalPosition;
             this.rightMotor.setControl(this.motionMagic.withPosition(
                     this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
-        });
+        }).andThen(new WaitUntilCommand(atPosition));
     }
 
     public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));

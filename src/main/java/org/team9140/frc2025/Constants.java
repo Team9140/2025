@@ -107,6 +107,8 @@ public class Constants {
         public static Distance L3_ALGAE_height = Inches.of(39);
 
         public static Distance NET_HEIGHT = Inches.of(80); // TODO: Actual Value
+
+        public static Distance SOFT_LIMIT = Inches.of(81);
     }
 
     public enum ElevatorSetbacks {
