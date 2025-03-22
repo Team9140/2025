@@ -183,9 +183,9 @@ public class TunerConstants {
     // This needs to be tuned to your individual robot
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.48);
 
-    public static final double X_CONTROLLER_P = 10.0;
+    public static final double X_CONTROLLER_P = 8.0;
     public static final double X_CONTROLLER_I = 0.0;
-    public static final double X_CONTROLLER_D = 0.5;
+    public static final double X_CONTROLLER_D = 0.2;
     public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
     public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
     public static final double Y_CONTROLLER_D = X_CONTROLLER_D;

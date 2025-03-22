@@ -18,6 +18,10 @@ public class Robot extends TimedRobot {
 
     private final RobotContainer robotContainer;
 
+    public static boolean isRedAlliance() {
+        return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(DriverStation.Alliance.Red);
+    }
+
     public Robot() {
         super(Constants.LOOP_PERIOD.in(Seconds));
         robotContainer = new RobotContainer();

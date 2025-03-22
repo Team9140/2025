@@ -41,7 +41,7 @@ public class Constants {
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.1);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(5);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(5);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(2);
     }
 
     public static class FieldItemPoses {
@@ -96,7 +96,7 @@ public class Constants {
         public static final Distance MIN_HEIGHT = Inches.of(0);
         public static final Distance MAX_HEIGHT = Inches.of(90);
 
-        public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
+        public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(1.0);
 
         public static Distance STOW_height = MIN_HEIGHT;
         public static Distance L1_coral_height = Inches.of(24);
@@ -104,10 +104,10 @@ public class Constants {
         public static Distance L3_coral_height = Inches.of(46);
         public static Distance L4_coral_height = Inches.of(72);
 
-        public static Distance L2_ALGAE_height = Inches.of(24); // TODO: Actual Value
+        public static Distance L2_ALGAE_height = Inches.of(24);
         public static Distance L3_ALGAE_height = Inches.of(39);
 
-        public static Distance NET_HEIGHT = Inches.of(80); // TODO: Actual Value
+        public static Distance NET_HEIGHT = Inches.of(80);
 
         public static Distance SOFT_LIMIT = Inches.of(81);
     }

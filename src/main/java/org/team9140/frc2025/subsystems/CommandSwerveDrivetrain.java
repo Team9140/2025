@@ -1,6 +1,7 @@
 package org.team9140.frc2025.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -12,14 +13,13 @@ import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 
-import choreo.trajectory.SwerveSample;
-import org.team9140.frc2025.Constants.ElevatorSetbacks;
-
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.geometry.*;
 import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
+import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -37,18 +37,22 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -122,14 +126,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void acceptVisionMeasurement(VisionMeasurement vm) {
         double xyStdDev = 9999;
         double thetaStdDev = 9999;
+        SmartDashboard.putNumber("bla", vm.measurement.avgTagArea);
         if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
             boolean reject = false;
 
             reject |= vm.measurement.avgTagDist >= 4;
             reject |= vm.measurement.avgTagArea < 0.1;
 
-            xyStdDev = 5.0;
-            thetaStdDev = 5.0;
+            xyStdDev = 1.0;
+            thetaStdDev = 1.0;
 
             if (reject) {
                 return;
@@ -148,11 +153,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return;
             }
 
-            if (Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25
-                    && Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.25) {
-                xyStdDev = 2.0;
+            if (Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.5
+                    && Math.abs(this.getState().Speeds.vxMetersPerSecond) <= 0.5
+                    && Math.abs(this.getPigeon2().getAngularVelocityZWorld().getValue().in(DegreesPerSecond)) <= 15.0) {
+
+                if (vm.measurement.avgTagArea > 1.0) {
+                    xyStdDev = 0.1;
+                } else {
+                    xyStdDev = 0.5;
+                }
             } else {
-                xyStdDev = 5.0;
+                xyStdDev = 2.0;
             }
 
             this.addVisionMeasurement(vm.measurement.pose, vm.timestamp.in(Seconds),
@@ -160,52 +171,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    // TODO: Potentially use SwerveRequest.ApplyFieldSpeeds or SwerveRequest.ApplyRobotSpeeds
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED_TELEOP)
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
-        
+
     private final SwerveRequest.FieldCentric auton = new SwerveRequest.FieldCentric()
             .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED)
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
-
-    /**
-     * Returns a command that applies the specified control request to this swerve
-     * drivetrain.
-     *
-     * @param requestSupplier Function returning the request to apply
-     * @return Command to run
-     */
-    public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-        return run(() -> this.setControl(requestSupplier.get()));
-    }
-
-    /**
-     * Follows the given field-centric path sample with PID and applies any velocities as feed forwards.
-     *
-     * @param samples Provides samples to execute at any given time.
-     */
-    public Command applySwerveSample(Supplier<SwerveSample> samples) {
-        return this.run(() -> {
-            SwerveSample sample = samples.get();
-            this.targetPose = sample.getPose();
-
-            if (this.targetPose == null)
-                return;
-
-            Pose2d pose = getState().Pose;
-            double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.auton
-                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
-                    .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
-                    .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
-        });
-    }
-
 
     /**
      * Follows the given field-centric path sample with PID.
@@ -222,7 +198,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             Pose2d pose = getState().Pose;
             double currentTime = Utils.getCurrentTimeSeconds();
             this.setControl(this.auton
-                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
+                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(),
+                            this.targetPose.getRotation().getRadians(), currentTime))
                     .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
                     .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
         });
@@ -230,10 +207,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public final Trigger reachedPose = new Trigger(
             () -> this.targetPose != null
-                    && !this.targetPose.equals(new Pose2d())
+                    && !this.targetPose.equals(Pose2d.kZero)
                     && Util.epsilonEquals(this.targetPose, this.getState().Pose));
 
-    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+    // AprilTagFieldLayout layout =
+    // AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
     public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {
@@ -244,7 +222,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command algaeReefDrive(ElevatorSetbacks level) {
-        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level)).withName("coral drive");
+        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level))
+                .withName("coral drive");
     }
 
     private double multiplier = 1.0;
@@ -284,6 +263,48 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command resetGyroCommand() {
         return this.runOnce(this::seedFieldCentric);
+    }
+
+    public Command follow(Trajectory<SwerveSample> traject) {
+        if (traject == null) {
+            return new PrintCommand("empty follow commmand: path null");
+        }
+        Timer time = new Timer();
+
+        return new FunctionalCommand(
+                () -> {
+                    // init
+                    time.restart();
+                    if (Robot.isSimulation()) {
+                        traject.getInitialPose(Robot.isRedAlliance()).ifPresent((pose) -> this.resetPose(pose));
+                    }
+                },
+                () -> {
+                    // exec
+                    Optional<SwerveSample> sample = traject.sampleAt(time.get(), Robot.isRedAlliance());
+                    if (sample.isPresent()) {
+                        double currentTime = Utils.getCurrentTimeSeconds();
+
+                        this.targetPose = sample.get().getPose();
+                        Pose2d pose = this.getState().Pose;
+
+                        this.setControl(this.auton
+                                .withRotationalRate(sample.get().omega
+                                        + this.headingController.calculate(pose.getRotation().getRadians(),
+                                                this.targetPose.getRotation().getRadians(), currentTime))
+                                .withVelocityX(sample.get().vx +
+                                        m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
+                                .withVelocityY(sample.get().vy +
+                                        m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
+                    } else {
+                        this.setControl(new SwerveRequest.Idle());
+                    }
+                },
+                interrupt -> {
+                    // end
+                    this.setControl(new SwerveRequest.Idle());
+                },
+                () -> time.hasElapsed(traject.getTotalTime()), this).withName("follow" + traject.name());
     }
 
     // move all sysid stuff to a new file in lib

@@ -69,6 +69,11 @@ public class AutoAiming {
 
             this.pose = center.plus(face.getOffset());
             this.direction = face.getDirection();
+
+            System.out.println("L" + this.tagId + " " + this.getLeft(ElevatorSetbacks.L4));
+            System.out.println("R" + this.tagId + " " + this.getRight(ElevatorSetbacks.L4));
+            // System.out.println(this);
+            System.out.println();
         }
 
         public Pose2d getCenter(ElevatorSetbacks height) {
