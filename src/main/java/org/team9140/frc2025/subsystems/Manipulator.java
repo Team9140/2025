@@ -53,10 +53,10 @@ public class Manipulator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
-        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
-        SmartDashboard.putString("manipulator command",
-                this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
+        // SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
+        // SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
+        // SmartDashboard.putString("manipulator command",
+                // this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
     }
 
     public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));

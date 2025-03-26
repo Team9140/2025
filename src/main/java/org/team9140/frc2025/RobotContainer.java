@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.HashMap;
 import java.util.Optional;
 
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
 import org.team9140.frc2025.subsystems.Canndle;
@@ -29,7 +30,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -178,8 +181,9 @@ public class RobotContainer {
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
-        this.drivetrain.reachedPose
-                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
+        // this.drivetrain.reachedPose
+        // .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1),
+        // Seconds.of(2.0)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -202,29 +206,29 @@ public class RobotContainer {
         limeB.start();
         // limeC.start();
 
-        connectedTrigger.onTrue(
-                this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
+        // connectedTrigger.onTrue(
+        //         this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
     }
 
     public void periodic() {
         if (DriverStation.isEnabled()) {
-            limeA.setIMUMode(2);
+        //     limeA.setIMUMode(2);
             limeB.setIMUMode(2);
         } else {
-            limeA.setIMUMode(1);
+        //     limeA.setIMUMode(1);
             limeB.setIMUMode(1);
         }
 
-        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        // limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
 
         // Right Side
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
-                Units.inchesToMeters(7.794), // Forward+
-                Units.inchesToMeters(10.347), // Right+??
-                Units.inchesToMeters(9.637), // Up+
-                0, 0, 15.0);
+        // LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
+        //         Units.inchesToMeters(7.794), // Forward+
+        //         Units.inchesToMeters(10.347), // Right+??
+        //         Units.inchesToMeters(9.637), // Up+
+        //         0, 0, 15.0);
 
         // Left Side
         // LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
@@ -233,18 +237,18 @@ public class RobotContainer {
         // Units.inchesToMeters(9.637), 0, 0, -15.0);
 
         // Top Camera
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
-                Units.inchesToMeters(1.739), // Forward+
-                Units.inchesToMeters(0), // Right+???
-                Units.inchesToMeters(34.677), // Up+
-                0, 10.118, -180.0);
+        // LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+        //         Units.inchesToMeters(1.739), // Forward+
+        //         Units.inchesToMeters(0), // Right+???
+        //         Units.inchesToMeters(34.677), // Up+
+        //         0, 10.118, -180.0);
 
         // only use reef tags for pose on low camera
-        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
-                new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
+        // LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
+        //         new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
 
-        // only use coral station tags for pose on back camera
-        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
+        // // only use coral station tags for pose on back camera
+        // LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
     }
 
     HashMap<String, Trajectory<SwerveSample>> trajects;
@@ -259,13 +263,24 @@ public class RobotContainer {
             if (optTraj.isPresent()) {
                 trajects.put(nm, optTraj.get());
             } else {
+                System.out.println("traject " + nm + " is null");
                 trajects.put(nm, null);
             }
         }
     }
 
     public Command getAutonomousCommand() {
-        return leftTwoCoral();
+        return rightTwoCoral();
+    }
+
+    private Command leftTwoCoralDriveOnly() {
+        return new SequentialCommandGroup(
+                drivetrain.follow(trajects.get("left_start_to_J")),
+                new WaitCommand(Seconds.of(1.0)),
+                drivetrain.follow(trajects.get("J_to_left_feed")),
+                new WaitCommand(Seconds.of(1.0)),
+                drivetrain.follow(trajects.get("left_feed_to_L"))
+        );
     }
 
     private Command leftTwoCoral() {
@@ -282,7 +297,65 @@ public class RobotContainer {
                                 drivetrain.follow(trajects.get("J_to_left_feed"))
                                         .andThen(new WaitCommand(Seconds.of(0.5)))
                                         .andThen(drivetrain.follow(trajects.get("left_feed_to_L")))),
+                manipulator.off().withTimeout(Seconds.of(0.001)),
+                new WaitCommand(Seconds.of(0.5)),
+                elevator.moveToPosition(Constants.Elevator.L4_coral_height),
                 new WaitCommand(Seconds.of(0.25)),
+                manipulator.outtakeCoral().withTimeout(Seconds.of(1.0)),
+                elevator.moveToPosition(Constants.Elevator.STOW_height),
+                new PrintCommand("lmao"));
+    }
+
+    private Command rightTwoCoral() {
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> trajects.get("right_start_to_F").sampleAt(0, false)).withTimeout(Seconds.of(2.0)),
+                drivetrain.follow(trajects.get("right_start_to_F")),
+                new WaitCommand(Seconds.of(0.25)),
+                drivetrain.coralReefDrive(ElevatorSetbacks.L4, true).withTimeout(Seconds.of(1.0)),
+                drivetrain.stop(),
+                new WaitCommand(Seconds.of(0.25)),
+                elevator.moveToPosition(Constants.Elevator.L4_coral_height),
+                new WaitCommand(Seconds.of(0.25)),
+                manipulator.outtakeCoral().withTimeout(Seconds.of(1.0)),
+                elevator.moveToPosition(Constants.Elevator.STOW_height),
+                manipulator.intakeCoral()
+                        .alongWith(funnel.intakeCoral())
+                        .withDeadline(
+                                drivetrain.follow(trajects.get("F_to_right_feed"))
+                                        .andThen(new WaitCommand(Seconds.of(0.5)))
+                                        .andThen(drivetrain.follow(trajects.get("right_feed_to_D")))),
+                manipulator.off().withTimeout(Seconds.of(0.001)),
+                new WaitCommand(Seconds.of(0.5)),
+                elevator.moveToPosition(Constants.Elevator.L4_coral_height),
+                new WaitCommand(Seconds.of(0.25)),
+                manipulator.outtakeCoral().withTimeout(Seconds.of(1.0)),
+                elevator.moveToPosition(Constants.Elevator.STOW_height),
+                new PrintCommand("lmao"));
+    }
+
+    private Command practiceFieldReefDriveBy() {
+        return drivetrain.follow(trajects.get("practice_field"));
+    }
+
+    private Command squareDanceTwoCoralTest() {
+        return new SequentialCommandGroup(
+                drivetrain.follow(trajects.get("x0y0_to_x1y0")),
+                new PrintCommand("finished x0y0 to x1y0"),
+                new WaitCommand(Seconds.of(0.25)),
+                elevator.moveToPosition(Constants.Elevator.L4_coral_height),
+                new WaitCommand(Seconds.of(0.25)),
+                manipulator.outtakeCoral().withTimeout(Seconds.of(1.0)),
+                elevator.moveToPosition(Constants.Elevator.STOW_height),
+                manipulator.intakeCoral()
+                        .alongWith(funnel.intakeCoral())
+                        .withDeadline(
+                                drivetrain.follow(trajects.get("x1y0_to_x1y1"))
+                                        .andThen(new PrintCommand("finished x1y0_to_x1y1"))
+                                        .andThen(new WaitCommand(Seconds.of(0.5)))
+                                        .andThen(drivetrain.follow(trajects.get("x1y1_to_x0y0")))
+                                        .andThen(new PrintCommand("finished x1y1_to_x0y0"))),
+                manipulator.off().withTimeout(Seconds.of(0.001)),
+                new WaitCommand(Seconds.of(0.5)),
                 elevator.moveToPosition(Constants.Elevator.L4_coral_height),
                 new WaitCommand(Seconds.of(0.25)),
                 manipulator.outtakeCoral().withTimeout(Seconds.of(1.0)),

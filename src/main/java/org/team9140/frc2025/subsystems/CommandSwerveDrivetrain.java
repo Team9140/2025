@@ -41,6 +41,8 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -72,7 +74,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     Field2d dashField2d = new Field2d();
 
+    private final StructPublisher<Pose2d> targetPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getStructTopic("TargetPose", Pose2d.struct).publish();
+
     private Pose2d targetPose = new Pose2d();
+    private double[] targetPoseArray = new double[3];
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -95,38 +100,41 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumberArray("drive target pose", new double[] { 0, 0, 0 });
     }
 
+
     @Override
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
-        SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
-        SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
-        SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
-        SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
+        // SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
+        // SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
+        // SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
+        // SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
 
         if (this.getCurrentCommand() != null) {
             SignalLogger.writeString("drivetrain command", this.getCurrentCommand().getName());
-            SmartDashboard.putString("drivetrain command", this.getCurrentCommand().getName());
+            // SmartDashboard.putString("drivetrain command", this.getCurrentCommand().getName());
         } else {
             SignalLogger.writeString("drivetrain command", "N/A");
-            SmartDashboard.putString("drivetrain command", "N/A");
+            // SmartDashboard.putString("drivetrain command", "N/A");
         }
 
+
         if (this.targetPose != null) {
-            SmartDashboard.putNumberArray("drive target pose", new double[] { this.targetPose.getX(),
-                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
-            SignalLogger.writeDoubleArray("drive target pose", new double[] { this.targetPose.getX(),
-                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
+            // targetPublisher.set(targetPose);
+            targetPoseArray[0] = this.targetPose.getX();
+            targetPoseArray[1] = this.targetPose.getY();
+            targetPoseArray[2] = this.targetPose.getRotation().getRadians();
+            SignalLogger.writeDoubleArray("drive target pose", targetPoseArray);
         } else {
-            SmartDashboard.putNumberArray("drive target pose", new double[] { -1, -1, -1 });
-            SignalLogger.writeDoubleArray("drive target pose", new double[] { -1, -1, -1 });
+            // SmartDashboard.putNumberArray("drive target pose", new double[] { -1, -1, -1 });
+            // SignalLogger.writeDoubleArray("drive target pose", new double[] { -1, -1, -1 });
         }
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
         double xyStdDev = 9999;
         double thetaStdDev = 9999;
-        SmartDashboard.putNumber("bla", vm.measurement.avgTagArea);
+        // SmartDashboard.putNumber("bla", vm.measurement.avgTagArea);
         if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
             boolean reject = false;
 
@@ -205,10 +213,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
-    public final Trigger reachedPose = new Trigger(
-            () -> this.targetPose != null
-                    && !this.targetPose.equals(Pose2d.kZero)
-                    && Util.epsilonEquals(this.targetPose, this.getState().Pose));
+    // public final Trigger reachedPose = new Trigger(
+    //         () -> this.targetPose != null
+    //                 && !this.targetPose.equals(Pose2d.kZero)
+    //                 && Util.epsilonEquals(this.targetPose, this.getState().Pose));
 
     // AprilTagFieldLayout layout =
     // AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
@@ -223,7 +231,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command algaeReefDrive(ElevatorSetbacks level) {
         return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level))
-                .withName("coral drive");
+                .withName("algae drive");
     }
 
     private double multiplier = 1.0;
@@ -276,7 +284,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // init
                     time.restart();
                     if (Robot.isSimulation()) {
-                        traject.getInitialPose(Robot.isRedAlliance()).ifPresent((pose) -> this.resetPose(pose));
+                        traject.getInitialPose(Robot.isRedAlliance()).ifPresent(this::resetPose);
                     }
                 },
                 () -> {

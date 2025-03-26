@@ -30,6 +30,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         SignalLogger.setPath("/media/sda/logs");
+        autonomousCommand = robotContainer.getAutonomousCommand();
     }
 
     @Override
@@ -45,8 +46,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (autonomousCommand == null && DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent())
-            autonomousCommand = robotContainer.getAutonomousCommand();
+        // if (autonomousCommand == null && DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent())
+        //     autonomousCommand = robotContainer.getAutonomousCommand();
     }
 
     @Override
@@ -55,8 +56,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        if (autonomousCommand == null)
-            autonomousCommand = robotContainer.getAutonomousCommand();
+        // if (autonomousCommand == null)
+        
 
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
@@ -88,7 +89,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopExit() {
-        
+
     }
 
     @Override

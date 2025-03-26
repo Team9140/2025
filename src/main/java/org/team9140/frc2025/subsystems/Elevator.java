@@ -74,7 +74,7 @@ public class Elevator extends SubsystemBase {
                 .withSensorToMechanismRatio(Constants.Elevator.GEAR_RATIO);
 
         SoftwareLimitSwitchConfigs softLimits = new SoftwareLimitSwitchConfigs()
-                .withForwardSoftLimitThreshold(Constants.Elevator.SOFT_LIMIT
+                .withForwardSoftLimitThreshold(Constants.Elevator.SOFT_LIMIT_HIGH
                         .div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude())
                 .withForwardSoftLimitEnable(true)
                 .withReverseSoftLimitEnable(true)
@@ -109,12 +109,12 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
-        SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
-        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition().getValueAsDouble());
-        SmartDashboard.putBoolean("Elevator at target", this.atPosition.getAsBoolean());
+        // SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
+        // SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
+        // SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
+        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
+        // SmartDashboard.putBoolean("Elevator at target", this.atPosition.getAsBoolean());
         // SmartDashboard.putNumber("error",
         // this.leftMotor.getClosedLoopError().getValueAsDouble());
     }

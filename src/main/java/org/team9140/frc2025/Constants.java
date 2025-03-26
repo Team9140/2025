@@ -39,9 +39,9 @@ public class Constants {
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.1);
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(5);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(2);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(4);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(1);
     }
 
     public static class FieldItemPoses {
@@ -56,7 +56,7 @@ public class Constants {
     }
 
     public static class Manipulator {
-        public static final double HOLD_VOLTAGE_ALGAE = 3.0;
+        public static final double HOLD_VOLTAGE_ALGAE = 4.0;
 
         public static final double INTAKE_VOLTAGE_CORAL = 7.0;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
@@ -73,8 +73,8 @@ public class Constants {
         // public static final double FORWARD_AUTOSET = 0.0;
 
         public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
-        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(100.0);
-        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(10);
+        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(250.0);
+        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(15);
     }
 
     public static final class Elevator {
@@ -109,7 +109,7 @@ public class Constants {
 
         public static Distance NET_HEIGHT = Inches.of(80);
 
-        public static Distance SOFT_LIMIT = Inches.of(81);
+        public static Distance SOFT_LIMIT_HIGH = Inches.of(81);
     }
 
     public static final class Climber {
