@@ -7,13 +7,12 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
-import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
-import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
+import static org.team9140.frc2025.Constants.Drive.*;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.filter.Debouncer;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -208,7 +207,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public final Trigger reachedPose = new Trigger(
             () -> this.targetPose != null
                     && !this.targetPose.equals(new Pose2d())
-                    && Util.epsilonEquals(this.targetPose, this.getState().Pose));
+                    && Util.epsilonEquals(this.targetPose, this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds), Debouncer.DebounceType.kBoth);
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
