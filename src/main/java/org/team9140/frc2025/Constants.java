@@ -1,18 +1,5 @@
 package org.team9140.frc2025;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
-
 import org.team9140.frc2025.generated.TunerConstants;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -30,6 +17,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+
+import static edu.wpi.first.units.Units.*;
 
 public class Constants {
 
@@ -52,6 +41,8 @@ public class Constants {
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.01);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(0.1);
+
+        public static final Time REACHEDPOSE_DEBOUNCE = Seconds.of(0.5);
     }
 
     public static class FieldItemPoses {
