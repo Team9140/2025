@@ -41,7 +41,7 @@ public class RobotContainer
 
     Limelight b = new Limelight("limelight-b", drivetrain::addVisionMeasurement, null, null);
 
-//    TheMatrix matrix = new TheMatrix();
+    TheMatrix matrix = new TheMatrix();
 
 
     public RobotContainer() {
@@ -55,7 +55,7 @@ public class RobotContainer
         this.path.atEventTime("Stop").onTrue(new PrintCommand("Stop").alongWith(candle.flashColor(Canndle.BLUE, 0.1)));
 
         b.start();
-//        this.matrix.setupVision(drivetrain);
+        this.matrix.setupVision(drivetrain);
 
 //        this.path.atEventTime("End_Test").onTrue(
 //                new PrintCommand("End").alongWith(candle.flashColor(Canndle.PINK, 0.1))
@@ -86,7 +86,7 @@ public class RobotContainer
 //        controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdSteerQ(Direction.kForward));
 //        controller.y().whileTrue(drivetrain.sysIdSteerQ(Direction.kReverse));
-
+//
 //        controller.a().whileTrue(drivetrain.sysIdDriveD(Direction.kForward));
 //        controller.b().whileTrue(drivetrain.sysIdDriveD(Direction.kReverse));
 //        controller.x().whileTrue(drivetrain.sysIdDriveQ(Direction.kForward));

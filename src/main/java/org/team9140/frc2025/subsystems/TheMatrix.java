@@ -5,6 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -41,8 +42,7 @@ public class TheMatrix extends SubsystemBase {
         this.addCameraSim(this.cameraSim);
         this.drivetrain = drivetrain;
         cameraSim.enableDrawWireframe(true);
-
-
+        SmartDashboard.putData("nibba", visionSystem.getDebugField());
     }
 
     private VisionSystemSim visionSim() {
