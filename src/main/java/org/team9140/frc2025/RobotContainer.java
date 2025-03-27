@@ -203,8 +203,8 @@ public class RobotContainer {
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
-        this.drivetrain.reachedPose
-                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
+//        this.drivetrain.reachedPose
+//                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -240,7 +240,7 @@ public class RobotContainer {
         // }));
 
         connectedTrigger.onTrue(
-                this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
+                this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)).ignoringDisable(true));
     }
 
     public void periodic() {
@@ -288,6 +288,6 @@ public class RobotContainer {
         // return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () ->
         // 0).repeatedly().withTimeout(3.0);
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.oneCoralFeed();
+        return routines.threeCoral();
     }
 }

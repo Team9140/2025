@@ -95,7 +95,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
-        SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
         SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
         SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
         SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
@@ -187,23 +186,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /**
      * Follows the given field-centric path sample with PID and applies any velocities as feed forwards.
      *
-     * @param samples Provides samples to execute at any given time.
+     * @param sample Provides sample to execute.
      */
-    public Command applySwerveSample(Supplier<SwerveSample> samples) {
-        return this.run(() -> {
-            SwerveSample sample = samples.get();
-            this.targetPose = sample.getPose();
+    public void followSample(SwerveSample sample) {
+        Pose2d currPose = getState().Pose;
+        Pose2d target = sample.getPose();
 
-            if (this.targetPose == null)
-                return;
+        double currentTime = Utils.getCurrentTimeSeconds();
 
-            Pose2d pose = getState().Pose;
-            double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.auton
-                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
-                    .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
-                    .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
-        });
+        this.setControl(this.auton
+                .withRotationalRate(sample.omega + this.headingController.calculate(currPose.getRotation().getRadians(), target.getRotation().getRadians(), currentTime))
+                .withVelocityX(sample.vx + this.m_pathXController.calculate(currPose.getX(), target.getX(), currentTime))
+                .withVelocityY(sample.vy + this.m_pathYController.calculate(currPose.getY(), target.getY(), currentTime)));
     }
 
 
@@ -228,10 +222,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
-    public final Trigger reachedPose = new Trigger(
-            () -> this.targetPose != null
-                    && !this.targetPose.equals(new Pose2d())
-                    && Util.epsilonEquals(this.targetPose, this.getState().Pose));
+//    public final Trigger reachedPose = new Trigger(
+//            () -> this.targetPose != null
+//                    && !this.targetPose.equals(new Pose2d())
+//                    && Util.epsilonEquals(this.targetPose, this.getState().Pose));
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
