@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.Voltage;
 import static edu.wpi.first.units.Units.*;
 
 public class Constants {
-
     public static final Time LOOP_PERIOD = Milliseconds.of(20.0);
 
     public static class Ports {
