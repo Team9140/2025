@@ -191,7 +191,7 @@ public class TunerConstants {
     public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
     public static final double HEADING_CONTROLLER_P = 10.0;
     public static final double HEADING_CONTROLLER_I = 0.0;
-    public static final double HEADING_CONTROLLER_D = 0.05;
+    public static final double HEADING_CONTROLLER_D = 0.1;
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot

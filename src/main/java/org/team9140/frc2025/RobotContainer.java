@@ -5,9 +5,6 @@
 
 package org.team9140.frc2025;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
@@ -21,6 +18,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import static edu.wpi.first.units.Units.*;
 
 public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
@@ -195,9 +194,8 @@ public class RobotContainer {
                 .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis,
                         this.controller.getHID()::getRightTriggerAxis));
 
-        controller.start().onTrue(this.drivetrain.resetGyroCommand());
+//        controller.start().onTrue(this.drivetrain.resetGyroCommand(Degrees.of(0)));
         controller.back().whileTrue(this.drivetrain.goToPose(() -> new Pose2d(1, 0, new Rotation2d())));
-
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
                 .onFalse(this.drivetrain.disengageSlowMode());
 

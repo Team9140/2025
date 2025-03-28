@@ -1,12 +1,6 @@
 package org.team9140.frc2025.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED;
@@ -14,6 +8,9 @@ import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 import static org.team9140.frc2025.Constants.Drive.*;
 
 import choreo.trajectory.SwerveSample;
+import com.ctre.phoenix6.configs.GyroTrimConfigs;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 
 import java.util.function.DoubleSupplier;
@@ -60,6 +57,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
+    private final ADIS16470_IMU green_gyro = new ADIS16470_IMU();
+
     // move magic numbers to constants
     private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P,
             TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
@@ -88,6 +87,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
 
+        this.getPigeon2().getConfigurator().apply(new GyroTrimConfigs().withGyroScalarZ(-2.94));
+
         SmartDashboard.putData("field", dashField2d);
 
         SmartDashboard.putNumberArray("drive target pose", new double[] { 0, 0, 0 });
@@ -97,6 +98,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
+        SmartDashboard.putNumber("pigeon yaw", this.getPigeon2().getYaw().getValueAsDouble());
+        SmartDashboard.putNumber("green yaw", this.green_gyro.getAngle());
         SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
         SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
         SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
@@ -224,10 +227,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
-    public final Trigger reachedPose = new Trigger(
-            () -> this.targetPose != null
-                    && !this.targetPose.equals(new Pose2d())
-                    && Util.epsilonEquals(this.targetPose, this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds), Debouncer.DebounceType.kBoth);
+//    public final Trigger reachedPose = new Trigger(
+//            () -> this.targetPose != null
+//                    && !this.targetPose.equals(new Pose2d())
+//                    && Util.epsilonEquals(this.targetPose, this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds), Debouncer.DebounceType.kBoth);
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
@@ -280,6 +283,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command resetGyroCommand() {
         return this.runOnce(this::seedFieldCentric);
+    }
+
+    public Command resetGyroCommand(Angle angle) {
+        return this.runOnce(() -> {
+            this.green_gyro.setGyroAngleZ(angle.in(Degrees));
+            this.getPigeon2().setYaw(angle);
+        });
     }
 
     // move all sysid stuff to a new file in lib
