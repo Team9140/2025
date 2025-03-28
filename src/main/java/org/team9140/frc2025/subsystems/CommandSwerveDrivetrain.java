@@ -7,11 +7,19 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
+import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
+import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED;
+import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
 import static org.team9140.frc2025.Constants.Drive.*;
+
+import choreo.trajectory.SwerveSample;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.filter.Debouncer;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -34,11 +42,6 @@ import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -84,7 +87,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         this.headingController.enableContinuousInput(-Math.PI, Math.PI);
-        this.centric.HeadingController = headingController;
 
         SmartDashboard.putData("field", dashField2d);
 
@@ -95,7 +97,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
-        SmartDashboard.putBoolean("reached pose", this.reachedPose.getAsBoolean());
         SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
         SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
         SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
@@ -160,15 +161,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private final SwerveRequest.FieldCentricFacingAngle centric = new SwerveRequest.FieldCentricFacingAngle()
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withTargetDirection(new Rotation2d())
-            .withRotationalDeadband(Constants.Drive.MIN_ROTATIONAL_SPEED)
-            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED);
-
+    // TODO: Potentially use SwerveRequest.ApplyFieldSpeeds or SwerveRequest.ApplyRobotSpeeds
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED_TELEOP)
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
+            .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
+            .withDriveRequestType(DriveRequestType.Velocity);
+
+    private final SwerveRequest.FieldCentric auton = new SwerveRequest.FieldCentric()
+            .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED)
+            .withRotationalDeadband(MIN_ROTATIONAL_SPEED)
             .withSteerRequestType(SwerveModule.SteerRequestType.MotionMagicExpo)
             .withDriveRequestType(DriveRequestType.Velocity);
 
@@ -184,6 +186,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /**
+     * Follows the given field-centric path sample with PID and applies any velocities as feed forwards.
+     *
+     * @param sample Provides sample to execute.
+     */
+    public void followSample(SwerveSample sample) {
+        Pose2d currPose = getState().Pose;
+        Pose2d target = sample.getPose();
+
+        double currentTime = Utils.getCurrentTimeSeconds();
+
+        this.setControl(this.auton
+                .withRotationalRate(sample.omega + this.headingController.calculate(currPose.getRotation().getRadians(), target.getRotation().getRadians(), currentTime))
+                .withVelocityX(sample.vx + this.m_pathXController.calculate(currPose.getX(), target.getX(), currentTime))
+                .withVelocityY(sample.vy + this.m_pathYController.calculate(currPose.getY(), target.getY(), currentTime)));
+    }
+
+
+    /**
      * Follows the given field-centric path sample with PID.
      *
      * @param poses Provides poses to go to at any given time.
@@ -197,8 +217,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             Pose2d pose = getState().Pose;
             double currentTime = Utils.getCurrentTimeSeconds();
-            this.setControl(this.centric
-                    .withTargetDirection(this.targetPose.getRotation())
+            this.setControl(this.auton
+                    .withRotationalRate(this.headingController.calculate(pose.getRotation().getRadians(), this.targetPose.getRotation().getRadians(), currentTime))
                     .withVelocityX(m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime))
                     .withVelocityY(m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime)));
         });
@@ -211,43 +231,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
-    public Command coralReefDrive(int level, boolean lefty) {
+    public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {
-            boolean left = lefty;
-            int closestTag = AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getTagId();
+            AutoAiming.ReefFaces closestReef = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());
 
-            if (closestTag >= 9 && closestTag <= 11 || closestTag >= 20 && closestTag <= 22) {
-                left = !left;
-            }
-
-            Pose2d tagXY = layout.getTagPose(closestTag).orElse(new Pose3d()).toPose2d();
-
-            Translation2d offset = new Translation2d();
-
-            if (left) {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.leftBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.leftBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.leftBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.leftBranchOffset_L4;
-                    default -> offset;
-                };
-            } else {
-                offset = switch (level) {
-                    case 1 -> Constants.AutoAlign.rightBranchOffset_L1;
-                    case 2 -> Constants.AutoAlign.rightBranchOffset_L2;
-                    case 3 -> Constants.AutoAlign.rightBranchOffset_L3;
-                    case 4 -> Constants.AutoAlign.rightBranchOffset_L4;
-                    default -> offset;
-                };
-            }
-
-            return tagXY.plus(new Transform2d(offset, new Rotation2d(Math.PI)));
+            return lefty ? closestReef.getLeft(level) : closestReef.getRight(level);
         }).withName("coral drive");
     }
 
-    public Command algaeReefDrive(int level) {
-        return null;
+    public Command algaeReefDrive(ElevatorSetbacks level) {
+        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level)).withName("coral drive");
     }
 
     private double multiplier = 1.0;
@@ -315,7 +308,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     state -> SignalLogger.writeString("sysIdDrive_state", state.toString())),
             new SysIdRoutine.Mechanism(output -> setControl(m_driveSysID.withVolts(output)), null, this));
 
-    // @SuppressWarnings("unused")
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     null, // Use default ramp rate (1 V/s)

@@ -4,9 +4,8 @@ import static org.team9140.lib.Util.rotationEpsilonEquals;
 
 import java.util.Optional;
 import java.util.TreeMap;
-
-import org.team9140.frc2025.Robot;
-import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import choreo.Choreo;
 import choreo.trajectory.EventMarker;
@@ -16,45 +15,49 @@ import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+// TODO: Support path splits
 public class FollowPath {
     private final TreeMap<String, Trigger> eventtimes;
-    private final StructPublisher<Pose2d> posePublisher;
     private final EventLoop loop;
     private final Timer timer;
-    private final CommandSwerveDrivetrain drive;
     private final DriverStation.Alliance alliance;
     private final Trigger activeTrigger;
 
     private Trajectory<SwerveSample> trajectory;
-    private Pose2d targetPose;
     private boolean active = false;
 
-    public FollowPath(String name, CommandSwerveDrivetrain drivetrain, DriverStation.Alliance alliance) {
+    private final Supplier<Pose2d> poseSupplier;
+    private final Consumer<SwerveSample> sampleConsumer;
+
+    private final Subsystem requirement;
+
+    private final Pose2d finalPose;
+
+    public FollowPath(String name, Supplier<Pose2d> poseSupplier, Consumer<SwerveSample> sampleConsumer, DriverStation.Alliance alliance, Subsystem requirement) {
         Choreo.<SwerveSample>loadTrajectory(name)
                 .ifPresent(trajectory -> this.trajectory = alliance.equals(DriverStation.Alliance.Blue) ? trajectory
                         : trajectory.flipped());
-        this.drive = drivetrain;
 
         this.loop = new EventLoop();
         this.timer = new Timer();
         this.eventtimes = new TreeMap<>();
         this.alliance = alliance;
-        this.posePublisher = NetworkTableInstance.getDefault().getStructTopic("expected_pose", Pose2d.struct).publish();
 
         this.activeTrigger = new Trigger(loop, () -> this.active);
 
-        NetworkTableInstance.getDefault().getStructArrayTopic("trajectory", Pose2d.struct).publish()
-                .set(this.trajectory.getPoses());
+        this.poseSupplier = poseSupplier;
+        this.sampleConsumer = sampleConsumer;
+
+        this.requirement = requirement;
 
         for (EventMarker e : this.trajectory.events()) {
             if (this.eventtimes.containsKey(e.event))
@@ -64,6 +67,8 @@ public class FollowPath {
             this.eventtimes.put(e.event, atTime(e.timestamp));
             System.out.println("Added event " + e.event + " at time " + e.timestamp);
         }
+
+        this.finalPose = this.trajectory.getFinalPose(false).get();
     }
 
     public Trigger atEventTime(String eventName) {
@@ -90,7 +95,7 @@ public class FollowPath {
         return new Trigger(
                 loop,
                 () -> {
-                    final Pose2d currentPose = this.drive.getState().Pose;
+                    final Pose2d currentPose = this.poseSupplier.get();
                     boolean transValid = currentPose.getTranslation()
                             .getDistance(pose.getTranslation()) < toleranceMeters;
                     boolean rotValid = rotationEpsilonEquals(
@@ -107,7 +112,7 @@ public class FollowPath {
             return new Trigger(
                     loop,
                     () -> {
-                        final Translation2d currentTrans = this.drive.getState().Pose.getTranslation();
+                        final Translation2d currentTrans = this.poseSupplier.get().getTranslation();
                         return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
                     })
                     .and(activeTrigger);
@@ -116,7 +121,7 @@ public class FollowPath {
         return new Trigger(
                 loop,
                 () -> {
-                    final Translation2d currentTrans = this.drive.getState().Pose.getTranslation();
+                    final Translation2d currentTrans = this.poseSupplier.get().getTranslation();
                     return currentTrans.getDistance(translation) < toleranceMeters;
                 })
                 .and(activeTrigger);
@@ -127,30 +132,25 @@ public class FollowPath {
     }
 
     public Pose2d getFinalPose() {
-        return this.trajectory.getFinalPose(false).get();
+        return this.finalPose;
     }
 
     public Command gimmeCommand() {
-        return this.drive.goToPose(() -> this.targetPose).raceWith(new FunctionalCommand(
+        return new FunctionalCommand(
                 () -> {
-                    if (Robot.isSimulation()) {
-                        this.drive.resetPose(this.getInitialPose());
-                    }
                     this.timer.restart();
                     this.active = true;
                 },
                 () -> {
                     this.loop.poll();
                     Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), false);
-                    sample.ifPresent((swerveSample) -> {
-                        this.targetPose = swerveSample.getPose();
-                        this.posePublisher.set(this.targetPose);
-                    });
+                    sample.ifPresent(this.sampleConsumer);
                 },
                 interrupted -> {
-                    this.targetPose = this.drive.getState().Pose;
+                    final Pose2d finalPose = getFinalPose();
                     this.active = false;
                 },
-                () -> this.timer.hasElapsed(this.trajectory.getTotalTime())));
+                () -> (this.timer.hasElapsed(this.trajectory.getTotalTime())) && Util.epsilonEquals(poseSupplier.get(), getFinalPose()),
+                requirement);
     }
 }

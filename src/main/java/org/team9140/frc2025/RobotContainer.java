@@ -6,17 +6,16 @@
 package org.team9140.frc2025;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
-import org.team9140.frc2025.subsystems.Canndle;
-import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
-import org.team9140.frc2025.subsystems.Elevator;
-import org.team9140.frc2025.subsystems.Funnel;
-import org.team9140.frc2025.subsystems.LimeLight;
-import org.team9140.frc2025.subsystems.Manipulator;
+import org.team9140.frc2025.subsystems.*;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +30,7 @@ public class RobotContainer {
     private final Manipulator manipulator = Manipulator.getInstance();
     private final Funnel funnel = Funnel.getInstance();
     private final Canndle candle = Canndle.getInstance();
+    private final Climber climber = Climber.getInstance();
 
     private final LimeLight limeA = new LimeLight("limelight-a", this.drivetrain::acceptVisionMeasurement);
     private final LimeLight limeB = new LimeLight("limelight-b", this.drivetrain::acceptVisionMeasurement);
@@ -82,16 +82,6 @@ public class RobotContainer {
 
         // this.autonomousCommand = this.path.gimmeCommand();
 
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
-                Units.inchesToMeters(7.5),
-                Units.inchesToMeters(11.5),
-                Units.inchesToMeters(13.5), 0, -12.5, 16.0);
-
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
-                Units.inchesToMeters(7.5),
-                Units.inchesToMeters(-11.5),
-                Units.inchesToMeters(13.5), 0, -9.5, -13.0);
-
         limeA.setIMUMode(1);
         limeB.setIMUMode(1);
 
@@ -104,74 +94,117 @@ public class RobotContainer {
                 || Math.abs(this.controller.getRightX()) > 0.35;
     }
 
-    private Trigger exitAutoAlign = new Trigger(this::stickInput);
+    private final Trigger exitAutoAlign = new Trigger(this::stickInput);
 
     private void configureBindings() {
         this.candle.setDefaultCommand(this.candle.solidAllianceColor());
+        this.climber.setDefaultCommand(this.climber.off());
 
         drivetrain
                 .setDefaultCommand(
-                        drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY, controller::getRightX));
+                        drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
+                                controller::getRightX));
 
-        controller.rightTrigger().whileTrue(this.manipulator.outtakeCoral());
+        controller.rightTrigger().and(manipulator.hasCoral).onTrue(this.manipulator.outtakeCoral().until(this.controller.rightTrigger().negate()));
+        controller.rightTrigger().and(manipulator.hasAlgae).onTrue(this.manipulator.outtakeAlgae().until(this.controller.rightTrigger().negate()));
 
-        controller.rightBumper().whileTrue(
-                this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral()).withName("intake coral"));
+        controller.rightBumper().and(elevator.isStowed).whileTrue(
+                this.manipulator.intakeCoral().alongWith(this.funnel.intakeCoral())
+                        .withName("intake coral"));
         controller.leftBumper()
-                .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse()).withName("unstick coral"));
+                .whileTrue(this.manipulator.reverse().alongWith(this.funnel.reverse())
+                        .withName("unstick coral"));
 
+        this.controller.rightBumper().and(elevator.isStowed.negate())
+                .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
 
         this.controller.y().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(4, false).until(this::stickInput).withName("high coral R"));
-        this.controller.y().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("high coral R"));
 
         this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(4, true).until(this::stickInput));
-        this.controller.y().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L4, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("high coral L"));
 
-
-
-
+        this.controller.y().and(this.controller.povCenter())
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.NET_HEIGHT)
+                        .withName("net height"));
 
         this.controller.b().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(3, false).until(this::stickInput));
-        this.controller.b().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L3, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L3_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("highish (level 3) coral R"));
 
         this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(3, true).until(this::stickInput));
-        this.controller.b().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L3, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L3_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("highish (level 3) coral L"));
 
         this.controller.b().and(this.controller.povCenter())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L3_ALGAE_height));
-
-
-
+                .onTrue(this.elevator
+                        .moveToPosition(Constants.Elevator.L3_ALGAE_height)
+                        .until(this::stickInput)
+                        .withName("highish (level 3) algae center"));
 
         this.controller.a().and(this.controller.povRight())
-                .onTrue(this.drivetrain.coralReefDrive(2, false).until(this::stickInput));
-        this.controller.a().and(this.controller.povRight())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, false)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L2_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("mid coral R"));
 
         this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.drivetrain.coralReefDrive(2, true).until(this::stickInput));
-        this.controller.a().and(this.controller.povLeft())
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height));
+                .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, true)
+                        .alongWith(this.elevator
+                                .moveToPosition(Constants.Elevator.L2_coral_height))
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .until(this::stickInput)
+                        .withName("mid coral L"));
 
+        this.controller.a().and(this.controller.povCenter())
+                .onTrue(this.elevator
+                        .moveToPosition(Constants.Elevator.L2_ALGAE_height)
+                        .until(this::stickInput)
+                        .withName("mid (level 2) algae center"));
 
+        this.controller.x()
+                .onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
 
-        this.controller.x().onTrue(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+        this.controller.x()
+                .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis,
+                        this.controller.getHID()::getRightTriggerAxis));
 
         controller.start().onTrue(this.drivetrain.resetGyroCommand());
+        controller.back().whileTrue(this.drivetrain.goToPose(() -> new Pose2d(1, 0, new Rotation2d())));
 
-        // this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode()).onFalse(this.drivetrain.disengageSlowMode());
+        this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
+                .onFalse(this.drivetrain.disengageSlowMode());
 
         this.exitAutoAlign.onTrue(this.candle.solidAllianceColor());
 
-        this.drivetrain.reachedPose.onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, 0.1, 0.5));
+//        this.drivetrain.reachedPose
+//                .onTrue(this.candle.blinkColorEndsOff(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)));
 
         // controller.a().whileTrue(drivetrain.sysIdSteerD(Direction.kForward));
         // controller.b().whileTrue(drivetrain.sysIdSteerD(Direction.kReverse));
@@ -206,26 +239,55 @@ public class RobotContainer {
         // // limeC.setIMUMode(1);
         // }));
 
-        connectedTrigger.onTrue(this.candle.blinkColorEndsAlliance(Canndle.GREEN, 0.1, 2.0));
+        connectedTrigger.onTrue(
+                this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)).ignoringDisable(true));
     }
 
     public void periodic() {
         if (DriverStation.isEnabled()) {
-            // limeA.setIMUMode(2);
+            limeA.setIMUMode(2);
             limeB.setIMUMode(2);
         } else {
-            // limeA.setIMUMode(1);
+            limeA.setIMUMode(1);
             limeB.setIMUMode(1);
         }
-        // limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+
+        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+
+        // Right Side
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
+                Units.inchesToMeters(7.794), // Forward+
+                Units.inchesToMeters(10.347), // Right+??
+                Units.inchesToMeters(9.637), // Up+
+                0, 0, 15.0);
+
+        // Left Side
+        // LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
+        // Units.inchesToMeters(7.794),
+        // Units.inchesToMeters(10.347),
+        // Units.inchesToMeters(9.637), 0, 0, -15.0);
+
+        // Top Camera
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+                Units.inchesToMeters(1.739), // Forward+
+                Units.inchesToMeters(0), // Right+???
+                Units.inchesToMeters(34.677), // Up+
+                0, 10.118, -180.0);
+
+        // only use reef tags for pose on low camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
+                new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
+
+        // only use coral station tags for pose on back camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
     }
 
     public Command getAutonomousCommand() {
         // return this.drivetrain.teleopDrive(() -> 0, () -> 0.25, () ->
         // 0).repeatedly().withTimeout(3.0);
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.oneCoralFeed();
+        return routines.threeCoral();
     }
 }

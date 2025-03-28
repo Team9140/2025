@@ -20,9 +20,17 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Manipulator extends SubsystemBase {
+    private enum Holdables {
+        WATER,
+        ALGAE,
+        CORAL
+    }
+
     private final TalonSRX manipulatorMotor;
+    private Holdables currentItem = Holdables.WATER;
 
     private Manipulator() {
         this.manipulatorMotor = new TalonSRX(Ports.MANIPULATOR_MOTOR);
@@ -34,7 +42,7 @@ public class Manipulator extends SubsystemBase {
         this.manipulatorMotor.configContinuousCurrentLimit((int) MANIPULATOR_CONTINUOUS_CURRENT_LIMIT.in(Amps));
         this.manipulatorMotor.enableCurrentLimit(true);
 
-        this.setDefaultCommand(this.turnOff());
+        this.setDefaultCommand(this.off());
     }
 
     private static Manipulator instance;
@@ -51,28 +59,41 @@ public class Manipulator extends SubsystemBase {
                 this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
     }
 
-    public Command turnOff() {
-        return this.runOnce(() -> this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, 0)).withName("off");
+    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
+    public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdables.ALGAE));
+
+    public Command off() {
+        return this.run(() -> {
+            switch (currentItem) {
+                case CORAL:
+                case WATER:
+                    this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, 0);
+                    break;
+                case ALGAE:
+                    this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, HOLD_VOLTAGE_ALGAE / 12.0);
+                    break;
+            }
+        }).withName("off");
     }
 
     public Command intakeCoral() {
-        return this.setVoltage(INTAKE_VOLTAGE_CORAL).withName("intake coral");
-    }
-
-    public Command holdAlgae() {
-        return this.setVoltage(HOLD_VOLTAGE_ALGAE).withName("hold algae");
+        return this.runOnce(() -> this.currentItem = Holdables.CORAL)
+                .andThen(this.setVoltage(INTAKE_VOLTAGE_CORAL).withName("intake coral"));
     }
 
     public Command intakeAlgae() {
-        return this.setVoltage(INTAKE_VOLTAGE_ALGAE).withName("intake algae");
+        return this.runOnce(() -> this.currentItem = Holdables.ALGAE)
+                .andThen(this.setVoltage(INTAKE_VOLTAGE_ALGAE).withName("intake algae"));
     }
 
     public Command outtakeCoral() {
-        return this.setVoltage(OUTTAKE_VOLTAGE_CORAL).withName("throw coral");
+        return this.runOnce(() -> this.currentItem = Holdables.WATER)
+                .andThen(this.setVoltage(OUTTAKE_VOLTAGE_CORAL).withName("throw coral"));
     }
 
     public Command outtakeAlgae() {
-        return this.setVoltage(OUTTAKE_VOLTAGE_ALGAE).withName("throw algae");
+        return this.runOnce(() -> this.currentItem = Holdables.WATER)
+                .andThen(this.setVoltage(OUTTAKE_VOLTAGE_ALGAE).withName("throw algae"));
     }
 
     public Command setVoltage(double voltage) {
