@@ -5,7 +5,6 @@ import static org.team9140.frc2025.Constants.Drive.MAX_teleop_rotation;
 import static org.team9140.frc2025.Constants.Drive.MAX_teleop_velocity;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED;
 import static org.team9140.frc2025.Constants.Drive.MIN_ROTATIONAL_SPEED_TELEOP;
-import static org.team9140.frc2025.Constants.Drive.*;
 
 import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.configs.GyroTrimConfigs;
@@ -17,7 +16,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.filter.Debouncer;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -70,6 +68,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Field2d dashField2d = new Field2d();
 
     private Pose2d targetPose = new Pose2d();
+    private final double[] targetPoseDecomposed = new double[] { 0, 0, 0 };
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -91,7 +90,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         SmartDashboard.putData("field", dashField2d);
 
-        SmartDashboard.putNumberArray("drive target pose", new double[] { 0, 0, 0 });
+        SmartDashboard.putNumberArray("drive target pose", targetPoseDecomposed);
     }
 
     @Override
@@ -113,14 +112,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         if (this.targetPose != null) {
-            SmartDashboard.putNumberArray("drive target pose", new double[] { this.targetPose.getX(),
-                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
-            SignalLogger.writeDoubleArray("drive target pose", new double[] { this.targetPose.getX(),
-                    this.targetPose.getY(), this.targetPose.getRotation().getRadians() });
+            targetPoseDecomposed[0] = this.targetPose.getX();
+            targetPoseDecomposed[1] = this.targetPose.getY();
+            targetPoseDecomposed[2] = this.targetPose.getRotation().getRadians();
         } else {
-            SmartDashboard.putNumberArray("drive target pose", new double[] { -1, -1, -1 });
-            SignalLogger.writeDoubleArray("drive target pose", new double[] { -1, -1, -1 });
+            targetPoseDecomposed[0] = -1;
+            targetPoseDecomposed[1] = -1;
+            targetPoseDecomposed[2] = -1;
         }
+
+        SmartDashboard.putNumberArray("drive target pose", targetPoseDecomposed);
+        SignalLogger.writeDoubleArray("drive target pose", targetPoseDecomposed);
     }
 
     public void acceptVisionMeasurement(VisionMeasurement vm) {
@@ -292,99 +294,100 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
-    // move all sysid stuff to a new file in lib
+    // TODO:
+    //  move all sysid stuff to a new file in lib
 
-    private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();
-
-    // for tuning steer motors
-    private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
-            new SysIdRoutineTorqueCurrent.Config(
-                    Amps.of(1.0).per(Second),
-                    Amps.of(5.0),
-                    Seconds.of(15),
-                    state -> SignalLogger.writeString("sysIdSteer_state", state.toString())),
-            new SysIdRoutineTorqueCurrent.Mechanism(
-                    output -> setControl(m_steerSysID.withAmps(output)),
-                    null,
-                    this));
-
-    private final SwerveRequest.SysIdSwerveTranslation m_driveSysID = new SwerveRequest.SysIdSwerveTranslation();
-
-    private final SysIdRoutine m_driveRoutine = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    Volts.of(1.0).per(Second),
-                    Volts.of(4.0),
-                    Seconds.of(10),
-                    state -> SignalLogger.writeString("sysIdDrive_state", state.toString())),
-            new SysIdRoutine.Mechanism(output -> setControl(m_driveSysID.withVolts(output)), null, this));
-
-    @SuppressWarnings("unused")
-    private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    null, // Use default ramp rate (1 V/s)
-                    Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-                    null, // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
-            new SysIdRoutine.Mechanism(
-                    output -> {
-                        this.setControl(this.drive.withVelocityX(output.in(Volts)));
-                        SignalLogger.writeDouble("Target_Velocity", output.in(Volts));
-                        SignalLogger.writeDouble("Actual_Velocity", this.getState().Speeds.vxMetersPerSecond);
-                        SignalLogger.writeDouble("Drive_Position", this.getState().Pose.getX());
-                    },
-                    null,
-                    this));
-
-    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
-
-    // @SuppressWarnings("unused")
-    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    /* This is in radians per second², but SysId only supports "volts per second" */
-                    Volts.of(Math.PI / 6).per(Second),
-                    /* This is in radians per second, but SysId only supports "volts" */
-                    Volts.of(Math.PI),
-                    Seconds.of(30), // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
-            new SysIdRoutine.Mechanism(
-                    output -> {
-                        /* output is actually radians per second, but SysId only supports "volts" */
-                        setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                        /* also log the requested output for SysId */
-                        SignalLogger.writeDouble("Target_Rotational_Rate_RadPerSec", output.in(Volts));
-                        SignalLogger.writeDouble("Actual_Rotational_Rate_RadPerSec",
-                                this.getPigeon2().getAngularVelocityZWorld().getValue().in(RadiansPerSecond));
-                        SignalLogger.writeDouble("Actual_Rotational_Position_Radians",
-                                this.getPigeon2().getRotation2d().getRadians());
-                    },
-                    null,
-                    this));
-
-    public Command sysIdSteerQ(SysIdRoutine.Direction direction) {
-        return m_steerRoutine.quasistatic(direction);
-    }
-
-    public Command sysIdSteerD(SysIdRoutine.Direction direction) {
-        return m_steerRoutine.dynamic(direction);
-    }
-
-    public Command sysIdRotateQ(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineRotation.quasistatic(direction);
-    }
-
-    public Command sysIdRotateD(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineRotation.dynamic(direction);
-    }
-
-    public Command sysIdDriveQ(SysIdRoutine.Direction direction) {
-        return m_driveRoutine.quasistatic(direction);
-    }
-
-    public Command sysIdDriveD(SysIdRoutine.Direction direction) {
-        return m_driveRoutine.dynamic(direction);
-    }
+//    private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();
+//
+//    // for tuning steer motors
+//    private final SysIdRoutineTorqueCurrent m_steerRoutine = new SysIdRoutineTorqueCurrent(
+//            new SysIdRoutineTorqueCurrent.Config(
+//                    Amps.of(1.0).per(Second),
+//                    Amps.of(5.0),
+//                    Seconds.of(15),
+//                    state -> SignalLogger.writeString("sysIdSteer_state", state.toString())),
+//            new SysIdRoutineTorqueCurrent.Mechanism(
+//                    output -> setControl(m_steerSysID.withAmps(output)),
+//                    null,
+//                    this));
+//
+//    private final SwerveRequest.SysIdSwerveTranslation m_driveSysID = new SwerveRequest.SysIdSwerveTranslation();
+//
+//    private final SysIdRoutine m_driveRoutine = new SysIdRoutine(
+//            new SysIdRoutine.Config(
+//                    Volts.of(1.0).per(Second),
+//                    Volts.of(4.0),
+//                    Seconds.of(10),
+//                    state -> SignalLogger.writeString("sysIdDrive_state", state.toString())),
+//            new SysIdRoutine.Mechanism(output -> setControl(m_driveSysID.withVolts(output)), null, this));
+//
+//    @SuppressWarnings("unused")
+//    private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
+//            new SysIdRoutine.Config(
+//                    null, // Use default ramp rate (1 V/s)
+//                    Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
+//                    null, // Use default timeout (10 s)
+//                    // Log state with SignalLogger class
+//                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
+//            new SysIdRoutine.Mechanism(
+//                    output -> {
+//                        this.setControl(this.drive.withVelocityX(output.in(Volts)));
+//                        SignalLogger.writeDouble("Target_Velocity", output.in(Volts));
+//                        SignalLogger.writeDouble("Actual_Velocity", this.getState().Speeds.vxMetersPerSecond);
+//                        SignalLogger.writeDouble("Drive_Position", this.getState().Pose.getX());
+//                    },
+//                    null,
+//                    this));
+//
+//    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+//
+//    // @SuppressWarnings("unused")
+//    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
+//            new SysIdRoutine.Config(
+//                    /* This is in radians per second², but SysId only supports "volts per second" */
+//                    Volts.of(Math.PI / 6).per(Second),
+//                    /* This is in radians per second, but SysId only supports "volts" */
+//                    Volts.of(Math.PI),
+//                    Seconds.of(30), // Use default timeout (10 s)
+//                    // Log state with SignalLogger class
+//                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
+//            new SysIdRoutine.Mechanism(
+//                    output -> {
+//                        /* output is actually radians per second, but SysId only supports "volts" */
+//                        setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+//                        /* also log the requested output for SysId */
+//                        SignalLogger.writeDouble("Target_Rotational_Rate_RadPerSec", output.in(Volts));
+//                        SignalLogger.writeDouble("Actual_Rotational_Rate_RadPerSec",
+//                                this.getPigeon2().getAngularVelocityZWorld().getValue().in(RadiansPerSecond));
+//                        SignalLogger.writeDouble("Actual_Rotational_Position_Radians",
+//                                this.getPigeon2().getRotation2d().getRadians());
+//                    },
+//                    null,
+//                    this));
+//
+//    public Command sysIdSteerQ(SysIdRoutine.Direction direction) {
+//        return m_steerRoutine.quasistatic(direction);
+//    }
+//
+//    public Command sysIdSteerD(SysIdRoutine.Direction direction) {
+//        return m_steerRoutine.dynamic(direction);
+//    }
+//
+//    public Command sysIdRotateQ(SysIdRoutine.Direction direction) {
+//        return m_sysIdRoutineRotation.quasistatic(direction);
+//    }
+//
+//    public Command sysIdRotateD(SysIdRoutine.Direction direction) {
+//        return m_sysIdRoutineRotation.dynamic(direction);
+//    }
+//
+//    public Command sysIdDriveQ(SysIdRoutine.Direction direction) {
+//        return m_driveRoutine.quasistatic(direction);
+//    }
+//
+//    public Command sysIdDriveD(SysIdRoutine.Direction direction) {
+//        return m_driveRoutine.dynamic(direction);
+//    }
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();

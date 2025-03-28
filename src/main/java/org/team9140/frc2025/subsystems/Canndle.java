@@ -58,7 +58,7 @@ public class Canndle extends SubsystemBase {
     }
 
     public Command turnOff() {
-        return this.setColor(new Color8Bit(0, 0, 0)).asProxy();
+        return this.setColor(OFF).asProxy();
     }
 
     public Command blinkColorEndsAlliance(Color8Bit color, Time wait, Time timeout) {

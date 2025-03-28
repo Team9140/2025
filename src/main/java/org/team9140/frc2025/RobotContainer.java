@@ -85,6 +85,33 @@ public class RobotContainer {
         limeB.setIMUMode(1);
 
         configureBindings();
+
+        // Right Side
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
+                Units.inchesToMeters(7.794), // Forward+
+                Units.inchesToMeters(10.347), // Right+??
+                Units.inchesToMeters(9.637), // Up+
+                0, 0, 15.0);
+
+        // Left Side
+        // LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
+        // Units.inchesToMeters(7.794),
+        // Units.inchesToMeters(10.347),
+        // Units.inchesToMeters(9.637), 0, 0, -15.0);
+
+        // Top Camera
+        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
+                Units.inchesToMeters(1.739), // Forward+
+                Units.inchesToMeters(0), // Right+???
+                Units.inchesToMeters(34.677), // Up+
+                0, 10.118, -180.0);
+
+        // only use reef tags for pose on low camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
+                new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
+
+        // only use coral station tags for pose on back camera
+        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
     }
 
     private boolean stickInput() {
@@ -195,7 +222,8 @@ public class RobotContainer {
                         this.controller.getHID()::getRightTriggerAxis));
 
 //        controller.start().onTrue(this.drivetrain.resetGyroCommand(Degrees.of(0)));
-        controller.back().whileTrue(this.drivetrain.goToPose(() -> new Pose2d(1, 0, new Rotation2d())));
+        Pose2d target = new Pose2d(1, 0, new Rotation2d());
+        controller.back().whileTrue(this.drivetrain.goToPose(() -> target));
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
                 .onFalse(this.drivetrain.disengageSlowMode());
 
@@ -253,33 +281,6 @@ public class RobotContainer {
         limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
         // limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
-
-        // Right Side
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-b",
-                Units.inchesToMeters(7.794), // Forward+
-                Units.inchesToMeters(10.347), // Right+??
-                Units.inchesToMeters(9.637), // Up+
-                0, 0, 15.0);
-
-        // Left Side
-        // LimelightHelpers.setCameraPose_RobotSpace("limelight-c",
-        // Units.inchesToMeters(7.794),
-        // Units.inchesToMeters(10.347),
-        // Units.inchesToMeters(9.637), 0, 0, -15.0);
-
-        // Top Camera
-        LimelightHelpers.setCameraPose_RobotSpace("limelight-a",
-                Units.inchesToMeters(1.739), // Forward+
-                Units.inchesToMeters(0), // Right+???
-                Units.inchesToMeters(34.677), // Up+
-                0, 10.118, -180.0);
-
-        // only use reef tags for pose on low camera
-        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-b",
-                new int[] { 17, 18, 19, 20, 21, 22, 6, 7, 8, 9, 10, 11 });
-
-        // only use coral station tags for pose on back camera
-        LimelightHelpers.SetFiducialIDFiltersOverride("limelight-a", new int[] { 1, 2, 12, 13 });
     }
 
     public Command getAutonomousCommand() {
