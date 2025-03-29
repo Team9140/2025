@@ -37,7 +37,7 @@ public class Constants {
         public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.1);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
