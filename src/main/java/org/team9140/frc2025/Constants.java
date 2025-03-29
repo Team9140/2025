@@ -39,8 +39,8 @@ public class Constants {
 
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(0);
-        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(5);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
+        public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
 
         public static final Time REACHEDPOSE_DEBOUNCE = Seconds.of(0.5);
     }

@@ -234,8 +234,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 //                    && !this.targetPose.equals(new Pose2d())
 //                    && Util.epsilonEquals(this.targetPose, this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds), Debouncer.DebounceType.kBoth);
 
-    AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
-
     public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {
             AutoAiming.ReefFaces closestReef = AutoAiming.getClosestFace(this.getState().Pose.getTranslation());

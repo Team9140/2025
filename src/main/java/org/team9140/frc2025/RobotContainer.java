@@ -224,7 +224,7 @@ public class RobotContainer {
                         this.controller.getHID()::getRightTriggerAxis));
 
 //        controller.start().onTrue(this.drivetrain.resetGyroCommand(Degrees.of(0)));
-        Pose2d target = new Pose2d(1, 0, new Rotation2d());
+        Pose2d target = new Pose2d(2, 4, new Rotation2d());
         controller.back().whileTrue(this.drivetrain.goToPose(() -> target));
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
                 .onFalse(this.drivetrain.disengageSlowMode());
