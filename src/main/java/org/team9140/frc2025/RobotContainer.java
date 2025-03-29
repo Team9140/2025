@@ -5,6 +5,8 @@
 
 package org.team9140.frc2025;
 
+import com.ctre.phoenix6.Utils;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.LimelightHelpers;
@@ -269,7 +271,10 @@ public class RobotContainer {
                 this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0)).ignoringDisable(true));
     }
 
+    double prevTime = Utils.getCurrentTimeSeconds();
+
     public void periodic() {
+        SmartDashboard.putNumber("period", -(prevTime - (prevTime = Utils.getCurrentTimeSeconds())));
         if (DriverStation.isEnabled()) {
             limeA.setIMUMode(2);
             limeB.setIMUMode(2);
