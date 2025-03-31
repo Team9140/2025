@@ -37,8 +37,8 @@ public class Constants {
         public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.1);
-        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.1);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.06);
+        public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.02);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
 
@@ -81,7 +81,7 @@ public class Constants {
     public static final class Elevator {
         public static final Mass mass = Pounds.of(0.1);
 
-        public static final Current STATOR_LIMIT = Amps.of(50.0);
+        public static final Current STATOR_LIMIT = Amps.of(60.0);
 
         public static final double GEAR_RATIO = 60.0 / 12.0;
         public static final Distance SPOOL_RADIUS = Inches.of(0.75);
@@ -101,9 +101,9 @@ public class Constants {
 
         public static Distance STOW_height = MIN_HEIGHT;
         public static Distance L1_coral_height = Inches.of(24);
-        public static Distance L2_coral_height = Inches.of(30);
-        public static Distance L3_coral_height = Inches.of(46);
-        public static Distance L4_coral_height = Inches.of(72);
+        public static Distance L2_coral_height = Inches.of(31);
+        public static Distance L3_coral_height = Inches.of(47);
+        public static Distance L4_coral_height = Inches.of(72.0);
 
         public static Distance L2_ALGAE_height = Inches.of(24); // TODO: Actual Value
         public static Distance L3_ALGAE_height = Inches.of(39);
@@ -127,7 +127,7 @@ public class Constants {
         L1(Inches.of(18.0)),
         L2(Inches.of(18.0)),
         L3(Inches.of(18.0 + 4.0)),
-        L4(Inches.of(18.0 + 10.0));
+        L4(Inches.of(18.0 + 9.0));
 
         ElevatorSetbacks(Distance setback) {
             this.setbackinator = new Transform2d(setback.unaryMinus(), Meters.of(0), new Rotation2d());
@@ -148,12 +148,12 @@ public class Constants {
                 Inches.of(13).div(2), new Rotation2d());
 
         // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Inches.of(13.0);
+        private static final Distance reefBranchGap = Inches.of(13.5);
         // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
         private static final Distance L1setback = Inches.of(18.0);
         private static final Distance L2setback = Inches.of(18.0); // wall bump
         private static final Distance L3setback = Inches.of(18.0 + 4.0); // 4 inch behind wall
-        private static final Distance L4setback = Inches.of(18.0 + 10.0); // 11 inch behind wall
+        private static final Distance L4setback = Inches.of(18.0 + 9.0); // 11 inch behind wall
 
         // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
         // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot
