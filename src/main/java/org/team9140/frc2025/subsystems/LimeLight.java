@@ -18,13 +18,15 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LimeLight extends SubsystemBase {
 
     private String name;
     private Consumer<VisionMeasurement> measurementConsumer;
+    private double[] mt1BotPose = new double[3];
+    private double[] mt2BotPose = new double[3];
 
     public LimeLight(String nm, Consumer<VisionMeasurement> cvm) {
         this.name = nm;
@@ -49,27 +51,26 @@ public class LimeLight extends SubsystemBase {
                 timestamp = timestamp.minus(Milliseconds.of(llResult.latency_capture))
                         .minus(Milliseconds.of(llResult.latency_pipeline));
 
-                if (DriverStation.isDisabled()) {
+                LimelightHelpers.PoseEstimate mt1 = LimelightHelpers
+                        .getBotPoseEstimate_wpiBlue(LimeLight.this.name);
 
-                    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers
-                            .getBotPoseEstimate_wpiBlue(LimeLight.this.name);
-
-                    if (mt1 != null && mt1.tagCount >= 1) {
-                        LimeLight.this.measurementConsumer
-                                .accept(new VisionMeasurement(VisionMeasurement.Kind.MT1, timestamp, mt1));
-                    }
-
-                } else {
-
-                    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers
-                            .getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
-
-                    if (mt2 != null && mt2.tagCount >= 1) {
-                        LimeLight.this.measurementConsumer
-                                .accept(new VisionMeasurement(VisionMeasurement.Kind.MT2, timestamp, mt2));
-                    }
-
+                if (mt1 != null && mt1.tagCount >= 1) {
+                    LimeLight.this.measurementConsumer
+                            .accept(new VisionMeasurement(VisionMeasurement.Kind.MT1, timestamp, mt1));
                 }
+
+                LimelightHelpers.PoseEstimate mt2 = LimelightHelpers
+                        .getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
+
+                LimeLight.this.mt1BotPose[0] = mt1.pose.getX();
+                LimeLight.this.mt1BotPose[1] = mt1.pose.getY();
+                LimeLight.this.mt1BotPose[2] = mt1.pose.getRotation().getRadians();
+                SmartDashboard.putNumberArray(LimeLight.this.name + "_MT1", LimeLight.this.mt1BotPose);
+
+                LimeLight.this.mt2BotPose[0] = mt2.pose.getX();
+                LimeLight.this.mt2BotPose[1] = mt2.pose.getY();
+                LimeLight.this.mt2BotPose[2] = mt2.pose.getRotation().getRadians();
+                SmartDashboard.putNumberArray(LimeLight.this.name + "_MT2", LimeLight.this.mt2BotPose);
             }
         }
     }
