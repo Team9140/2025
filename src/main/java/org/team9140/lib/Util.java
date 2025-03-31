@@ -61,4 +61,14 @@ public class Util {
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b) {
         return rotationEpsilonEquals(a, b, Math.toRadians(5.0));
     }
+
+    public static double clamp(double val, double limit) {
+        if (val > limit) {
+             return limit;
+        } else if (val < -limit) {
+            return -limit;
+        } else {
+            return val;
+        }
+    }
 }
