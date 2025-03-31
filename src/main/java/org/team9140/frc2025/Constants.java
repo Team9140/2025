@@ -1,7 +1,5 @@
 package org.team9140.frc2025;
 
-import org.team9140.frc2025.generated.TunerConstants;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -34,13 +32,24 @@ public class Constants {
     }
 
     public static class Drive {
-        public static final LinearVelocity MAX_teleop_velocity = TunerConstants.kSpeedAt12Volts.times(0.8);
+        public static final LinearVelocity SPEED_AT_12_VOLTS = MetersPerSecond.of(4.48);
+        public static final LinearVelocity MAX_teleop_velocity = SPEED_AT_12_VOLTS.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
 
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED = MetersPerSecond.of(0.06);
         public static final LinearVelocity MIN_TRANSLATIONAL_SPEED_TELEOP = MetersPerSecond.of(0.02);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
+
+        public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
+        public static final double X_CONTROLLER_I = 0.0;
+        public static final double X_CONTROLLER_D = 0.015;
+        public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
+        public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
+        public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
+        public static final double HEADING_CONTROLLER_P = 8.0; // 8.0
+        public static final double HEADING_CONTROLLER_I = 0.0;
+        public static final double HEADING_CONTROLLER_D = 0.03; // 0.04
 
         public static final Time REACHEDPOSE_DEBOUNCE = Seconds.of(0.5);
     }
@@ -127,7 +136,9 @@ public class Constants {
         L1(Inches.of(18.0)),
         L2(Inches.of(18.0)),
         L3(Inches.of(18.0 + 4.0)),
-        L4(Inches.of(18.0 + 9.0));
+        L4(Inches.of(18.0 + 9.0)),
+        ALGAE_L2(Inches.of(18.0)),
+        ALGAE_L3(Inches.of(18.0 + 4.0));
 
         ElevatorSetbacks(Distance setback) {
             this.setbackinator = new Transform2d(setback.unaryMinus(), Meters.of(0), new Rotation2d());

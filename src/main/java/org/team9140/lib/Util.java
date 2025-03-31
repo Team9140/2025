@@ -49,13 +49,7 @@ public class Util {
     }
 
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b, double epsilon) {
-        return Math.abs(MathUtil.angleModulus(a.minus(b).getRadians())) <= epsilon;
-        // final double tau = 2 * Math.PI;
-        // double theta_a = a.getRadians() < 0 ? tau - (-a.getRadians() % tau):
-        // a.getRadians() % tau;
-        // double theta_b = b.getRadians() < 0 ? tau - (-b.getRadians() % tau):
-        // b.getRadians() % tau;
-        // return epsilonEquals(theta_a, theta_b, epsilon);
+        return Math.abs(MathUtil.angleModulus(a.getRadians() - b.getRadians())) <= epsilon;
     }
 
     public static boolean rotationEpsilonEquals(Rotation2d a, Rotation2d b) {
@@ -65,10 +59,6 @@ public class Util {
     public static double clamp(double val, double limit) {
         if (val > limit) {
              return limit;
-        } else if (val < -limit) {
-            return -limit;
-        } else {
-            return val;
-        }
+        } else return Math.max(val, -limit);
     }
 }

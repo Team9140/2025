@@ -3,6 +3,8 @@ package org.team9140.frc2025.helpers;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 
+import edu.wpi.first.units.measure.Distance;
+import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.Constants.FieldItemPoses;
 import org.team9140.frc2025.Constants.AutoAlign;
@@ -17,18 +19,18 @@ import edu.wpi.first.units.measure.Angle;
 public class AutoAiming {
     // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
     public enum ReefFaces {
-        BlueFarMiddle(FieldItemPoses.REEF_BLUE, Sides.Right, true, 21),
-        BlueFarLeft(FieldItemPoses.REEF_BLUE, Sides.TopRight, true, 20),
-        BlueCloseLeft(FieldItemPoses.REEF_BLUE, Sides.TopLeft, false, 19),
-        BlueCloseMiddle(FieldItemPoses.REEF_BLUE, Sides.Left, false, 18),
-        BlueCloseRight(FieldItemPoses.REEF_BLUE, Sides.BottomLeft, false, 17),
-        BlueFarRight(FieldItemPoses.REEF_BLUE, Sides.BottomRight, true, 22),
-        RedCloseMiddle(FieldItemPoses.REEF_RED, Sides.Right, false, 7),
-        RedCloseRight(FieldItemPoses.REEF_RED, Sides.TopRight, false, 8),
-        RedFarRight(FieldItemPoses.REEF_RED, Sides.TopLeft, true, 9),
-        RedFarMiddle(FieldItemPoses.REEF_RED, Sides.Left, true, 10),
-        RedFarLeft(FieldItemPoses.REEF_RED, Sides.BottomLeft, true, 11),
-        RedCloseLeft(FieldItemPoses.REEF_RED, Sides.BottomRight, false, 6);
+        BlueFarMiddle(FieldItemPoses.REEF_BLUE, Sides.Right, true, 21, Constants.Elevator.L2_ALGAE_height),
+        BlueFarLeft(FieldItemPoses.REEF_BLUE, Sides.TopRight, true, 20, Constants.Elevator.L3_ALGAE_height),
+        BlueCloseLeft(FieldItemPoses.REEF_BLUE, Sides.TopLeft, false, 19, Constants.Elevator.L2_ALGAE_height),
+        BlueCloseMiddle(FieldItemPoses.REEF_BLUE, Sides.Left, false, 18, Constants.Elevator.L3_ALGAE_height),
+        BlueCloseRight(FieldItemPoses.REEF_BLUE, Sides.BottomLeft, false, 17, Constants.Elevator.L2_ALGAE_height),
+        BlueFarRight(FieldItemPoses.REEF_BLUE, Sides.BottomRight, true, 22, Constants.Elevator.L3_ALGAE_height),
+        RedCloseMiddle(FieldItemPoses.REEF_RED, Sides.Right, false, 7, Constants.Elevator.L2_ALGAE_height),
+        RedCloseRight(FieldItemPoses.REEF_RED, Sides.TopRight, false, 8, Constants.Elevator.L3_ALGAE_height),
+        RedFarRight(FieldItemPoses.REEF_RED, Sides.TopLeft, true, 9, Constants.Elevator.L2_ALGAE_height),
+        RedFarMiddle(FieldItemPoses.REEF_RED, Sides.Left, true, 10, Constants.Elevator.L3_ALGAE_height),
+        RedFarLeft(FieldItemPoses.REEF_RED, Sides.BottomLeft, true, 11, Constants.Elevator.L2_ALGAE_height),
+        RedCloseLeft(FieldItemPoses.REEF_RED, Sides.BottomRight, false, 6, Constants.Elevator.L3_ALGAE_height);
 
         // Birds eye view
         private enum Sides {
@@ -62,17 +64,20 @@ public class AutoAiming {
         private final Rotation2d direction;
         private final boolean isFar;
         private final int tagId;
+        private final Distance algaeElevatorHeight;
 
-        ReefFaces(Pose2d center, Sides face, boolean isFar, int tagId) {
+        ReefFaces(Pose2d center, Sides face, boolean isFar, int tagId, Distance algaeElevatorHeight) {
             this.isFar = isFar;
             this.tagId = tagId;
 
             this.pose = center.plus(face.getOffset());
             this.direction = face.getDirection();
+
+            this.algaeElevatorHeight = algaeElevatorHeight;
         }
 
-        public Pose2d getCenter(ElevatorSetbacks height) {
-            return this.pose.plus(height.getSetbackinator());
+        public Pose2d getCenter() {
+            return this.pose.plus(this.algaeElevatorHeight.equals(Constants.Elevator.L2_ALGAE_height) ? Constants.ElevatorSetbacks.ALGAE_L2.getSetbackinator() : ElevatorSetbacks.ALGAE_L3.getSetbackinator());
         }
 
         public Pose2d getLeft(ElevatorSetbacks height) {
@@ -85,6 +90,10 @@ public class AutoAiming {
             return this.pose
                     .plus(AutoAlign.HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER.times(this.isFar ? 1 : -1))
                     .plus(height.getSetbackinator());
+        }
+
+        public Distance getAlgaeElevatorHeight() {
+            return this.algaeElevatorHeight;
         }
 
         public Rotation2d getDirection() {

@@ -9,7 +9,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
-import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.generated.TunerConstantsComp;
 import org.team9140.frc2025.subsystems.Canndle;
 import org.team9140.frc2025.subsystems.Climber;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
@@ -30,8 +30,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.getDrivetrain();
-    private final Telemetry logger = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+    private final CommandSwerveDrivetrain drivetrain = TunerConstantsComp.getDrivetrain();
+    private final Telemetry logger = new Telemetry(Constants.Drive.SPEED_AT_12_VOLTS.in(MetersPerSecond));
     private final Elevator elevator = Elevator.getInstance();
     private final Manipulator manipulator = Manipulator.getInstance();
     private final Funnel funnel = Funnel.getInstance();

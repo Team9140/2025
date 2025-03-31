@@ -10,7 +10,6 @@ import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.configs.GyroTrimConfigs;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 
 import java.util.function.DoubleSupplier;
@@ -20,8 +19,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.generated.TunerConstants;
-import org.team9140.frc2025.generated.TunerConstants.TunerSwerveDrivetrain;
+import org.team9140.frc2025.generated.TunerConstantsComp;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.helpers.LimelightHelpers.RawFiducial;
 import org.team9140.lib.Util;
@@ -47,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
-public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrivetrain implements Subsystem {
     private static final Time kSimLoopPeriod = Milliseconds.of(5);
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -55,12 +53,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // private final ADIS16470_IMU green_gyro = new ADIS16470_IMU();
 
     // move magic numbers to constants
-    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(TunerConstants.X_CONTROLLER_P,
-            TunerConstants.X_CONTROLLER_I, TunerConstants.X_CONTROLLER_D);
-    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(TunerConstants.Y_CONTROLLER_P,
-            TunerConstants.Y_CONTROLLER_I, TunerConstants.Y_CONTROLLER_D);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(TunerConstants.HEADING_CONTROLLER_P,
-            TunerConstants.HEADING_CONTROLLER_I, TunerConstants.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
+    private final PhoenixPIDController m_pathXController = new PhoenixPIDController(Constants.Drive.X_CONTROLLER_P,
+            Constants.Drive.X_CONTROLLER_I, Constants.Drive.X_CONTROLLER_D);
+    private final PhoenixPIDController m_pathYController = new PhoenixPIDController(Constants.Drive.Y_CONTROLLER_P,
+            Constants.Drive.Y_CONTROLLER_I, Constants.Drive.Y_CONTROLLER_D);
+    private final PhoenixPIDController headingController = new PhoenixPIDController(Constants.Drive.HEADING_CONTROLLER_P,
+            Constants.Drive.HEADING_CONTROLLER_I, Constants.Drive.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     Field2d dashField2d = new Field2d();
 
@@ -309,8 +307,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }).withName("coral drive");
     }
 
-    public Command algaeReefDrive(ElevatorSetbacks level) {
-        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter(level))
+    public Command algaeReefDrive() {
+        return this.goToPose(() -> AutoAiming.getClosestFace(this.getState().Pose.getTranslation()).getCenter())
                 .withName("coral drive");
     }
 
