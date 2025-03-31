@@ -118,12 +118,12 @@ public class TunerConstants {
     // the
     // output type specified by SwerveModuleConstants.SteerMotorClosedLoopOutput
     private static final Slot0Configs steerGainsMK4i = new Slot0Configs()
-            .withKP(100.0).withKI(0).withKD(0.0)
+            .withKP(50.0).withKI(0).withKD(0.0)// 100, 0, 0
             .withKS((0.063954 + 0.022664) / 2.0).withKV((2.719 + 2.7317) / 2.0).withKA((0.34302 + 0.30008) / 2.0)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
 
     private static final Slot0Configs steerGainsMK4n = new Slot0Configs()
-            .withKP(100.0).withKI(0).withKD(0.0)
+            .withKP(50.0).withKI(0).withKD(0.0) //100, 0, 0
             .withKS((0.075051 + 0.15571) / 2.0).withKV((2.3389 + 2.3426) / 2.0).withKA((0.19043 + 0.17707) / 2.0)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
 
@@ -185,13 +185,13 @@ public class TunerConstants {
 
     public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
     public static final double X_CONTROLLER_I = 0.0;
-    public static final double X_CONTROLLER_D = 0.05;
+    public static final double X_CONTROLLER_D = 0.015;
     public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
     public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
     public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
     public static final double HEADING_CONTROLLER_P = 8.0; // 8.0
     public static final double HEADING_CONTROLLER_I = 0.0;
-    public static final double HEADING_CONTROLLER_D = 0.4; // 0.04
+    public static final double HEADING_CONTROLLER_D = 0.03; // 0.04
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot
