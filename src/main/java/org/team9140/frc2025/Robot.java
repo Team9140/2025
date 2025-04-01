@@ -10,11 +10,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import org.team9140.lib.Util;
+
+import java.util.Optional;
 
 import static edu.wpi.first.units.Units.Seconds;
 
 public class Robot extends TimedRobot {
     private Command autonomousCommand;
+    private Optional<DriverStation.Alliance> lastSetAlliance = Optional.empty();
 
     private final RobotContainer robotContainer;
 
@@ -41,8 +45,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
-        if (autonomousCommand == null && DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent())
+        if (DriverStation.isDSAttached() && !Util.getAlliance().equals(lastSetAlliance)) {
+            lastSetAlliance = Util.getAlliance();
             autonomousCommand = robotContainer.getAutonomousCommand();
+        }
+
+        Util.updateAlliance();
     }
 
     @Override

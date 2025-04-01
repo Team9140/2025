@@ -10,8 +10,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
+
+import java.util.Optional;
 
 public class Util {
+    private static Optional<DriverStation.Alliance> alliance = Optional.empty();
+
     private final static double defaultDeadband = 0.12;
     private final static double EPSILON = 0.00000001;
 
@@ -60,5 +65,14 @@ public class Util {
         if (val > limit) {
              return limit;
         } else return Math.max(val, -limit);
+    }
+
+    public static void updateAlliance() {
+        alliance = DriverStation.getAlliance();
+    }
+
+    public static Optional<DriverStation.Alliance> getAlliance() {
+        if (alliance.isEmpty()) updateAlliance();
+        return alliance;
     }
 }

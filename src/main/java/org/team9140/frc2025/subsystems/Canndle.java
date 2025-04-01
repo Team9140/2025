@@ -10,6 +10,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.team9140.lib.Util;
+
+import java.util.Optional;
 
 public class Canndle extends SubsystemBase {
     private static Canndle instance;
@@ -42,15 +45,14 @@ public class Canndle extends SubsystemBase {
 
     public Command solidAllianceColor() {
         Command command = new ConditionalCommand(this.setColor(RED), this.setColor(BLUE),
-                () -> DriverStation.getAlliance().isPresent()
-                        && DriverStation.Alliance.Red.equals(DriverStation.getAlliance().get()));
+                () -> Optional.of(DriverStation.Alliance.Red).equals(Util.getAlliance()));
         command.addRequirements(this);
         
         return command;
     }
 
     public Color8Bit getAllianceColor() {
-        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)) {
+        if (Optional.of(DriverStation.Alliance.Blue).equals(Util.getAlliance())) {
             return BLUE;
         } else {
             return RED;

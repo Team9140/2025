@@ -8,7 +8,6 @@ package org.team9140.frc2025;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstantsComp;
 import org.team9140.frc2025.subsystems.Canndle;

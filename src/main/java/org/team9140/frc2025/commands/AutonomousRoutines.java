@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import org.team9140.lib.Util;
 
 // TODO: put expected pose on dashboard in telemetry file
 public class AutonomousRoutines {
@@ -37,7 +38,7 @@ public class AutonomousRoutines {
 
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
-        this.alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+        this.alliance = Util.getAlliance().get();
 
         Elevator elevator = Elevator.getInstance();
         Manipulator manipulator = Manipulator.getInstance();

@@ -12,6 +12,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -333,7 +334,7 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
             var omega = MAX_teleop_rotation.times(Util.applyDeadband(-rightStickX.getAsDouble()))
                     .times(this.multiplier);
 
-            if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+            if (Optional.of(Alliance.Red).equals(Util.getAlliance())) {
                 vX = vX.unaryMinus();
                 vY = vY.unaryMinus();
             }
