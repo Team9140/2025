@@ -61,7 +61,7 @@ public class AutonomousRoutines {
     }
 
     public Command oneCoral() {
-        FollowPath path = new FollowPath("allianceColorToJ", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath path = new FollowPath("allianceColorToJL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
 
         return Commands.runOnce(() -> {
             if (Robot.isSimulation()) {
@@ -74,7 +74,7 @@ public class AutonomousRoutines {
     }
 
     public Command oneCoralFeed() {
-        FollowPath jToFeed = new FollowPath("jToFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath jToFeed = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
         return oneCoral()
                 .andThen(jToFeed.gimmeCommand())
                 .andThen(this.drivetrain.stop())
@@ -82,15 +82,15 @@ public class AutonomousRoutines {
     }
 
     public Command hToFeed() {
-        FollowPath path = new FollowPath("hToFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath path = new FollowPath("HL4ToRightFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
         return path.gimmeCommand().andThen(INTAKE_CORAL.get());
     }
 
     public Command threeCoral() {
-        FollowPath farLeftToFeed = new FollowPath("jToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath closeLeftToFeed = new FollowPath("kToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath feedToCloseLeftLeft = new FollowPath("leftFeedToK", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath feedToCloseLeftRight = new FollowPath("leftFeedToL", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath farLeftToFeed = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath closeLeftToFeed = new FollowPath("KL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath feedToCloseLeftLeft = new FollowPath("LeftFeedToKL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+        FollowPath feedToCloseLeftRight = new FollowPath("LeftFeedToLL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
 
         return oneCoral()
                 .andThen(farLeftToFeed.gimmeCommand())
