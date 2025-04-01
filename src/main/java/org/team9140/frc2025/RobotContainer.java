@@ -8,6 +8,7 @@ package org.team9140.frc2025;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstantsComp;
 import org.team9140.frc2025.subsystems.Canndle;
@@ -214,9 +215,10 @@ public class RobotContainer {
             limeC.setIMUMode(1);
         }
 
-        limeA.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
-        limeB.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
-        limeC.setRobotOrientation(this.drivetrain.getState().Pose.getRotation());
+        final Rotation2d robotAngle = this.drivetrain.getState().Pose.getRotation();
+        limeA.setRobotOrientation(robotAngle);
+        limeB.setRobotOrientation(robotAngle);
+        limeC.setRobotOrientation(robotAngle);
     }
 
     public Command getAutonomousCommand() {

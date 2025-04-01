@@ -1,5 +1,8 @@
 package org.team9140.frc2025.subsystems;
 
+import com.ctre.phoenix6.Utils;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.Notifier;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Ports;
 
@@ -36,6 +39,10 @@ public class Elevator extends SubsystemBase {
 
     private Distance targetPosition;
 
+    private static final Time kSimLoopPeriod = Milliseconds.of(5);
+    private Notifier m_simNotifier = null;
+    private double m_lastSimTime;
+
     private final ElevatorSim elevatorSim = new ElevatorSim(
             DCMotor.getKrakenX60Foc(2),
             Constants.Elevator.GEAR_RATIO,
@@ -47,6 +54,10 @@ public class Elevator extends SubsystemBase {
             Constants.Elevator.STOW_height.in(Meters));
 
     private Elevator() {
+        if (Utils.isSimulation()) {
+            startSimThread();
+        }
+
         this.rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
         this.leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
 
@@ -109,21 +120,20 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
+        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition(false).in(Inches));
         SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
-        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent().getValueAsDouble());
-        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition().getValueAsDouble());
-        SmartDashboard.putBoolean("Elevator at target", this.atPosition.getAsBoolean());
+        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
+        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
+        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
+        SmartDashboard.putBoolean("Elevator at target", this.getPosition(false).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
         // SmartDashboard.putNumber("error",
         // this.leftMotor.getClosedLoopError().getValueAsDouble());
     }
 
-    @Override
-    public void simulationPeriodic() {
+    public void updateSimState(double deltatime) {
         double simvVolts = this.rightMotor.getSimState().getMotorVoltage();
         this.elevatorSim.setInputVoltage(simvVolts);
-        this.elevatorSim.update(Constants.LOOP_PERIOD.in(Seconds));
+        this.elevatorSim.update(deltatime);
 
         Distance simPosition = Meters.of(this.elevatorSim.getPositionMeters());
         LinearVelocity simVelocity = MetersPerSecond.of(this.elevatorSim.getVelocityMetersPerSecond());
@@ -138,9 +148,24 @@ public class Elevator extends SubsystemBase {
                                 * Constants.Elevator.GEAR_RATIO));
     }
 
-    public Distance getPosition() {
+    private void startSimThread() {
+        m_lastSimTime = Utils.getCurrentTimeSeconds();
+
+        /* Run simulation at a faster rate so PID gains behave more reasonably */
+        m_simNotifier = new Notifier(() -> {
+            final double currentTime = Utils.getCurrentTimeSeconds();
+            double deltaTime = currentTime - m_lastSimTime;
+            m_lastSimTime = currentTime;
+
+            /* use the measured time delta, get battery voltage from WPILib */
+            updateSimState(deltaTime);
+        });
+        m_simNotifier.startPeriodic(kSimLoopPeriod.in(Seconds));
+    }
+
+    public Distance getPosition(boolean refresh) {
         return Constants.Elevator.SPOOL_CIRCUMFERENCE
-                .times(this.rightMotor.getPosition().getValue().in(Rotations));
+                .times(this.rightMotor.getPosition(refresh).getValue().in(Rotations));
     }
 
     public Command moveToPosition(Distance goalPosition) {
@@ -151,7 +176,7 @@ public class Elevator extends SubsystemBase {
         }).andThen(new WaitUntilCommand(atPosition));
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));
-    public final Trigger atPosition = new Trigger(() -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
-    public final Trigger isStowed = new Trigger(() -> this.getPosition().lt(Inches.of(0.5)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition(true).gt(Feet.of(3)));
+    public final Trigger atPosition = new Trigger(() -> this.getPosition(true).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
+    public final Trigger isStowed = new Trigger(() -> this.getPosition(true).lt(Inches.of(0.5)));
 }

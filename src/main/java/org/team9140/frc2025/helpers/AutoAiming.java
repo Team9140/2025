@@ -19,27 +19,27 @@ import edu.wpi.first.units.measure.Angle;
 public class AutoAiming {
     // DO NOT CHANGE THE ORDER OF THESE UNLESS YOU KNOW WHAT YOU'RE DOING
     public enum ReefFaces {
-        BlueFarMiddle(FieldItemPoses.REEF_BLUE, Sides.Right, true, 21, Constants.Elevator.L2_ALGAE_height),
-        BlueFarLeft(FieldItemPoses.REEF_BLUE, Sides.TopRight, true, 20, Constants.Elevator.L3_ALGAE_height),
-        BlueCloseLeft(FieldItemPoses.REEF_BLUE, Sides.TopLeft, false, 19, Constants.Elevator.L2_ALGAE_height),
-        BlueCloseMiddle(FieldItemPoses.REEF_BLUE, Sides.Left, false, 18, Constants.Elevator.L3_ALGAE_height),
-        BlueCloseRight(FieldItemPoses.REEF_BLUE, Sides.BottomLeft, false, 17, Constants.Elevator.L2_ALGAE_height),
-        BlueFarRight(FieldItemPoses.REEF_BLUE, Sides.BottomRight, true, 22, Constants.Elevator.L3_ALGAE_height),
-        RedCloseMiddle(FieldItemPoses.REEF_RED, Sides.Right, false, 7, Constants.Elevator.L2_ALGAE_height),
-        RedCloseRight(FieldItemPoses.REEF_RED, Sides.TopRight, false, 8, Constants.Elevator.L3_ALGAE_height),
-        RedFarRight(FieldItemPoses.REEF_RED, Sides.TopLeft, true, 9, Constants.Elevator.L2_ALGAE_height),
-        RedFarMiddle(FieldItemPoses.REEF_RED, Sides.Left, true, 10, Constants.Elevator.L3_ALGAE_height),
-        RedFarLeft(FieldItemPoses.REEF_RED, Sides.BottomLeft, true, 11, Constants.Elevator.L2_ALGAE_height),
-        RedCloseLeft(FieldItemPoses.REEF_RED, Sides.BottomRight, false, 6, Constants.Elevator.L3_ALGAE_height);
+        GH_B(FieldItemPoses.REEF_BLUE, Sides.GH, true, 21, Constants.Elevator.L2_ALGAE_height),
+        IJ_B(FieldItemPoses.REEF_BLUE, Sides.IJ, true, 20, Constants.Elevator.L3_ALGAE_height),
+        KL_B(FieldItemPoses.REEF_BLUE, Sides.KL, false, 19, Constants.Elevator.L2_ALGAE_height),
+        AB_B(FieldItemPoses.REEF_BLUE, Sides.AB, false, 18, Constants.Elevator.L3_ALGAE_height),
+        CD_B(FieldItemPoses.REEF_BLUE, Sides.CD, false, 17, Constants.Elevator.L2_ALGAE_height),
+        EF_B(FieldItemPoses.REEF_BLUE, Sides.EF, true, 22, Constants.Elevator.L3_ALGAE_height),
+        GH_R(FieldItemPoses.REEF_RED, Sides.GH, false, 7, Constants.Elevator.L2_ALGAE_height),
+        IJ_R(FieldItemPoses.REEF_RED, Sides.IJ, false, 8, Constants.Elevator.L3_ALGAE_height),
+        KL_R(FieldItemPoses.REEF_RED, Sides.KL, true, 9, Constants.Elevator.L2_ALGAE_height),
+        AB_R(FieldItemPoses.REEF_RED, Sides.AB, true, 10, Constants.Elevator.L3_ALGAE_height),
+        CD_R(FieldItemPoses.REEF_RED, Sides.CD, true, 11, Constants.Elevator.L2_ALGAE_height),
+        EF_R(FieldItemPoses.REEF_RED, Sides.EF, false, 6, Constants.Elevator.L3_ALGAE_height);
 
         // Birds eye view
         private enum Sides {
-            Left(Radians.of(Math.PI)),
-            BottomLeft(Radians.of(-2 * Math.PI / 3)),
-            TopLeft(Radians.of(2 * Math.PI / 3)),
-            Right(Radians.of(0)),
-            BottomRight(Radians.of(-Math.PI / 3)),
-            TopRight(Radians.of(Math.PI / 3));
+            AB(Radians.of(Math.PI)),
+            CD(Radians.of(-2 * Math.PI / 3)),
+            KL(Radians.of(2 * Math.PI / 3)),
+            GH(Radians.of(0)),
+            EF(Radians.of(-Math.PI / 3)),
+            IJ(Radians.of(Math.PI / 3));
 
             private final Transform2d offset;
             private final Rotation2d direction;
@@ -78,6 +78,10 @@ public class AutoAiming {
 
         public Pose2d getCenter() {
             return this.pose.plus(this.algaeElevatorHeight.equals(Constants.Elevator.L2_ALGAE_height) ? Constants.ElevatorSetbacks.ALGAE_L2.getSetbackinator() : ElevatorSetbacks.ALGAE_L3.getSetbackinator());
+        }
+
+        public Pose2d getCenter(ElevatorSetbacks setback) {
+            return this.pose.plus(setback.getSetbackinator());
         }
 
         public Pose2d getLeft(ElevatorSetbacks height) {
