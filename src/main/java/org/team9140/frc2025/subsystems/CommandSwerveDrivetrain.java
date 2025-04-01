@@ -242,6 +242,8 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
         Pose2d currPose = getState().Pose;
         Pose2d target = sample.getPose();
 
+        this.targetPose = currPose;
+
         double currentTime = Utils.getCurrentTimeSeconds();
 
         this.setControl(this.auton
