@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Optional;
 
 public class Util {
-    private static Optional<DriverStation.Alliance> alliance = Optional.empty();
+    private static DriverStation.Alliance alliance = null;
 
     private final static double defaultDeadband = 0.12;
     private final static double EPSILON = 0.00000001;
@@ -68,11 +68,11 @@ public class Util {
     }
 
     public static void updateAlliance() {
-        alliance = DriverStation.getAlliance();
+        alliance = DriverStation.getAlliance().orElse(null);
     }
 
     public static Optional<DriverStation.Alliance> getAlliance() {
-        if (alliance.isEmpty()) updateAlliance();
-        return alliance;
+        if (alliance == null) updateAlliance();
+        return Optional.ofNullable(alliance);
     }
 }
