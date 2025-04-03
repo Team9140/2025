@@ -104,7 +104,7 @@ public class RobotContainer {
                         .until(this::stickInput)
                         .withName("high coral L"));
 
-        this.controller.y().and(this.controller.povCenter())
+        this.controller.y().and(this.controller.povCenter()).and(this.manipulator.hasAlgae)
                 .onTrue(this.elevator.moveToPosition(Constants.Elevator.NET_HEIGHT)
                         .withName("net height"));
 
@@ -132,15 +132,17 @@ public class RobotContainer {
                         .until(this::stickInput)
                         .withName("highish (level 3) algae center"));
 
-//        this.controller.something().and(this.controller.povCenter())
-//                .onTrue(this.drivetrain.algaeReefDrive()
-//                        .alongWith(this.elevator
-//                                .moveToPosition(AutoAiming.getClosestFace(this.drivetrain.getState().Pose.getTranslation())
-//                                        .getAlgaeElevatorHeight()))
-//                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-//                                Seconds.of(0.5)))
-//                        .until(this::stickInput)
-//                        .withName("autoaiming algae"));
+        this.elevator.isAlgaeing.and(this.controller.rightBumper())
+                .onTrue(this.drivetrain.algaeReefDrive()
+                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                                Seconds.of(0.5)))
+                        .alongWith(this.elevator
+                                .moveToPosition(() -> AutoAiming.getClosestFace(
+                                        this.drivetrain.getState().Pose
+                                                .getTranslation())
+                                        .getAlgaeElevatorHeight()))
+                        .until(this::stickInput)
+                        .withName("autoaiming algae"));
 
         this.controller.a().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, false)
@@ -175,7 +177,8 @@ public class RobotContainer {
 
         // controller.start().onTrue(this.drivetrain.resetGyroCommand(Degrees.of(0)));
         Pose2d target = new Pose2d(2, 4, new Rotation2d());
-        controller.back().whileTrue(this.drivetrain.goToPose(() -> target));
+        // controller.back().whileTrue(this.drivetrain.goToPose(() -> target));
+        this.controller.back().onTrue(this.climber.prep());
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
                 .onFalse(this.drivetrain.disengageSlowMode());
 
@@ -233,6 +236,6 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.threeCoral();
+        return routines.twoCoralInsideRight();
     }
 }

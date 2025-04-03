@@ -87,8 +87,7 @@ public class Manipulator extends SubsystemBase {
     }
 
     public Command outtakeCoral() {
-        return this.runOnce(() -> this.currentItem = Holdables.WATER)
-                .andThen(this.setVoltage(OUTTAKE_VOLTAGE_CORAL).withName("throw coral"));
+        return this.setVoltage(OUTTAKE_VOLTAGE_CORAL).withName("throw coral");
     }
 
     public Command outtakeAlgae() {

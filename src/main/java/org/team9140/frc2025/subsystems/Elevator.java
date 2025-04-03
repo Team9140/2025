@@ -31,9 +31,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Supplier;
+
 public class Elevator extends SubsystemBase {
-    private final TalonFX rightMotor;
-    private final TalonFX leftMotor;
+    private final TalonFX rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
+    private final TalonFX leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
 
     private final MotionMagicVoltage motionMagic;
 
@@ -54,13 +56,6 @@ public class Elevator extends SubsystemBase {
             Constants.Elevator.STOW_height.in(Meters));
 
     private Elevator() {
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
-
-        this.rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
-        this.leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
-
         Slot0Configs elevatorGains = new Slot0Configs()
                 .withKP(20.0)
                 .withKI(0)
@@ -101,15 +96,19 @@ public class Elevator extends SubsystemBase {
 
         this.rightMotor.getConfigurator().apply(motorConfig);
         this.rightMotor.getConfigurator().apply(feedbackConfigs);
-        this.rightMotor.setPosition(0.0);
+        // this.rightMotor.setPosition(0.0);
 
         this.motionMagic = new MotionMagicVoltage(0)
                 .withEnableFOC(true)
                 .withSlot(0);
 
-        this.targetPosition = Constants.Elevator.MIN_HEIGHT;
+        this.targetPosition = Constants.Elevator.STOW_height;
 
         this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
+
+        if (Utils.isSimulation()) {
+            startSimThread();
+        }
     }
 
     private static Elevator instance;
@@ -125,7 +124,8 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
         SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
         SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
-        SmartDashboard.putBoolean("Elevator at target", this.getPosition(false).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
+        SmartDashboard.putBoolean("Elevator at target", this.getPosition(false).isNear(this.targetPosition,
+                Constants.Elevator.POSITION_epsilon));
         // SmartDashboard.putNumber("error",
         // this.leftMotor.getClosedLoopError().getValueAsDouble());
     }
@@ -176,7 +176,18 @@ public class Elevator extends SubsystemBase {
         }).andThen(new WaitUntilCommand(atPosition));
     }
 
+    public Command moveToPosition(Supplier<Distance> goalPosition) {
+        return this.runOnce(() -> {
+            this.targetPosition = goalPosition.get();
+            this.rightMotor.setControl(this.motionMagic.withPosition(
+                    this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
+        }).andThen(new WaitUntilCommand(atPosition));
+    }
+
     public final Trigger isUp = new Trigger(() -> this.getPosition(true).gt(Feet.of(3)));
-    public final Trigger atPosition = new Trigger(() -> this.getPosition(true).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
-    public final Trigger isStowed = new Trigger(() -> this.getPosition(true).lt(Inches.of(0.5)));
+    private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height).div(2.0);
+    public final Trigger isAlgaeing = new Trigger(() -> this.getPosition(true).isNear(algaeingCenter, Inches.of(18.0)));
+    public final Trigger atPosition = new Trigger(
+            () -> this.getPosition(true).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
+    public final Trigger isStowed = new Trigger(() -> this.getPosition(true).isNear(Constants.Elevator.STOW_height, Inches.of(0.75)));
 }

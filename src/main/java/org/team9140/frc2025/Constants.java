@@ -66,7 +66,7 @@ public class Constants {
     }
 
     public static class Manipulator {
-        public static final double HOLD_VOLTAGE_ALGAE = 3.0;
+        public static final double HOLD_VOLTAGE_ALGAE = 4.0;
 
         public static final double INTAKE_VOLTAGE_CORAL = 7.0;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
@@ -83,8 +83,8 @@ public class Constants {
         // public static final double FORWARD_AUTOSET = 0.0;
 
         public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
-        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(100.0);
-        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(10);
+        public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(500.0);
+        public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(20);
     }
 
     public static final class Elevator {
@@ -108,7 +108,7 @@ public class Constants {
 
         public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
 
-        public static Distance STOW_height = MIN_HEIGHT;
+        public static Distance STOW_height = Inches.of(0.5);
         public static Distance L1_coral_height = Inches.of(24);
         public static Distance L2_coral_height = Inches.of(31);
         public static Distance L3_coral_height = Inches.of(47);
@@ -124,11 +124,13 @@ public class Constants {
 
     public static final class Climber {
         public static final Current STATOR_LIMIT = Amps.of(80.0);
-        public static final double GEAR_RATIO = 400.0;
+        public static final double GEAR_RATIO = 5.0 * 5.0 * 4.0 * 4.0;
         public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
-        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.7);
+        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.71);
 
         public static final Voltage MAX_OUTPUT = Volts.of(12.0);
+        public static final Voltage PREP_VOLTAGE = Volts.of(10.0);
+        public static final Angle PREPPED_POSITION = Rotations.of(0.46);
     }
 
     public enum ElevatorSetbacks {

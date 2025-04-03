@@ -25,12 +25,12 @@ public class AutoAiming {
         AB_B(FieldItemPoses.REEF_BLUE, Sides.AB, false, 18, Constants.Elevator.L3_ALGAE_height),
         CD_B(FieldItemPoses.REEF_BLUE, Sides.CD, false, 17, Constants.Elevator.L2_ALGAE_height),
         EF_B(FieldItemPoses.REEF_BLUE, Sides.EF, true, 22, Constants.Elevator.L3_ALGAE_height),
-        GH_R(FieldItemPoses.REEF_RED, Sides.GH, false, 7, Constants.Elevator.L2_ALGAE_height),
-        IJ_R(FieldItemPoses.REEF_RED, Sides.IJ, false, 8, Constants.Elevator.L3_ALGAE_height),
-        KL_R(FieldItemPoses.REEF_RED, Sides.KL, true, 9, Constants.Elevator.L2_ALGAE_height),
-        AB_R(FieldItemPoses.REEF_RED, Sides.AB, true, 10, Constants.Elevator.L3_ALGAE_height),
-        CD_R(FieldItemPoses.REEF_RED, Sides.CD, true, 11, Constants.Elevator.L2_ALGAE_height),
-        EF_R(FieldItemPoses.REEF_RED, Sides.EF, false, 6, Constants.Elevator.L3_ALGAE_height);
+        AB_R(FieldItemPoses.REEF_RED, Sides.GH, false, 7, Constants.Elevator.L3_ALGAE_height),
+        CD_R(FieldItemPoses.REEF_RED, Sides.IJ, false, 8, Constants.Elevator.L2_ALGAE_height),
+        EF_R(FieldItemPoses.REEF_RED, Sides.KL, true, 9, Constants.Elevator.L3_ALGAE_height),
+        GH_R(FieldItemPoses.REEF_RED, Sides.AB, true, 10, Constants.Elevator.L2_ALGAE_height),
+        IJ_R(FieldItemPoses.REEF_RED, Sides.CD, true, 11, Constants.Elevator.L3_ALGAE_height),
+        KL_R(FieldItemPoses.REEF_RED, Sides.EF, false, 6, Constants.Elevator.L2_ALGAE_height);
 
         // Birds eye view
         private enum Sides {

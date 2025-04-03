@@ -2,57 +2,50 @@ package org.team9140.frc2025.commands;
 
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.Robot;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Elevator;
 import org.team9140.frc2025.subsystems.Funnel;
 import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.FollowPath;
-
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import org.team9140.lib.Util;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 // TODO: put expected pose on dashboard in telemetry file
 public class AutonomousRoutines {
-    private static final Time INTAKE_TIME = Seconds.of(2.0);
+    private static final Time INTAKE_TIME = Seconds.of(1.0);
     private static final Time THROW_TIME = Seconds.of(0.5);
     private final CommandSwerveDrivetrain drivetrain;
-    private final DriverStation.Alliance alliance;
 
     // TODO: Align while raising elevator
     private final Supplier<Command> SCORE_CORAL_L4;
-    private final Supplier<Command> RESET_ARM;
     private final Supplier<Command> INTAKE_CORAL;
     private final Supplier<Command> STOP_INTAKE;
     private final Supplier<Command> ARM_HALFWAY;
     // private final Function<Boolean, Command> REEF_DRIVE_THEN_SCORE_L4;
 
+    Elevator elevator = Elevator.getInstance();
+    Manipulator manipulator = Manipulator.getInstance();
+    Funnel funnel = Funnel.getInstance();
+
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
-        this.alliance = Util.getAlliance().get();
-
-        Elevator elevator = Elevator.getInstance();
-        Manipulator manipulator = Manipulator.getInstance();
-        Funnel funnel = Funnel.getInstance();
 
         this.SCORE_CORAL_L4 = () -> elevator.moveToPosition(Constants.Elevator.L4_coral_height)
                 .andThen(new WaitCommand(0.25))
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
         this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
-        this.RESET_ARM = () -> manipulator.off().withTimeout(0.000001)
-                .andThen(elevator.moveToPosition(Constants.Elevator.STOW_height));
-        this.INTAKE_CORAL = () -> new WaitUntilCommand(elevator.isStowed).andThen(manipulator.intakeCoral()
-                .alongWith(funnel.intakeCoral())
-                .withTimeout(INTAKE_TIME));
+        this.INTAKE_CORAL = () -> manipulator.intakeCoral().alongWith(funnel.intakeCoral());
         this.STOP_INTAKE = () -> manipulator.off().withTimeout(0.000001).alongWith(funnel.turnOff());
         // this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) ->
         // drivetrain.coralReefDrive(ElevatorSetbacks.L4,
@@ -61,63 +54,174 @@ public class AutonomousRoutines {
         // lefty)));
     }
 
-    public Command oneCoral() {
-        FollowPath path = new FollowPath("allianceColorToJL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
+    public Command oneCoralCenter() {
+        // score on G
+        Pose2d scorePose;
+        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+            scorePose = AutoAiming.ReefFaces.GH_B.getRight(ElevatorSetbacks.L4);
+        } else {
+            scorePose = AutoAiming.ReefFaces.GH_R.getRight(ElevatorSetbacks.L4);
+        }
 
-        return Commands.runOnce(() -> {
-            if (Robot.isSimulation()) {
-                this.drivetrain.resetPose(path.getInitialPose());
-            }
-        }).andThen(this.ARM_HALFWAY.get().alongWith(path.gimmeCommand().andThen(this.drivetrain.stop())))
+        return this.drivetrain.goToPose(() -> scorePose)
+                .until(this.drivetrain.reachedPose)
+                .andThen(this.drivetrain.stop())
+                .alongWith(this.ARM_HALFWAY.get())
                 .andThen(this.SCORE_CORAL_L4.get())
-                .andThen(this.RESET_ARM.get())
-                .andThen(new PrintCommand("done scoring 1 coral"));
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
-    public Command oneCoralFeed() {
-        FollowPath jToFeed = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        return oneCoral()
-                .andThen(jToFeed.gimmeCommand())
+    public Command oneCoralInsideLeft() {
+        // score on J
+        Pose2d scorePose;
+        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+            scorePose = AutoAiming.ReefFaces.IJ_B.getLeft(ElevatorSetbacks.L4);
+        } else {
+            scorePose = AutoAiming.ReefFaces.IJ_R.getLeft(ElevatorSetbacks.L4);
+        }
+
+        return this.drivetrain.goToPose(() -> scorePose)
+                .until(this.drivetrain.reachedPose)
                 .andThen(this.drivetrain.stop())
-                .andThen(INTAKE_CORAL.get());
+                .alongWith(this.ARM_HALFWAY.get())
+                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
-    public Command hToFeed() {
-        FollowPath path = new FollowPath("HL4ToRightFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        return path.gimmeCommand().andThen(INTAKE_CORAL.get());
+    public Command oneCoralInsideRight() {
+        // score on E
+        Pose2d scorePose;
+        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+            scorePose = AutoAiming.ReefFaces.EF_B.getRight(ElevatorSetbacks.L4);
+        } else {
+            scorePose = AutoAiming.ReefFaces.EF_R.getRight(ElevatorSetbacks.L4);
+        }
+
+        return this.drivetrain.goToPose(() -> scorePose)
+                .until(this.drivetrain.reachedPose)
+                .andThen(this.drivetrain.stop())
+                .alongWith(this.ARM_HALFWAY.get())
+                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
-    public Command threeCoral() {
-        FollowPath farLeftToFeed = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath closeLeftToFeed = new FollowPath("KL4ToLeftFeed", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath feedToCloseLeftLeft = new FollowPath("LeftFeedToKL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath feedToCloseLeftRight = new FollowPath("LeftFeedToLL4", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-
-        return oneCoral()
-                .andThen(farLeftToFeed.gimmeCommand())
-                .andThen(this.drivetrain.stop())
-                .andThen(INTAKE_CORAL.get())
-                .andThen(STOP_INTAKE.get())
-                .andThen(feedToCloseLeftLeft.gimmeCommand())
-                .andThen(this.drivetrain.stop())
-                .andThen(SCORE_CORAL_L4.get())
-                .andThen(RESET_ARM.get())
-                .andThen(closeLeftToFeed.gimmeCommand())
-                .andThen(this.drivetrain.stop())
-                .andThen(INTAKE_CORAL.get())
-                .andThen(STOP_INTAKE.get())
-                .andThen(feedToCloseLeftRight.gimmeCommand())
-                .andThen(this.drivetrain.stop())
-                .andThen(SCORE_CORAL_L4.get())
-                .andThen(RESET_ARM.get());
+    private Command JtoLeftFeed() {
+        FollowPath path = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose,
+                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
+        return path.gimmeCommand();
     }
 
-    public Command testScore() {
-        FollowPath testForward = new FollowPath("test_1", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath testToFeed = new FollowPath("test_2", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-        FollowPath feedToScore = new FollowPath("test_3", () -> this.drivetrain.getState().Pose, this.drivetrain::followSample, this.alliance, drivetrain);
-
-        return Commands.runOnce(() -> this.drivetrain.resetPose(testForward.getInitialPose()))
-                .andThen(testForward.gimmeCommand());
+    private Command EtoRightFeed() {
+        FollowPath path = new FollowPath("EL4ToRightFeed", () -> this.drivetrain.getState().Pose,
+                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
+        return path.gimmeCommand();
     }
+
+    public Command twoCoralInsideRight() {
+        // score on E
+        Pose2d scorePose;
+        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+            scorePose = AutoAiming.ReefFaces.CD_B.getRight(ElevatorSetbacks.L4);
+        } else {
+            scorePose = AutoAiming.ReefFaces.CD_R.getRight(ElevatorSetbacks.L4);
+        }
+
+        return this.oneCoralInsideRight()
+                .andThen(this.INTAKE_CORAL.get()
+                        .raceWith(this.EtoRightFeed()
+                                .andThen(new WaitCommand(0.5))
+                                .andThen(drivetrain.goToPose(() -> scorePose).until(this.drivetrain.reachedPose)
+                                        .andThen(this.drivetrain.stop()))))
+                .andThen(new WaitCommand(INTAKE_TIME))
+                .andThen(this.STOP_INTAKE.get())
+                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+    }
+
+    public Command twoCoralInsideLeft() {
+        // score on L
+        Pose2d scorePose;
+        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+            scorePose = AutoAiming.ReefFaces.KL_B.getLeft(ElevatorSetbacks.L4);
+        } else {
+            scorePose = AutoAiming.ReefFaces.KL_R.getLeft(ElevatorSetbacks.L4);
+        }
+
+        return this.oneCoralInsideLeft()
+                .andThen(this.INTAKE_CORAL.get()
+                        .raceWith(this.JtoLeftFeed()
+                                .andThen(new WaitCommand(0.5))
+                                .andThen(drivetrain.goToPose(() -> scorePose).until(this.drivetrain.reachedPose)
+                                        .andThen(this.drivetrain.stop()))))
+                .andThen(new WaitCommand(INTAKE_TIME))
+                .andThen(this.STOP_INTAKE.get())
+                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+    }
+
+    // public Command oneCoralFeed() {
+    // FollowPath jToFeed = new FollowPath("JL4ToLeftFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // return oneCoral()
+    // .andThen(jToFeed.gimmeCommand())
+    // .andThen(this.drivetrain.stop())
+    // .andThen(INTAKE_CORAL.get());
+    // }
+
+    // public Command hToFeed() {
+    // FollowPath path = new FollowPath("HL4ToRightFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // return path.gimmeCommand().andThen(INTAKE_CORAL.get());
+    // }
+
+    // public Command threeCoral() {
+    // FollowPath JL4ToLeftFeed = new FollowPath("JL4ToLeftFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // FollowPath LeftFeedToKL4 = new FollowPath("LeftFeedToKL4", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // FollowPath KL4ToLeftFeed = new FollowPath("KL4ToLeftFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // FollowPath LeftFeedToLL4 = new FollowPath("LeftFeedToLL4", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+
+    // return oneCoral()
+    // .andThen(JL4ToLeftFeed.gimmeCommand())
+    // .andThen(this.drivetrain.stop())
+    // .andThen(INTAKE_CORAL.get())
+    // .andThen(STOP_INTAKE.get())
+    // .andThen(LeftFeedToKL4.gimmeCommand())
+    // .andThen(this.drivetrain.stop())
+    // .andThen(SCORE_CORAL_L4.get())
+    // .andThen(STOW_ARM.get())
+    // .andThen(KL4ToLeftFeed.gimmeCommand())
+    // .andThen(this.drivetrain.stop())
+    // .andThen(INTAKE_CORAL.get())
+    // .andThen(STOP_INTAKE.get())
+    // .andThen(LeftFeedToLL4.gimmeCommand())
+    // .andThen(this.drivetrain.stop())
+    // .andThen(SCORE_CORAL_L4.get())
+    // .andThen(STOW_ARM.get());
+    // }
+
+    // public Command testScore() {
+    // FollowPath testForward = new FollowPath("test_1", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // FollowPath testToFeed = new FollowPath("test_2", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+    // FollowPath feedToScore = new FollowPath("test_3", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, this.alliance, drivetrain);
+
+    // return Commands.runOnce(() ->
+    // this.drivetrain.resetPose(testForward.getInitialPose()))
+    // .andThen(testForward.gimmeCommand());
+    // }
 }

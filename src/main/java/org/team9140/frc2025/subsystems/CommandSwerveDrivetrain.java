@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrivetrain implements Subsystem {
     private static final Time kSimLoopPeriod = Milliseconds.of(5);
@@ -301,6 +302,8 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
     // && Util.epsilonEquals(this.targetPose,
     // this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds),
     // Debouncer.DebounceType.kBoth);
+
+    public final Trigger reachedPose = new Trigger(() -> Util.epsilonEquals(this.targetPose, this.getState().Pose));
 
     public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {

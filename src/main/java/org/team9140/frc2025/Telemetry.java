@@ -88,7 +88,7 @@ public class Telemetry {
     public void telemeterize(SwerveDriveState state) {
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);
-        closestReefPose.set(AutoAiming.getClosestFace(state.Pose.getTranslation()).getCenter(Constants.ElevatorSetbacks.NONE));
+        closestReefPose.set(AutoAiming.getClosestFace(state.Pose.getTranslation()).getCenter());
         driveSpeeds.set(state.Speeds);
         driveModuleStates.set(state.ModuleStates);
         driveModuleTargets.set(state.ModuleTargets);

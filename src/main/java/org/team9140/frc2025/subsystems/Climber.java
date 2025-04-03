@@ -16,6 +16,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 import java.util.function.Supplier;
 
@@ -24,7 +25,7 @@ public class Climber extends SubsystemBase {
     private final TalonFX leftMotor;
 
     private final VoltageOut controller;
-    
+
     private Climber() {
         this.rightMotor = new TalonFX(Ports.CLIMBER_MOTOR_RIGHT, "sigma");
         this.leftMotor = new TalonFX(Ports.CLIMBER_MOTOR_LEFT, "sigma");
@@ -53,7 +54,6 @@ public class Climber extends SubsystemBase {
                 .withSoftwareLimitSwitch(softLimits);
 
         this.rightMotor.getConfigurator().apply(motorConfig);
-        this.rightMotor.setPosition(0.0);
 
         this.controller = new VoltageOut(0.0)
                 .withEnableFOC(true);
@@ -67,13 +67,20 @@ public class Climber extends SubsystemBase {
         return (instance == null) ? instance = new Climber() : instance;
     }
 
+    public Command prep() {
+        return this.runOnce(() -> this.rightMotor.setControl(this.controller.withOutput(Constants.Climber.PREP_VOLTAGE)))
+                .andThen(new WaitUntilCommand(() -> this.rightMotor.getPosition().getValue().gt(Constants.Climber.PREPPED_POSITION)))
+                .andThen(this.off());
+    }
+
     public Command climb(Supplier<Double> leftTrigger, Supplier<Double> rightTrigger) {
         return this.run(() -> {
-            this.rightMotor.setControl(this.controller.withOutput(Constants.Climber.MAX_OUTPUT.times(leftTrigger.get() - rightTrigger.get() / 4.0)));
+            this.rightMotor.setControl(this.controller
+                    .withOutput(Constants.Climber.MAX_OUTPUT.times(leftTrigger.get() - rightTrigger.get() / 4.0)));
         });
     }
 
     public Command off() {
-        return this.run(() -> this.rightMotor.setControl(this.controller.withOutput(0.0)));
+        return this.runOnce(() -> this.rightMotor.setControl(this.controller.withOutput(0.0)));
     }
 }
