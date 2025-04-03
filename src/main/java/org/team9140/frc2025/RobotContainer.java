@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.generated.TunerConstantsComp;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.Canndle;
 import org.team9140.frc2025.subsystems.Climber;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
@@ -130,6 +131,16 @@ public class RobotContainer {
                         .moveToPosition(Constants.Elevator.L3_ALGAE_height)
                         .until(this::stickInput)
                         .withName("highish (level 3) algae center"));
+
+//        this.controller.something().and(this.controller.povCenter())
+//                .onTrue(this.drivetrain.algaeReefDrive()
+//                        .alongWith(this.elevator
+//                                .moveToPosition(AutoAiming.getClosestFace(this.drivetrain.getState().Pose.getTranslation())
+//                                        .getAlgaeElevatorHeight()))
+//                        .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+//                                Seconds.of(0.5)))
+//                        .until(this::stickInput)
+//                        .withName("autoaiming algae"));
 
         this.controller.a().and(this.controller.povRight())
                 .onTrue(this.drivetrain.coralReefDrive(Constants.ElevatorSetbacks.L2, false)
