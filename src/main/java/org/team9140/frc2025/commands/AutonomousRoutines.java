@@ -58,17 +58,17 @@ public class AutonomousRoutines {
         // score on G
         Pose2d scorePose;
         if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.GH_B.getRight(ElevatorSetbacks.L4);
+            scorePose = AutoAiming.ReefFaces.GH_B.getLeft(ElevatorSetbacks.L4);
         } else {
-            scorePose = AutoAiming.ReefFaces.GH_R.getRight(ElevatorSetbacks.L4);
+            scorePose = AutoAiming.ReefFaces.GH_R.getLeft(ElevatorSetbacks.L4);
         }
 
-        return this.drivetrain.goToPose(() -> scorePose)
+        return new WaitCommand(Seconds.of(5.0)).andThen(this.drivetrain.goToPose(() -> scorePose)
                 .until(this.drivetrain.reachedPose)
                 .andThen(this.drivetrain.stop())
                 .alongWith(this.ARM_HALFWAY.get())
                 .andThen(this.SCORE_CORAL_L4.get())
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height)));
     }
 
     public Command oneCoralInsideLeft() {
@@ -127,11 +127,12 @@ public class AutonomousRoutines {
         }
 
         return this.oneCoralInsideRight()
-                .andThen(this.INTAKE_CORAL.get()
-                        .raceWith(this.EtoRightFeed()
-                                .andThen(new WaitCommand(0.5))
-                                .andThen(drivetrain.goToPose(() -> scorePose).until(this.drivetrain.reachedPose)
-                                        .andThen(this.drivetrain.stop()))))
+                .andThen(this.INTAKE_CORAL.get().raceWith(this.EtoRightFeed())
+                        .andThen(this.INTAKE_CORAL.get().withTimeout(INTAKE_TIME))
+                        .andThen(drivetrain.goToPose(() -> scorePose)
+                                .alongWith(this.INTAKE_CORAL.get())
+                                .until(this.drivetrain.reachedPose)
+                                .andThen(this.drivetrain.stop())))
                 .andThen(new WaitCommand(INTAKE_TIME))
                 .andThen(this.STOP_INTAKE.get())
                 .andThen(this.SCORE_CORAL_L4.get())
@@ -148,11 +149,12 @@ public class AutonomousRoutines {
         }
 
         return this.oneCoralInsideLeft()
-                .andThen(this.INTAKE_CORAL.get()
-                        .raceWith(this.JtoLeftFeed()
-                                .andThen(new WaitCommand(0.5))
-                                .andThen(drivetrain.goToPose(() -> scorePose).until(this.drivetrain.reachedPose)
-                                        .andThen(this.drivetrain.stop()))))
+                .andThen(this.INTAKE_CORAL.get().raceWith(this.JtoLeftFeed())
+                        .andThen(this.INTAKE_CORAL.get().withTimeout(INTAKE_TIME))
+                        .andThen(drivetrain.goToPose(() -> scorePose)
+                                .alongWith(this.INTAKE_CORAL.get())
+                                .until(this.drivetrain.reachedPose)
+                                .andThen(this.drivetrain.stop())))
                 .andThen(new WaitCommand(INTAKE_TIME))
                 .andThen(this.STOP_INTAKE.get())
                 .andThen(this.SCORE_CORAL_L4.get())

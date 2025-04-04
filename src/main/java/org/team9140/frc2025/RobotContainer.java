@@ -236,6 +236,6 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.twoCoralInsideRight();
+        return routines.twoCoralInsideLeft();
     }
 }

@@ -63,6 +63,7 @@ public class Constants {
         public static final Current STATOR_LIMIT = Amps.of(70);
         public static final Current SUPPLY_LIMIT = Amps.of(30);
         public static final Voltage INTAKE_VOLTAGE = Volts.of(12);
+        public static final Voltage UNSTICK_VOLTAGE = Volts.of(-8);
     }
 
     public static class Manipulator {
@@ -140,7 +141,7 @@ public class Constants {
         L3(Inches.of(18.0 + 4.0)),
         L4(Inches.of(18.0 + 9.0)),
         ALGAE_L2(Inches.of(18.0)),
-        ALGAE_L3(Inches.of(18.0 + 4.0));
+        ALGAE_L3(Inches.of(18.0 + 3.0));
 
         ElevatorSetbacks(Distance setback) {
             this.setbackinator = new Transform2d(setback.unaryMinus(), Meters.of(0), new Rotation2d());
