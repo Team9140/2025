@@ -28,10 +28,10 @@ public class AutonomousRoutines {
     private final CommandSwerveDrivetrain drivetrain;
 
     // TODO: Align while raising elevator
-    private final Supplier<Command> SCORE_CORAL_L4;
+    // private final Supplier<Command> SCORE_CORAL_L4;
     private final Supplier<Command> INTAKE_CORAL;
     private final Supplier<Command> STOP_INTAKE;
-    private final Supplier<Command> ARM_HALFWAY;
+    // private final Supplier<Command> ARM_HALFWAY;
     // private final Function<Boolean, Command> REEF_DRIVE_THEN_SCORE_L4;
 
     Elevator elevator = Elevator.getInstance();
@@ -41,10 +41,12 @@ public class AutonomousRoutines {
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
 
-        this.SCORE_CORAL_L4 = () -> elevator.moveToPosition(Constants.Elevator.L4_coral_height)
-                .andThen(new WaitCommand(0.25))
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
-        this.ARM_HALFWAY = () -> elevator.moveToPosition(Constants.Elevator.L1_coral_height);
+        // this.SCORE_CORAL_L4 = () ->
+        // elevator.moveToPosition(Constants.Elevator.L4_coral_height)
+        // .andThen(new WaitCommand(0.25))
+        // .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        // this.ARM_HALFWAY = () ->
+        // elevator.moveToPosition(Constants.Elevator.L1_coral_height);
         this.INTAKE_CORAL = () -> manipulator.intakeCoral().alongWith(funnel.intakeCoral());
         this.STOP_INTAKE = () -> manipulator.off().withTimeout(0.000001).alongWith(funnel.turnOff());
         // this.REEF_DRIVE_THEN_SCORE_L4 = (lefty) ->
@@ -65,9 +67,9 @@ public class AutonomousRoutines {
 
         return new WaitCommand(Seconds.of(5.0)).andThen(this.drivetrain.goToPose(() -> scorePose)
                 .until(this.drivetrain.reachedPose)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .alongWith(this.ARM_HALFWAY.get())
-                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height)));
     }
 
@@ -82,9 +84,9 @@ public class AutonomousRoutines {
 
         return this.drivetrain.goToPose(() -> scorePose)
                 .until(this.drivetrain.reachedPose)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .alongWith(this.ARM_HALFWAY.get())
-                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
@@ -99,9 +101,9 @@ public class AutonomousRoutines {
 
         return this.drivetrain.goToPose(() -> scorePose)
                 .until(this.drivetrain.reachedPose)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .alongWith(this.ARM_HALFWAY.get())
-                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
@@ -133,14 +135,14 @@ public class AutonomousRoutines {
                                 .alongWith(this.INTAKE_CORAL.get())
                                 .until(this.drivetrain.reachedPose)
                                 .andThen(this.drivetrain.stop())))
-                .andThen(new WaitCommand(INTAKE_TIME))
                 .andThen(this.STOP_INTAKE.get())
-                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 
     public Command twoCoralInsideLeft() {
-        // score on L
+        // score on K
         Pose2d scorePose;
         if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
             scorePose = AutoAiming.ReefFaces.KL_B.getLeft(ElevatorSetbacks.L4);
@@ -155,9 +157,9 @@ public class AutonomousRoutines {
                                 .alongWith(this.INTAKE_CORAL.get())
                                 .until(this.drivetrain.reachedPose)
                                 .andThen(this.drivetrain.stop())))
-                .andThen(new WaitCommand(INTAKE_TIME))
                 .andThen(this.STOP_INTAKE.get())
-                .andThen(this.SCORE_CORAL_L4.get())
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 

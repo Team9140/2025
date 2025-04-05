@@ -59,7 +59,7 @@ public class Elevator extends SubsystemBase {
         Slot0Configs elevatorGains = new Slot0Configs()
                 .withKP(20.0)
                 .withKI(0)
-                .withKD(0)
+                .withKD(1.0)
                 .withKS(0)
                 .withKV(0)
                 .withKA(0);

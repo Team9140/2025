@@ -43,7 +43,7 @@ public class Constants {
 
         public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
         public static final double X_CONTROLLER_I = 0.0;
-        public static final double X_CONTROLLER_D = 0.015;
+        public static final double X_CONTROLLER_D = 0.015; // TODO: Raise value
         public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
         public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
         public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
@@ -98,9 +98,9 @@ public class Constants {
         public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
 
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
-                .of(Meters.of(2.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(3.0).div(SPOOL_CIRCUMFERENCE).magnitude());
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
-                .of(Meters.of(4.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(5.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
 
@@ -127,7 +127,7 @@ public class Constants {
         public static final Current STATOR_LIMIT = Amps.of(80.0);
         public static final double GEAR_RATIO = 5.0 * 5.0 * 4.0 * 4.0;
         public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
-        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.71);
+        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.73);
 
         public static final Voltage MAX_OUTPUT = Volts.of(12.0);
         public static final Voltage PREP_VOLTAGE = Volts.of(10.0);

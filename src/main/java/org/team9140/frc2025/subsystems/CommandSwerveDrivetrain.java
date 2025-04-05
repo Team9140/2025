@@ -35,6 +35,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -59,7 +60,8 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
             Constants.Drive.X_CONTROLLER_I, Constants.Drive.X_CONTROLLER_D);
     private final PhoenixPIDController m_pathYController = new PhoenixPIDController(Constants.Drive.Y_CONTROLLER_P,
             Constants.Drive.Y_CONTROLLER_I, Constants.Drive.Y_CONTROLLER_D);
-    private final PhoenixPIDController headingController = new PhoenixPIDController(Constants.Drive.HEADING_CONTROLLER_P,
+    private final PhoenixPIDController headingController = new PhoenixPIDController(
+            Constants.Drive.HEADING_CONTROLLER_P,
             Constants.Drive.HEADING_CONTROLLER_I, Constants.Drive.HEADING_CONTROLLER_D);// 11.0, 0.0, 0.25
 
     Field2d dashField2d = new Field2d();
@@ -276,12 +278,12 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
             if (!Util.epsilonEquals(pose.getX(), targetPose.getX(), 0.015)) {
                 vx = m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime);
-                vx = Util.clamp(vx, 1.5);
+                vx = Util.clamp(vx, 1.75);
             }
 
             if (!Util.epsilonEquals(pose.getY(), targetPose.getY(), 0.015)) {
                 vy = m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime);
-                vy = Util.clamp(vy, 1.5);
+                vy = Util.clamp(vy, 1.75);
             }
             if (!Util.epsilonEquals(pose.getRotation().getDegrees(), targetPose.getRotation().getDegrees(), 1.0)) {
                 omega = this.headingController.calculate(pose.getRotation().getRadians(),
@@ -303,7 +305,8 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
     // this.getState().Pose)).debounce(REACHEDPOSE_DEBOUNCE.in(Seconds),
     // Debouncer.DebounceType.kBoth);
 
-    public final Trigger reachedPose = new Trigger(() -> Util.epsilonEquals(this.targetPose, this.getState().Pose));
+    public final Trigger reachedPose = new Trigger(() -> Util.epsilonEquals(this.targetPose, this.getState().Pose))
+            .debounce(0.25, DebounceType.kBoth);
 
     public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {
@@ -350,7 +353,7 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
     }
 
     public Command stop() {
-        return this.runOnce(() -> this.setControl(new SwerveRequest.Idle()));
+        return this.runOnce(() -> this.setControl(new SwerveRequest.SwerveDriveBrake()));
     }
 
     public Command resetGyroCommand() {
