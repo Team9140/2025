@@ -69,7 +69,7 @@ public class RobotContainer {
         drivetrain
                 .setDefaultCommand(
                         drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
-                                controller::getRightX));
+                                controller::getRightX).ignoringDisable(true));
 
         controller.rightTrigger().and(manipulator.hasCoral)
                 .onTrue(this.manipulator.outtakeCoral().until(this.controller.rightTrigger().negate()));
@@ -209,29 +209,29 @@ public class RobotContainer {
         limeB.start();
         limeC.start();
 
-        connectedTrigger.onTrue(
-                this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0))
-                        .ignoringDisable(true));
+        // connectedTrigger.onTrue(
+        //         this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0))
+        //                 .ignoringDisable(true));
     }
 
     double prevTime = Utils.getCurrentTimeSeconds();
 
     public void periodic() {
         SmartDashboard.putNumber("period", -(prevTime - (prevTime = Utils.getCurrentTimeSeconds())));
-        if (DriverStation.isEnabled()) {
-            limeA.setIMUMode(2);
-            limeB.setIMUMode(2);
-            limeC.setIMUMode(2);
-        } else {
-            limeA.setIMUMode(1);
-            limeB.setIMUMode(1);
-            limeC.setIMUMode(1);
-        }
+        // if (DriverStation.isEnabled()) {
+        // limeA.setIMUMode(2);
+        // limeB.setIMUMode(2);
+        // limeC.setIMUMode(2);
+        // } else {
+        // limeA.setIMUMode(1);
+        // limeB.setIMUMode(1);
+        // limeC.setIMUMode(1);
+        // }
 
-        final Rotation2d robotAngle = this.drivetrain.getState().Pose.getRotation();
-        limeA.setRobotOrientation(robotAngle);
-        limeB.setRobotOrientation(robotAngle);
-        limeC.setRobotOrientation(robotAngle);
+        // final Rotation2d robotAngle = this.drivetrain.getState().Pose.getRotation();
+        // limeA.setRobotOrientation(robotAngle);
+        // limeB.setRobotOrientation(robotAngle);
+        // limeC.setRobotOrientation(robotAngle);
     }
 
     public Command getAutonomousCommand() {

@@ -98,9 +98,9 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
         SmartDashboard.putNumber("pigeon yaw", this.getPigeon2().getYaw().getValueAsDouble());
         // SmartDashboard.putNumber("green yaw", this.green_gyro.getAngle());
-        SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
-        SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
-        SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
+        // SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
+        // SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
+        // SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
 
         if (this.getCurrentCommand() != null) {
             SignalLogger.writeString("drivetrain command", this.getCurrentCommand().getName());
@@ -152,7 +152,7 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
         }
 
         if (DriverStation.isEnabled()) {
-            if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
+            // if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
                 // if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 1.0) {
                 // xyStdDev = 0.1;
                 // } else if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 0.5)
@@ -166,7 +166,7 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
                 // // close, stationary
                 // xyStdDev = 1.0;
                 // }
-            } else if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
+            if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
                 if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 0.25) {
                     xyStdDev = 0.5;
                     thetaStdDev = 90.0;

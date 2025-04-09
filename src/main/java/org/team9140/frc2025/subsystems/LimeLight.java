@@ -59,18 +59,18 @@ public class LimeLight extends SubsystemBase {
                             .accept(new VisionMeasurement(VisionMeasurement.Kind.MT1, timestamp, mt1));
                 }
 
-                LimelightHelpers.PoseEstimate mt2 = LimelightHelpers
-                        .getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
+                // LimelightHelpers.PoseEstimate mt2 = LimelightHelpers
+                //         .getBotPoseEstimate_wpiBlue_MegaTag2(LimeLight.this.name);
 
-                LimeLight.this.mt1BotPose[0] = mt1.pose.getX();
-                LimeLight.this.mt1BotPose[1] = mt1.pose.getY();
-                LimeLight.this.mt1BotPose[2] = mt1.pose.getRotation().getRadians();
-                SmartDashboard.putNumberArray(LimeLight.this.name + "_MT1", LimeLight.this.mt1BotPose);
+                // LimeLight.this.mt1BotPose[0] = mt1.pose.getX();
+                // LimeLight.this.mt1BotPose[1] = mt1.pose.getY();
+                // LimeLight.this.mt1BotPose[2] = mt1.pose.getRotation().getRadians();
+                // SmartDashboard.putNumberArray(LimeLight.this.name + "_MT1", LimeLight.this.mt1BotPose);
 
-                LimeLight.this.mt2BotPose[0] = mt2.pose.getX();
-                LimeLight.this.mt2BotPose[1] = mt2.pose.getY();
-                LimeLight.this.mt2BotPose[2] = mt2.pose.getRotation().getRadians();
-                SmartDashboard.putNumberArray(LimeLight.this.name + "_MT2", LimeLight.this.mt2BotPose);
+                // LimeLight.this.mt2BotPose[0] = mt2.pose.getX();
+                // LimeLight.this.mt2BotPose[1] = mt2.pose.getY();
+                // LimeLight.this.mt2BotPose[2] = mt2.pose.getRotation().getRadians();
+                // SmartDashboard.putNumberArray(LimeLight.this.name + "_MT2", LimeLight.this.mt2BotPose);
             }
         }
     }
