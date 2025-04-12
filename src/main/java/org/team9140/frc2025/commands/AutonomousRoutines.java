@@ -1,10 +1,10 @@
 package org.team9140.frc2025.commands;
 
-import static edu.wpi.first.units.Units.Seconds;
-
-import java.util.Optional;
-import java.util.function.Supplier;
-
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -15,11 +15,10 @@ import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.FollowPath;
 import org.team9140.lib.Util;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
     private static final Time INTAKE_TIME = Seconds.of(1.0);
@@ -71,6 +70,14 @@ public class AutonomousRoutines {
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height)));
     }
 
+    public Command intakeUntilIntooken() {
+        return this.INTAKE_CORAL.get().until(this.manipulator.justIntookenGamePooken).andThen(this.STOP_INTAKE.get()).andThen(new WaitCommand(0.1));
+    }
+
+    public Command testAuto() {
+        return this.intakeUntilIntooken().andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+    }
+
     public Command oneCoralInsideLeft() {
         // score on J
         Pose2d scorePose;
@@ -84,8 +91,7 @@ public class AutonomousRoutines {
                 .until(this.drivetrain.reachedPose)
                 .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
     public Command oneCoralInsideRight() {
@@ -101,8 +107,7 @@ public class AutonomousRoutines {
                 .until(this.drivetrain.reachedPose)
                 .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
     private Command JtoLeftFeed() {
@@ -148,17 +153,17 @@ public class AutonomousRoutines {
             scorePose = AutoAiming.ReefFaces.KL_R.getLeft(ElevatorSetbacks.L4);
         }
 
+        FollowPath JL4ToLeftFeedToLL4 = new FollowPath("JL4ToLeftFeedToLL4", () -> this.drivetrain.getState().Pose,
+                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
+
         return this.oneCoralInsideLeft()
-                .andThen(this.INTAKE_CORAL.get().raceWith(this.JtoLeftFeed())
-                        .andThen(this.INTAKE_CORAL.get().withTimeout(INTAKE_TIME))
-                        .andThen(drivetrain.goToPose(() -> scorePose)
-                                .alongWith(this.INTAKE_CORAL.get())
-                                .until(this.drivetrain.reachedPose)
-                                .andThen(this.drivetrain.stop())))
-                .andThen(this.STOP_INTAKE.get())
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME))
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
+                .andThen(this.intakeUntilIntooken().andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                        .alongWith(JL4ToLeftFeedToLL4.gimmeCommand()))
+                .andThen(drivetrain.goToPose(() -> scorePose)
+                        .until(this.drivetrain.reachedPose)
+                        .andThen(this.drivetrain.stop()))
+                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
     // public Command oneCoralFeed() {
