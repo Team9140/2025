@@ -27,7 +27,6 @@ public class Constants {
         public static final int FUNNEL_MOTOR = 13;
         public static final int CLIMBER_MOTOR_RIGHT = 14;
         public static final int CLIMBER_MOTOR_LEFT = 12;
-        public static final int CANDLE_id = 0;
     }
 
     public static class Drive {
@@ -97,9 +96,9 @@ public class Constants {
         public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
 
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
-                .of(Meters.of(3.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(2.5).div(SPOOL_CIRCUMFERENCE).magnitude());
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
-                .of(Meters.of(6.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(10.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
 
