@@ -12,6 +12,7 @@ import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_CORAL;
 
 import com.ctre.phoenix6.SignalLogger;
+import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Ports;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -29,11 +30,10 @@ public class Manipulator extends SubsystemBase {
         CORAL
     }
 
-    private final TalonSRX manipulatorMotor;
+    private final TalonSRX manipulatorMotor = new TalonSRX(Ports.MANIPULATOR_MOTOR);;
     private Holdables currentItem = Holdables.WATER;
 
     private Manipulator() {
-        this.manipulatorMotor = new TalonSRX(Ports.MANIPULATOR_MOTOR);
         this.manipulatorMotor.setInverted(false);
         this.manipulatorMotor.setNeutralMode(NeutralMode.Brake);
 
@@ -62,7 +62,8 @@ public class Manipulator extends SubsystemBase {
 //        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
     }
 
-    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
+//    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
+    public final Trigger hasCoral = new Trigger(() -> Amps.of(this.manipulatorMotor.getStatorCurrent()).gt(Constants.Manipulator.HOLD_AMPERAGE_ALGAE));
     public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdables.ALGAE));
 
     public Command off() {

@@ -84,6 +84,7 @@ public class Constants {
         public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
         public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(500.0);
         public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(20);
+        public static final Current HOLD_AMPERAGE_ALGAE = Amps.of(4);
     }
 
     public static final class Elevator {
