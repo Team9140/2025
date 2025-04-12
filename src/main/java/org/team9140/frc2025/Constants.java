@@ -109,7 +109,7 @@ public class Constants {
 
         public static final Measure<DistanceUnit> POSITION_epsilon = Inches.of(0.75);
 
-        public static Distance STOW_height = Inches.of(0.75);
+        public static Distance STOW_height = Inches.of(0.5);
         public static Distance L1_coral_height = Inches.of(24);
         public static Distance L2_coral_height = Inches.of(31);
         public static Distance L3_coral_height = Inches.of(47);
