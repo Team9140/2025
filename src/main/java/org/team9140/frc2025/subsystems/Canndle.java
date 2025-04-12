@@ -30,6 +30,11 @@ public class Canndle extends SubsystemBase {
 
     private Canndle() {
         this.candle = new CANdle(0);
+
+        if (Optional.of(DriverStation.Alliance.Red).equals(Util.getAlliance()))
+            this.setColor(RED);
+        else
+            this.setColor(BLUE);
     }
 
     public static Canndle getInstance() {

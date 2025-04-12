@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
     private final CommandSwerveDrivetrain drivetrain = TunerConstantsComp.getDrivetrain();
-    private final Telemetry logger = new Telemetry(Constants.Drive.SPEED_AT_12_VOLTS.in(MetersPerSecond));
+    private final SwerveTelemetry logger = new SwerveTelemetry(Constants.Drive.SPEED_AT_12_VOLTS.in(MetersPerSecond));
     private final Elevator elevator = Elevator.getInstance();
     private final Manipulator manipulator = Manipulator.getInstance();
     private final Funnel funnel = Funnel.getInstance();
@@ -63,7 +63,7 @@ public class RobotContainer {
     private final Trigger exitAutoAlign = new Trigger(this::stickInput);
 
     private void configureBindings() {
-        this.candle.setDefaultCommand(this.candle.solidAllianceColor());
+        this.candle.setDefaultCommand(this.candle.solidAllianceColor().ignoringDisable(true));
         this.climber.setDefaultCommand(this.climber.off());
 
         drivetrain

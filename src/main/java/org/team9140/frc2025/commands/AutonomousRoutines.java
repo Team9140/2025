@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -159,7 +160,7 @@ public class AutonomousRoutines {
                                 .andThen(this.drivetrain.stop())))
                 .andThen(this.STOP_INTAKE.get())
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
+                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME))
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
     }
 

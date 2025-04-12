@@ -1,5 +1,7 @@
 package org.team9140.frc2025;
 
+import edu.wpi.first.networktables.*;
+import org.team9140.frc2025.generated.TunerConstantsComp;
 import org.team9140.frc2025.helpers.AutoAiming;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -9,20 +11,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
+import org.team9140.frc2025.subsystems.Elevator;
 
-public class Telemetry {
+public class SwerveTelemetry {
     private final double MaxSpeed;
 
     /**
@@ -30,7 +27,7 @@ public class Telemetry {
      *
      * @param maxSpeed Maximum speed in meters per second
      */
-    public Telemetry(double maxSpeed) {
+    public SwerveTelemetry(double maxSpeed) {
         MaxSpeed = maxSpeed;
         SignalLogger.start();
     }
@@ -84,8 +81,14 @@ public class Telemetry {
     private final double[] m_moduleStatesArray = new double[8];
     private final double[] m_moduleTargetsArray = new double[8];
 
+    private final CommandSwerveDrivetrain drivetrain = TunerConstantsComp.getDrivetrain();
+
+    private final BooleanPublisher reachedPosePub = this.inst.getTable("SmartDashboard").getBooleanTopic("reached pose").publish();
+
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
     public void telemeterize(SwerveDriveState state) {
+        reachedPosePub.set(drivetrain.reachedPose.getAsBoolean());
+
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);
         closestReefPose.set(AutoAiming.getClosestFace(state.Pose.getTranslation()).getCenter());
@@ -116,13 +119,13 @@ public class Telemetry {
         fieldTypePub.set("Field2d");
         fieldPub.set(m_poseArray);
 
-        /* Telemeterize the module states to a Mechanism2d */
-        for (int i = 0; i < 4; ++i) {
-            m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
-            m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
-            m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
-
-            SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
-        }
+//        /* Telemeterize the module states to a Mechanism2d */
+//        for (int i = 0; i < 4; ++i) {
+//            m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
+//            m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
+//            m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
+//
+//            SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
+//        }
     }
 }

@@ -104,6 +104,8 @@ public class Elevator extends SubsystemBase {
 
         this.targetPosition = Constants.Elevator.STOW_height;
 
+        this.rightMotor.setControl(this.motionMagic.withPosition(
+                this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
         this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
 
         if (Utils.isSimulation()) {
@@ -121,9 +123,9 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("Elevator Current Position Inch", getPosition(false).in(Inches));
         SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
-        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
-        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
-        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
+//        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
+//        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
+//        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
         SmartDashboard.putBoolean("Elevator at target", this.getPosition(false).isNear(this.targetPosition,
                 Constants.Elevator.POSITION_epsilon));
         // SmartDashboard.putNumber("error",

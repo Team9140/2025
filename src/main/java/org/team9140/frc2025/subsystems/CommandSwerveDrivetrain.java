@@ -90,25 +90,22 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
         SmartDashboard.putData("field", dashField2d);
 
         SmartDashboard.putNumberArray("drive target pose", targetPoseDecomposed);
+
+        this.setControl(new SwerveRequest.Idle());
     }
 
     @Override
     public void periodic() {
         dashField2d.setRobotPose(this.getState().Pose);
 
-        SmartDashboard.putNumber("pigeon yaw", this.getPigeon2().getYaw().getValueAsDouble());
+        SmartDashboard.putNumber("pigeon yaw", this.getPigeon2().getYaw(false).getValueAsDouble());
         // SmartDashboard.putNumber("green yaw", this.green_gyro.getAngle());
         // SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
         // SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
         // SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
 
-        if (this.getCurrentCommand() != null) {
-            SignalLogger.writeString("drivetrain command", this.getCurrentCommand().getName());
-            SmartDashboard.putString("drivetrain command", this.getCurrentCommand().getName());
-        } else {
-            SignalLogger.writeString("drivetrain command", "N/A");
-            SmartDashboard.putString("drivetrain command", "N/A");
-        }
+        Command curr = this.getCurrentCommand();
+        SignalLogger.writeString("drivetrain command", curr != null ? curr.getName() : "N/A");
 
         if (this.targetPose != null) {
             targetPoseDecomposed[0] = this.targetPose.getX();

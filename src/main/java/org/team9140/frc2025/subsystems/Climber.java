@@ -58,7 +58,9 @@ public class Climber extends SubsystemBase {
         this.controller = new VoltageOut(0.0)
                 .withEnableFOC(true);
 
+
         this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
+        this.rightMotor.setControl(this.controller);
     }
 
     private static Climber instance;

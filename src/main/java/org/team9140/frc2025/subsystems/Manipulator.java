@@ -11,6 +11,7 @@ import static org.team9140.frc2025.Constants.Manipulator.MANIPULATOR_PEAK_CURREN
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_CORAL;
 
+import com.ctre.phoenix6.SignalLogger;
 import org.team9140.frc2025.Constants.Ports;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -42,6 +43,8 @@ public class Manipulator extends SubsystemBase {
         this.manipulatorMotor.configContinuousCurrentLimit((int) MANIPULATOR_CONTINUOUS_CURRENT_LIMIT.in(Amps));
         this.manipulatorMotor.enableCurrentLimit(true);
 
+        this.manipulatorMotor.set(TalonSRXControlMode.PercentOutput, 0);
+
         this.setDefaultCommand(this.off());
     }
 
@@ -53,10 +56,11 @@ public class Manipulator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
-        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
-        SmartDashboard.putString("manipulator command",
-                this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
+        Command curr = this.getCurrentCommand();
+        SignalLogger.writeString("manipulator command", curr != null ? curr.getName() : "N/A");
+
+//        SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
+//        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
     }
 
     public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));

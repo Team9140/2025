@@ -8,6 +8,7 @@ package org.team9140.frc2025;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.team9140.lib.Util;
@@ -45,6 +46,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledPeriodic() {
+        SignalLogger.writeString("robot mode", "disabled");
+        SmartDashboard.putString("robot mode", "disabled");
+
         if (DriverStation.isDSAttached() && !Util.getAlliance().equals(lastSetAlliance)) {
             lastSetAlliance = Util.getAlliance();
             autonomousCommand = robotContainer.getAutonomousCommand();
@@ -71,6 +75,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousPeriodic() {
+        SignalLogger.writeString("robot mode", "autonomous");
+        SmartDashboard.putString("robot mode", "autonomous");
     }
 
     @Override
@@ -88,6 +94,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
+        SignalLogger.writeString("robot mode", "teleop");
+        SmartDashboard.putString("robot mode", "teleop");
     }
 
     @Override
