@@ -3,7 +3,6 @@ package org.team9140.frc2025;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
@@ -43,7 +42,7 @@ public class Constants {
 
         public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
         public static final double X_CONTROLLER_I = 0.0;
-        public static final double X_CONTROLLER_D = 0.015; // TODO: Raise value
+        public static final double X_CONTROLLER_D = 0.015;
         public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
         public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
         public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
@@ -115,10 +114,10 @@ public class Constants {
         public static Distance L3_coral_height = Inches.of(47);
         public static Distance L4_coral_height = Inches.of(72.0);
 
-        public static Distance L2_ALGAE_height = Inches.of(24); // TODO: Actual Value
+        public static Distance L2_ALGAE_height = Inches.of(24);
         public static Distance L3_ALGAE_height = Inches.of(39);
 
-        public static Distance NET_HEIGHT = Inches.of(80); // TODO: Actual Value
+        public static Distance NET_HEIGHT = Inches.of(80);
 
         public static Distance SOFT_LIMIT = Inches.of(81);
     }
@@ -160,28 +159,5 @@ public class Constants {
 
         public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
                 Inches.of(13).div(2), new Rotation2d());
-
-        // gap between two reef branches on the same face
-        private static final Distance reefBranchGap = Inches.of(13.5);
-        // how many meters straight out from apriltag should center of robot be for L1 / L2 / L3 / L4
-        private static final Distance L1setback = Inches.of(18.0);
-        private static final Distance L2setback = Inches.of(18.0); // wall bump
-        private static final Distance L3setback = Inches.of(18.0 + 4.0); // 4 inch behind wall
-        private static final Distance L4setback = Inches.of(18.0 + 9.0); // 11 inch behind wall
-
-        // from the tag perspective, how far OUT (+x) and LEFT (+y) should the robot be to score?
-        // rotate these around by a tag's orientation on the field then add to tag pose to get target pose for any reef spot
-        public static final Translation2d leftBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(-0.5));
-        public static final Translation2d rightBranchOffset_L1 = new Translation2d(L1setback, reefBranchGap.times(0.5));
-
-        public static final Translation2d leftBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(-0.5));
-        public static final Translation2d rightBranchOffset_L2 = new Translation2d(L2setback, reefBranchGap.times(0.5));
-
-        public static final Translation2d leftBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(-0.5));
-        public static final Translation2d rightBranchOffset_L3 = new Translation2d(L3setback, reefBranchGap.times(0.5));
-
-        public static final Translation2d leftBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(-0.5));
-        public static final Translation2d rightBranchOffset_L4 = new Translation2d(L4setback, reefBranchGap.times(0.5));
     }
-
 }

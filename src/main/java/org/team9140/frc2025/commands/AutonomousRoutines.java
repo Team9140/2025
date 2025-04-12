@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -22,13 +21,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-// TODO: put expected pose on dashboard in telemetry file
 public class AutonomousRoutines {
     private static final Time INTAKE_TIME = Seconds.of(1.0);
     private static final Time THROW_TIME = Seconds.of(0.5);
     private final CommandSwerveDrivetrain drivetrain;
 
-    // TODO: Align while raising elevator
     // private final Supplier<Command> SCORE_CORAL_L4;
     private final Supplier<Command> INTAKE_CORAL;
     private final Supplier<Command> STOP_INTAKE;

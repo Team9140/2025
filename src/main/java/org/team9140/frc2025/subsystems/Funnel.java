@@ -1,6 +1,5 @@
 package org.team9140.frc2025.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -22,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Funnel extends SubsystemBase {
 
     private final TalonFX motor;
-    private VoltageOut output;
+    private final VoltageOut output;
 
     private Funnel() {
         this.motor = new TalonFX(Ports.FUNNEL_MOTOR, "sigma");

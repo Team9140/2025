@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-// TODO: Support path splits
 public class FollowPath {
     private final TreeMap<String, Trigger> eventtimes;
     private final EventLoop loop;
@@ -146,10 +145,7 @@ public class FollowPath {
                     Optional<SwerveSample> sample = this.trajectory.sampleAt(this.timer.get(), false);
                     sample.ifPresent(this.sampleConsumer);
                 },
-                interrupted -> {
-                    final Pose2d finalPose = getFinalPose();
-                    this.active = false;
-                },
+                interrupted -> this.active = false,
                 () -> (this.timer.hasElapsed(this.trajectory.getTotalTime())) && Util.epsilonEquals(poseSupplier.get(), getFinalPose()),
                 requirement);
     }

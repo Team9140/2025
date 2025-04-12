@@ -18,15 +18,12 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LimeLight extends SubsystemBase {
 
     private String name;
     private Consumer<VisionMeasurement> measurementConsumer;
-    private double[] mt1BotPose = new double[3];
-    private double[] mt2BotPose = new double[3];
 
     public LimeLight(String nm, Consumer<VisionMeasurement> cvm) {
         this.name = nm;

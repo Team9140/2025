@@ -208,8 +208,6 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
     }
 
-    // TODO: Potentially use SwerveRequest.ApplyFieldSpeeds or
-    // SwerveRequest.ApplyRobotSpeeds
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(Constants.Drive.MIN_TRANSLATIONAL_SPEED_TELEOP)
             .withRotationalDeadband(MIN_ROTATIONAL_SPEED_TELEOP)
@@ -363,9 +361,6 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
             this.getPigeon2().setYaw(angle);
         });
     }
-
-    // TODO:
-    // move all sysid stuff to a new file in lib
 
     // private final SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC
     // m_steerSysID = new SwerveRequests9140.SysIdSwerveSteerTorqueCurrentFOC();

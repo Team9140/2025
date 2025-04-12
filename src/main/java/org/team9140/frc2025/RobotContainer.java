@@ -5,7 +5,6 @@
 
 package org.team9140.frc2025;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.team9140.frc2025.commands.AutonomousRoutines;
@@ -21,8 +20,6 @@ import org.team9140.frc2025.subsystems.Manipulator;
 
 import com.ctre.phoenix6.Utils;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
     private final CommandSwerveDrivetrain drivetrain = TunerConstantsComp.getDrivetrain();
-    private final SwerveTelemetry logger = new SwerveTelemetry(Constants.Drive.SPEED_AT_12_VOLTS.in(MetersPerSecond));
+    private final SwerveTelemetry logger = new SwerveTelemetry();
     private final Elevator elevator = Elevator.getInstance();
     private final Manipulator manipulator = Manipulator.getInstance();
     private final Funnel funnel = Funnel.getInstance();
@@ -176,7 +173,7 @@ public class RobotContainer {
                         this.controller.getHID()::getRightTriggerAxis));
 
         // controller.start().onTrue(this.drivetrain.resetGyroCommand(Degrees.of(0)));
-        Pose2d target = new Pose2d(2, 4, new Rotation2d());
+        // Pose2d target = new Pose2d(2, 4, new Rotation2d());
         // controller.back().whileTrue(this.drivetrain.goToPose(() -> target));
         this.controller.back().onTrue(this.climber.prep());
         this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())

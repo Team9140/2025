@@ -32,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import static edu.wpi.first.units.Units.*;
@@ -151,7 +150,7 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition(false).in(Inches));
+        SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
         SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
         // SmartDashboard.putNumber("Elevator Voltage",
         // rightMotor.getMotorVoltage(false).getValueAsDouble());
@@ -201,7 +200,7 @@ public class Elevator extends SubsystemBase {
         m_simNotifier.startPeriodic(kSimLoopPeriod.in(Seconds));
     }
 
-    public Distance getPosition(boolean refresh) {
+    public Distance getPosition() {
         return Constants.Elevator.SPOOL_CIRCUMFERENCE
                 .times(this.rightMotor.getPosition(false).getValue().in(Rotations));
     }
@@ -222,12 +221,12 @@ public class Elevator extends SubsystemBase {
         }).andThen(new WaitUntilCommand(atPosition));
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition(true).gt(Feet.of(3)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));
     private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height)
             .div(2.0);
-    public final Trigger isAlgaeing = new Trigger(() -> this.getPosition(true).isNear(algaeingCenter, Inches.of(18.0)));
+    public final Trigger isAlgaeing = new Trigger(() -> this.getPosition().isNear(algaeingCenter, Inches.of(18.0)));
     public final Trigger atPosition = new Trigger(
-            () -> this.getPosition(true).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
+            () -> this.getPosition().isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
     public final Trigger isStowed = new Trigger(
-            () -> this.getPosition(true).isNear(Constants.Elevator.STOW_height, Inches.of(0.75)));
+            () -> this.getPosition().isNear(Constants.Elevator.STOW_height, Inches.of(0.75)));
 }
