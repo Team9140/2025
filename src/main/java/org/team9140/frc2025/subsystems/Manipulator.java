@@ -1,7 +1,6 @@
 package org.team9140.frc2025.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.*;
 import static org.team9140.frc2025.Constants.Manipulator.HOLD_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.INTAKE_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.INTAKE_VOLTAGE_CORAL;
@@ -12,6 +11,7 @@ import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_CORAL;
 
 import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.math.filter.Debouncer;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Ports;
 
@@ -30,7 +30,7 @@ public class Manipulator extends SubsystemBase {
         CORAL
     }
 
-    private final TalonSRX manipulatorMotor = new TalonSRX(Ports.MANIPULATOR_MOTOR);;
+    private final TalonSRX manipulatorMotor = new TalonSRX(Ports.MANIPULATOR_MOTOR);
     private Holdables currentItem = Holdables.WATER;
 
     private Manipulator() {
@@ -62,9 +62,13 @@ public class Manipulator extends SubsystemBase {
 //        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
     }
 
-//    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
-    public final Trigger hasCoral = new Trigger(() -> Amps.of(this.manipulatorMotor.getStatorCurrent()).gt(Constants.Manipulator.HOLD_AMPERAGE_ALGAE));
+    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdables.CORAL));
     public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdables.ALGAE));
+
+    public final Trigger justIntookenGamePooken = new Trigger(() ->
+            Amps.of(Math.abs(
+                    this.manipulatorMotor.getStatorCurrent())).gt(Constants.Manipulator.HOLD_AMPERAGE_GAME_PIECE))
+            .debounce(Constants.Manipulator.INTOOKEN_TIME.in(Seconds), Debouncer.DebounceType.kBoth);
 
     public Command off() {
         return this.run(() -> {
