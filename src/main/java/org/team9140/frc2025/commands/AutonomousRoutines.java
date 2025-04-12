@@ -75,7 +75,8 @@ public class AutonomousRoutines {
     }
 
     public Command testAuto() {
-        return this.intakeUntilIntooken().andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height));
+        return new FollowPath("JL4ToLeftFeedToLL4", () -> this.drivetrain.getState().Pose,
+                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain).gimmeCommand();
     }
 
     public Command oneCoralInsideLeft() {
@@ -159,7 +160,7 @@ public class AutonomousRoutines {
         return this.oneCoralInsideLeft()
                 .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
                 .andThen(this.intakeUntilIntooken().andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                        .alongWith(JL4ToLeftFeedToLL4.gimmeCommand()))
+                        .alongWith(JL4ToLeftFeedToLL4.gimmeCommand().andThen(drivetrain.stop())))
                 .andThen(drivetrain.goToPose(() -> scorePose)
                         .until(this.drivetrain.reachedPose)
                         .andThen(this.drivetrain.stop()))

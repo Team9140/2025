@@ -41,7 +41,7 @@ public class Constants {
 
         public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
         public static final double X_CONTROLLER_I = 0.0;
-        public static final double X_CONTROLLER_D = 0.015;
+        public static final double X_CONTROLLER_D = 0.05;
         public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
         public static final double Y_CONTROLLER_I = X_CONTROLLER_I;
         public static final double Y_CONTROLLER_D = X_CONTROLLER_D;
