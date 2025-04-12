@@ -1,10 +1,12 @@
 package org.team9140.frc2025.subsystems;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Notifier;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Ports;
+import org.team9140.lib.SysIdRoutineTorqueCurrent;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -14,8 +16,10 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -28,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -37,7 +43,7 @@ public class Elevator extends SubsystemBase {
     private final TalonFX rightMotor = new TalonFX(Ports.ELEVATOR_MOTOR_RIGHT, "sigma");
     private final TalonFX leftMotor = new TalonFX(Ports.ELEVATOR_MOTOR_LEFT, "sigma");
 
-    private final MotionMagicVoltage motionMagic;
+    private final MotionMagicTorqueCurrentFOC motionMagic;
 
     private Distance targetPosition;
 
@@ -57,12 +63,14 @@ public class Elevator extends SubsystemBase {
 
     private Elevator() {
         Slot0Configs elevatorGains = new Slot0Configs()
-                .withKP(20.0)
-                .withKI(0)
-                .withKD(1.0)
-                .withKS(0)
-                .withKV(0)
-                .withKA(0);
+                .withKP(150.0)
+                .withKI(0.0)
+                .withKD(12.0)
+                .withKS(0.88302)
+                .withKV(0.7863)
+                .withKA(0.44435)
+                .withGravityType(GravityTypeValue.Elevator_Static)
+                .withKG(9.6);
 
         CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(Constants.Elevator.STATOR_LIMIT)
@@ -98,8 +106,7 @@ public class Elevator extends SubsystemBase {
         this.rightMotor.getConfigurator().apply(feedbackConfigs);
         // this.rightMotor.setPosition(0.0);
 
-        this.motionMagic = new MotionMagicVoltage(0)
-                .withEnableFOC(true)
+        this.motionMagic = new MotionMagicTorqueCurrentFOC(0)
                 .withSlot(0);
 
         this.targetPosition = Constants.Elevator.STOW_height;
@@ -113,6 +120,29 @@ public class Elevator extends SubsystemBase {
         }
     }
 
+    TorqueCurrentFOC testOutput = new TorqueCurrentFOC(0);
+    SysIdRoutineTorqueCurrent routine = new SysIdRoutineTorqueCurrent(
+            new SysIdRoutineTorqueCurrent.Config(Amps.of(5.0).per(Second), Amps.of(20.0), Seconds.of(10.0),
+                    state -> SignalLogger.writeString("elevator sysid", state.toString())),
+            new SysIdRoutineTorqueCurrent.Mechanism(output -> this.rightMotor.setControl(testOutput.withOutput(output)),
+                    null, this));
+
+    public Command qForward() {
+        return this.routine.quasistatic(Direction.kForward);
+    }
+
+    public Command qReverse() {
+        return this.routine.quasistatic(Direction.kReverse);
+    }
+
+    public Command dForward() {
+        return this.routine.dynamic(Direction.kForward);
+    }
+
+    public Command dReverse() {
+        return this.routine.dynamic(Direction.kReverse);
+    }
+
     private static Elevator instance;
 
     public static Elevator getInstance() {
@@ -123,13 +153,19 @@ public class Elevator extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("Elevator Current Position Inch", getPosition(false).in(Inches));
         SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
-//        SmartDashboard.putNumber("Elevator Voltage", rightMotor.getMotorVoltage(false).getValueAsDouble());
-//        SmartDashboard.putNumber("Elevator Current", rightMotor.getStatorCurrent(false).getValueAsDouble());
-//        SmartDashboard.putNumber("Elevator raw position", rightMotor.getPosition(false).getValueAsDouble());
-        SmartDashboard.putBoolean("Elevator at target", this.getPosition(false).isNear(this.targetPosition,
-                Constants.Elevator.POSITION_epsilon));
+        // SmartDashboard.putNumber("Elevator Voltage",
+        // rightMotor.getMotorVoltage(false).getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator Current",
+        // rightMotor.getStatorCurrent(false).getValueAsDouble());
+        // SmartDashboard.putNumber("Elevator raw position",
+        // rightMotor.getPosition(false).getValueAsDouble());
+        SmartDashboard.putBoolean("Elevator at target", this.atPosition.getAsBoolean());
+        SmartDashboard.putBoolean("Elevator algae", this.isAlgaeing.getAsBoolean());
         // SmartDashboard.putNumber("error",
         // this.leftMotor.getClosedLoopError().getValueAsDouble());
+
+        // refresh once instead of letting every trigger do it every loop
+        this.rightMotor.getPosition().refresh();
     }
 
     public void updateSimState(double deltatime) {
@@ -167,7 +203,7 @@ public class Elevator extends SubsystemBase {
 
     public Distance getPosition(boolean refresh) {
         return Constants.Elevator.SPOOL_CIRCUMFERENCE
-                .times(this.rightMotor.getPosition(refresh).getValue().in(Rotations));
+                .times(this.rightMotor.getPosition(false).getValue().in(Rotations));
     }
 
     public Command moveToPosition(Distance goalPosition) {
@@ -187,9 +223,11 @@ public class Elevator extends SubsystemBase {
     }
 
     public final Trigger isUp = new Trigger(() -> this.getPosition(true).gt(Feet.of(3)));
-    private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height).div(2.0);
+    private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height)
+            .div(2.0);
     public final Trigger isAlgaeing = new Trigger(() -> this.getPosition(true).isNear(algaeingCenter, Inches.of(18.0)));
     public final Trigger atPosition = new Trigger(
             () -> this.getPosition(true).isNear(this.targetPosition, Constants.Elevator.POSITION_epsilon));
-    public final Trigger isStowed = new Trigger(() -> this.getPosition(true).isNear(Constants.Elevator.STOW_height, Inches.of(0.75)));
+    public final Trigger isStowed = new Trigger(
+            () -> this.getPosition(true).isNear(Constants.Elevator.STOW_height, Inches.of(0.75)));
 }
