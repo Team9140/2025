@@ -60,9 +60,6 @@ public class RobotContainer {
     private final Trigger exitAutoAlign = new Trigger(this::stickInput);
 
     private void configureBindings() {
-        this.candle.setDefaultCommand(this.candle.solidAllianceColor().ignoringDisable(true));
-        this.climber.setDefaultCommand(this.climber.off());
-
         drivetrain
                 .setDefaultCommand(
                         drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
@@ -233,6 +230,6 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.testAuto();
+        return routines.threeCoralInsideLeft();
     }
 }

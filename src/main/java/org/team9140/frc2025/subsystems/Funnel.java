@@ -39,7 +39,7 @@ public class Funnel extends SubsystemBase {
 
         this.motor.setControl(this.output);
 
-        this.setDefaultCommand(this.turnOff());
+        this.setDefaultCommand(this.turnOff().ignoringDisable(true));
     }
 
     private static Funnel instance;

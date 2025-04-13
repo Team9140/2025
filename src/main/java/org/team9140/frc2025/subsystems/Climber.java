@@ -61,6 +61,8 @@ public class Climber extends SubsystemBase {
 
         this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
         this.rightMotor.setControl(this.controller);
+
+        this.setDefaultCommand(this.off().ignoringDisable(true));
     }
 
     private static Climber instance;

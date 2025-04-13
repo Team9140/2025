@@ -31,7 +31,7 @@ public class FollowPath {
     private final DriverStation.Alliance alliance;
     private final Trigger activeTrigger;
 
-    private Trajectory<SwerveSample> trajectory;
+    public Trajectory<SwerveSample> trajectory;
     private boolean active = false;
 
     private final Supplier<Pose2d> poseSupplier;

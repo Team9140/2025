@@ -110,9 +110,10 @@ public class Elevator extends SubsystemBase {
 
         this.targetPosition = Constants.Elevator.STOW_height;
 
+        
+        this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
         this.rightMotor.setControl(this.motionMagic.withPosition(
                 this.targetPosition.div(Constants.Elevator.SPOOL_CIRCUMFERENCE).magnitude()));
-        this.leftMotor.setControl(new Follower(this.rightMotor.getDeviceID(), true));
 
         if (Utils.isSimulation()) {
             startSimThread();
@@ -221,7 +222,7 @@ public class Elevator extends SubsystemBase {
         }).andThen(new WaitUntilCommand(atPosition));
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(3)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(4)));
     private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height)
             .div(2.0);
     public final Trigger isAlgaeing = new Trigger(() -> this.getPosition().isNear(algaeingCenter, Inches.of(18.0)));

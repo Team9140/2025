@@ -100,9 +100,12 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
         SmartDashboard.putNumber("pigeon yaw", this.getPigeon2().getYaw(false).getValueAsDouble());
         // SmartDashboard.putNumber("green yaw", this.green_gyro.getAngle());
-        // SmartDashboard.putNumber("x error", this.m_pathXController.getPositionError());
-        // SmartDashboard.putNumber("y error", this.m_pathYController.getPositionError());
-        // SmartDashboard.putNumber("angle error", this.headingController.getPositionError());
+        // SmartDashboard.putNumber("x error",
+        // this.m_pathXController.getPositionError());
+        // SmartDashboard.putNumber("y error",
+        // this.m_pathYController.getPositionError());
+        // SmartDashboard.putNumber("angle error",
+        // this.headingController.getPositionError());
 
         Command curr = this.getCurrentCommand();
         SignalLogger.writeString("drivetrain command", curr != null ? curr.getName() : "N/A");
@@ -149,20 +152,6 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
         }
 
         if (DriverStation.isEnabled()) {
-            // if (vm.kind.equals(VisionMeasurement.Kind.MT2)) {
-                // if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 1.0) {
-                // xyStdDev = 0.1;
-                // } else if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 0.5)
-                // {
-                // xyStdDev = 0.25;
-                // } else if (vm.measurement.tagCount >= 2) {
-                // xyStdDev = 0.5;
-                // } else if (Math.abs(speeds.vxMetersPerSecond) +
-                // Math.abs(speeds.vxMetersPerSecond) <= 0.1
-                // && vm.measurement.avgTagArea >= 2.0) {
-                // // close, stationary
-                // xyStdDev = 1.0;
-                // }
             if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
                 if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 0.25) {
                     xyStdDev = 0.5;
@@ -184,18 +173,6 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
         } else {
             if (vm.kind.equals(VisionMeasurement.Kind.MT1)) {
-
-                // if (vm.measurement.avgTagArea > 0.5) {
-                // xyStdDev = 2.0;
-                // thetaStdDev = 2.0;
-                // } else if (vm.measurement.tagCount >= 2 && vm.measurement.avgTagArea >= 0.2)
-                // {
-                // xyStdDev = 0.5;
-                // thetaStdDev = 1.0;
-                // } else if (highestAmbiguity <= 0.2 && vm.measurement.avgTagArea >= 0.05) {
-                // xyStdDev = 5.0;
-                // }
-
                 if (highestAmbiguity <= 0.5) {
                     xyStdDev = 5.0;
                     thetaStdDev = 5.0;
@@ -271,12 +248,12 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
             double vx = 0.0, vy = 0.0, omega = 0.0;
 
-            if (!Util.epsilonEquals(pose.getX(), targetPose.getX(), 0.015)) {
+            if (!Util.epsilonEquals(pose.getX(), targetPose.getX(), 0.01)) {
                 vx = m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime);
                 vx = Util.clamp(vx, 1.75);
             }
 
-            if (!Util.epsilonEquals(pose.getY(), targetPose.getY(), 0.015)) {
+            if (!Util.epsilonEquals(pose.getY(), targetPose.getY(), 0.01)) {
                 vy = m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime);
                 vy = Util.clamp(vy, 1.75);
             }
@@ -301,7 +278,7 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
     // Debouncer.DebounceType.kBoth);
 
     public final Trigger reachedPose = new Trigger(() -> Util.epsilonEquals(this.targetPose, this.getState().Pose))
-            .debounce(0.25, DebounceType.kBoth);
+            .debounce(0.188, DebounceType.kBoth);
 
     public Command coralReefDrive(ElevatorSetbacks level, boolean lefty) {
         return this.goToPose(() -> {

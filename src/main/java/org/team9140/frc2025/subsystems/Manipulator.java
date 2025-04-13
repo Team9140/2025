@@ -13,7 +13,6 @@ import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_CORAL;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Ports;
 
@@ -60,7 +59,7 @@ public class Manipulator extends SubsystemBase {
         Command curr = this.getCurrentCommand();
         SignalLogger.writeString("manipulator command", curr != null ? curr.getName() : "N/A");
 
-//        SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
+       SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
 //        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());
         SmartDashboard.putBoolean("intooketh", this.justIntookenGamePooken.getAsBoolean());
     }

@@ -55,6 +55,8 @@ public class Robot extends TimedRobot {
         }
 
         Util.updateAlliance();
+        if (autonomousCommand == null)
+            autonomousCommand = robotContainer.getAutonomousCommand();
     }
 
     @Override
@@ -63,8 +65,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        if (autonomousCommand == null)
-            autonomousCommand = robotContainer.getAutonomousCommand();
 
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
@@ -100,7 +100,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopExit() {
-        
+
     }
 
     @Override

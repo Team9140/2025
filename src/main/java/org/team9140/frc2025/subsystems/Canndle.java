@@ -35,6 +35,8 @@ public class Canndle extends SubsystemBase {
             this.setColor(RED);
         else
             this.setColor(BLUE);
+
+        this.setDefaultCommand(this.solidAllianceColor().ignoringDisable(true));
     }
 
     public static Canndle getInstance() {
