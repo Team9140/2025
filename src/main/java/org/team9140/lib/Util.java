@@ -43,7 +43,7 @@ public class Util {
     }
 
     public static final Distance TRANSLATION_E = Inches.of(1.5);
-    public static final Angle ROTATION_E = Degrees.of(3);
+    public static final Angle ROTATION_E = Degrees.of(2);
 
     public static boolean epsilonEquals(Pose2d a, Pose2d b) {
         boolean transValid = a.getTranslation().getDistance(b.getTranslation()) < TRANSLATION_E.in(Meters);
