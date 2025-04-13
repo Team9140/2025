@@ -113,7 +113,7 @@ public class Constants {
         public static Distance L1_coral_height = Inches.of(24);
         public static Distance L2_coral_height = Inches.of(31);
         public static Distance L3_coral_height = Inches.of(47);
-        public static Distance L4_coral_height = Inches.of(72.0);
+        public static Distance L4_coral_height = Inches.of(72.25);
 
         public static Distance L2_ALGAE_height = Inches.of(24);
         public static Distance L3_ALGAE_height = Inches.of(39);
