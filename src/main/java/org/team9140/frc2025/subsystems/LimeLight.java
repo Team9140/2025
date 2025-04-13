@@ -41,12 +41,14 @@ public class LimeLight extends SubsystemBase {
 
     private class Listener implements TableEventListener {
         public void accept(NetworkTable table, String key, NetworkTableEvent event) {
-            if (key.equals("json")) {
+            if (key.equals("botpose_wpiblue")) {
                 Time timestamp = Seconds.of(Utils.getCurrentTimeSeconds());
-                LimelightHelpers.LimelightResults llResult = LimelightHelpers.getLatestResults(LimeLight.this.name);
+                // LimelightHelpers.LimelightResults llResult = LimelightHelpers.getLatestResults(LimeLight.this.name);
+                double cl = LimelightHelpers.getLatency_Capture(LimeLight.this.name);
+                double tl = LimelightHelpers.getLatency_Pipeline(LimeLight.this.name);
 
-                timestamp = timestamp.minus(Milliseconds.of(llResult.latency_capture))
-                        .minus(Milliseconds.of(llResult.latency_pipeline));
+                timestamp = timestamp.minus(Milliseconds.of(cl))
+                        .minus(Milliseconds.of(tl));
 
                 LimelightHelpers.PoseEstimate mt1 = LimelightHelpers
                         .getBotPoseEstimate_wpiBlue(LimeLight.this.name);
@@ -76,7 +78,7 @@ public class LimeLight extends SubsystemBase {
 
     public synchronized void start() {
         if (m_listenerID < 0) {
-            m_listenerID = NetworkTableInstance.getDefault().getTable(this.name).addListener("json",
+            m_listenerID = NetworkTableInstance.getDefault().getTable(this.name).addListener("botpose_wpiblue",
                     EnumSet.of(Kind.kValueAll), new Listener());
         }
     }
