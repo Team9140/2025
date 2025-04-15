@@ -219,20 +219,17 @@ public class AutonomousRoutines {
             scorePose = AutoAiming.ReefFaces.AB_R.getLeft(ElevatorSetbacks.L4);
         }
 
-        FollowPath KL4ToLeftFeedToAL4 = new FollowPath("KL4ToLeftFeedToAL4", () -> this.drivetrain.getState().Pose,
+        FollowPath KL4ToLeftFeedToAL4_Special = new FollowPath("KL4ToLeftFeedToAL4_Special", () -> this.drivetrain.getState().Pose,
                 this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
 
-        swerveSample = KL4ToLeftFeedToAL4.trajectory.sampleAt(0, false).get();
+        swerveSample = KL4ToLeftFeedToAL4_Special.trajectory.sampleAt(0, false).get();
 
         return this.threeCoralInsideLeft()
                 .andThen(
                         this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
-                .andThen(KL4ToLeftFeedToAL4.gimmeCommand().andThen(drivetrain.stop())
+                .andThen(KL4ToLeftFeedToAL4_Special.gimmeCommand().andThen(drivetrain.stop())
                         .alongWith(this.intakeUntilIntooken()
                                 .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(drivetrain.goToPose(() -> scorePose)
-                        .until(this.drivetrain.reachedPose)
-                        .andThen(this.drivetrain.stop()))
                 .andThen(new WaitCommand(Seconds.of(0.25)))
                 .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
