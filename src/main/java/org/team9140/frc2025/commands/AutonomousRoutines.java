@@ -15,8 +15,6 @@ import org.team9140.frc2025.subsystems.Manipulator;
 import org.team9140.lib.FollowPath;
 import org.team9140.lib.Util;
 
-import choreo.trajectory.SwerveSample;
-
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -36,7 +34,6 @@ public class AutonomousRoutines {
     Elevator elevator = Elevator.getInstance();
     Manipulator manipulator = Manipulator.getInstance();
     Funnel funnel = Funnel.getInstance();
-    private SwerveSample swerveSample;
 
     public AutonomousRoutines(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
@@ -54,6 +51,25 @@ public class AutonomousRoutines {
         // lefty).until(drivetrain.reachedPose).withName("final alignment")
         // .andThen(SCORE_CORAL_L4.get().deadlineFor(drivetrain.coralReefDrive(ElevatorSetbacks.L4,
         // lefty)));
+    }
+
+    private Command feedAndScorePoseL4(String pathName) {
+        FollowPath path = new FollowPath(pathName, () -> this.drivetrain.getState().Pose,
+                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+
+        path.trajectory.sampleAt(0, false);
+
+        return this.oneCoralInsideLeft()
+                .andThen(
+                        this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
+                .andThen(path.gimmeCommand().andThen(drivetrain.stop())
+                        .alongWith(this.intakeUntilIntooken()
+                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
+                .andThen(drivetrain.goToPose(path::getFinalPose)
+                        .until(this.drivetrain.reachedPose)
+                        .andThen(this.drivetrain.stop()))
+                .andThen(new WaitCommand(Seconds.of(0.125)))
+                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
     public Command oneCoralCenter() {
@@ -81,8 +97,8 @@ public class AutonomousRoutines {
 
     public Command testAuto() {
         FollowPath f = new FollowPath("JL4ToLeftFeedToLL4", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
-        swerveSample = f.trajectory.sampleAt(0, false).get();
+                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+        f.trajectory.sampleAt(0, false);
         return oneCoralInsideLeft()
                 .andThen(elevator.moveToPosition(Constants.Elevator.STOW_height))
                 .andThen(f.gimmeCommand());
@@ -124,13 +140,13 @@ public class AutonomousRoutines {
     @SuppressWarnings("unused")
     private Command JtoLeftFeed() {
         FollowPath path = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
         return path.gimmeCommand();
     }
 
     private Command EtoRightFeed() {
         FollowPath path = new FollowPath("EL4ToRightFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
         return path.gimmeCommand();
     }
 
@@ -157,81 +173,15 @@ public class AutonomousRoutines {
     }
 
     public Command twoCoralInsideLeft() {
-        // score on L
-        Pose2d scorePose;
-        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.KL_B.getRight(ElevatorSetbacks.L4);
-        } else {
-            scorePose = AutoAiming.ReefFaces.KL_R.getRight(ElevatorSetbacks.L4);
-        }
-
-        FollowPath JL4ToLeftFeedToLL4 = new FollowPath("JL4ToLeftFeedToLL4", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
-
-        swerveSample = JL4ToLeftFeedToLL4.trajectory.sampleAt(0, false).get();
-
-        return this.oneCoralInsideLeft()
-                .andThen(
-                        this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
-                .andThen(JL4ToLeftFeedToLL4.gimmeCommand().andThen(drivetrain.stop())
-                        .alongWith(this.intakeUntilIntooken()
-                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(drivetrain.goToPose(() -> scorePose)
-                        .until(this.drivetrain.reachedPose)
-                        .andThen(this.drivetrain.stop()))
-                .andThen(new WaitCommand(Seconds.of(0.125)))
-                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        return feedAndScorePoseL4("JL4ToLeftFeedToLL4");
     }
 
     public Command threeCoralInsideLeft() {
-        // score on K
-        Pose2d scorePose;
-        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.KL_B.getLeft(ElevatorSetbacks.L4);
-        } else {
-            scorePose = AutoAiming.ReefFaces.KL_R.getLeft(ElevatorSetbacks.L4);
-        }
-
-        FollowPath LL4ToLeftFeedToKL4 = new FollowPath("LL4ToLeftFeedToKL4", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
-
-        swerveSample = LL4ToLeftFeedToKL4.trajectory.sampleAt(0, false).get();
-
-        return this.twoCoralInsideLeft()
-                .andThen(
-                        this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
-                .andThen(LL4ToLeftFeedToKL4.gimmeCommand().andThen(drivetrain.stop())
-                        .alongWith(this.intakeUntilIntooken()
-                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(drivetrain.goToPose(() -> scorePose)
-                        .until(this.drivetrain.reachedPose)
-                        .andThen(this.drivetrain.stop()))
-                .andThen(new WaitCommand(Seconds.of(0.125)))
-                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        return feedAndScorePoseL4("LL4ToLeftFeedToKL4");
     }
 
     public Command fourCoralInsideLeft() {
-        // score on A
-        Pose2d scorePose;
-        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.AB_B.getLeft(ElevatorSetbacks.L4);
-        } else {
-            scorePose = AutoAiming.ReefFaces.AB_R.getLeft(ElevatorSetbacks.L4);
-        }
-
-        FollowPath KL4ToLeftFeedToAL4_Special = new FollowPath("KL4ToLeftFeedToAL4_Special", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().get(), drivetrain);
-
-        swerveSample = KL4ToLeftFeedToAL4_Special.trajectory.sampleAt(0, false).get();
-
-        return this.threeCoralInsideLeft()
-                .andThen(
-                        this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
-                .andThen(KL4ToLeftFeedToAL4_Special.gimmeCommand().andThen(drivetrain.stop())
-                        .alongWith(this.intakeUntilIntooken()
-                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(new WaitCommand(Seconds.of(0.25)))
-                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        return feedAndScorePoseL4("KL4ToLeftFeedToAL4_Special");
     }
 
     // public Command oneCoralFeed() {
