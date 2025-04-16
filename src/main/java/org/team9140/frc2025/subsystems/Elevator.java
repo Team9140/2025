@@ -62,14 +62,14 @@ public class Elevator extends SubsystemBase {
 
     private Elevator() {
         Slot0Configs elevatorGains = new Slot0Configs()
-                .withKP(150.0)
+                .withKP(175.0)
                 .withKI(0.0)
-                .withKD(12.0)
+                .withKD(14.0)
                 .withKS(0.88302)
-                .withKV(0.7863)
-                .withKA(0.44435)
+                .withKV(0.65)
+                .withKA(0.56)
                 .withGravityType(GravityTypeValue.Elevator_Static)
-                .withKG(9.6);
+                .withKG(9.9);
 
         CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(Constants.Elevator.STATOR_LIMIT)
@@ -122,7 +122,7 @@ public class Elevator extends SubsystemBase {
 
     TorqueCurrentFOC testOutput = new TorqueCurrentFOC(0);
     SysIdRoutineTorqueCurrent routine = new SysIdRoutineTorqueCurrent(
-            new SysIdRoutineTorqueCurrent.Config(Amps.of(5.0).per(Second), Amps.of(20.0), Seconds.of(10.0),
+            new SysIdRoutineTorqueCurrent.Config(Amps.of(5.0).per(Second), Amps.of(30.0), Seconds.of(10.0),
                     state -> SignalLogger.writeString("elevator sysid", state.toString())),
             new SysIdRoutineTorqueCurrent.Mechanism(output -> this.rightMotor.setControl(testOutput.withOutput(output)),
                     null, this));

@@ -59,7 +59,18 @@ public class RobotContainer {
 
     private final Trigger exitAutoAlign = new Trigger(this::stickInput);
 
+    boolean elevatorTuning = false;
+
     private void configureBindings() {
+
+        // if (tuning) {
+        //     controller.a().whileTrue(elevator.dForward());
+        //     controller.b().whileTrue(elevator.dReverse());
+        //     controller.x().whileTrue(elevator.qForward());
+        //     controller.y().whileTrue(elevator.qReverse());
+        //     return;
+        // }
+
         drivetrain
                 .setDefaultCommand(
                         drivetrain.teleopDrive(controller::getLeftX, controller::getLeftY,
@@ -204,8 +215,9 @@ public class RobotContainer {
         limeC.start();
 
         // connectedTrigger.onTrue(
-        //         this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1), Seconds.of(2.0))
-        //                 .ignoringDisable(true));
+        // this.candle.blinkColorEndsAlliance(Canndle.GREEN, Seconds.of(0.1),
+        // Seconds.of(2.0))
+        // .ignoringDisable(true));
     }
 
     double prevTime = Utils.getCurrentTimeSeconds();

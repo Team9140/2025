@@ -98,7 +98,7 @@ public class Constants {
         public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
 
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
-                .of(Meters.of(2.5).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(3.0).div(SPOOL_CIRCUMFERENCE).magnitude());
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
                 .of(Meters.of(10.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
