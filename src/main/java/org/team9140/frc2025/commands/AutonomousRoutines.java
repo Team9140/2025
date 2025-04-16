@@ -4,9 +4,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
+import org.team9140.frc2025.Robot;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.CommandSwerveDrivetrain;
 import org.team9140.frc2025.subsystems.Elevator;
@@ -55,20 +57,15 @@ public class AutonomousRoutines {
 
     private Command feedAndScorePoseL4(String pathName) {
         FollowPath path = new FollowPath(pathName, () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
 
         path.trajectory.sampleAt(0, false);
 
-        return this.oneCoralInsideLeft()
-                .andThen(
-                        this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate()))
+        return this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate())
                 .andThen(path.gimmeCommand().andThen(drivetrain.stop())
-                        .alongWith(this.intakeUntilIntooken()
-                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(drivetrain.goToPose(path::getFinalPose)
-                        .until(this.drivetrain.reachedPose)
-                        .andThen(this.drivetrain.stop()))
-                .andThen(new WaitCommand(Seconds.of(0.125)))
+                .alongWith(this.intakeUntilIntooken()
+                        .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
+                .andThen(new WaitCommand(Seconds.of(0.25)))
                 .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
@@ -90,6 +87,10 @@ public class AutonomousRoutines {
     }
 
     public Command intakeUntilIntooken() {
+        if (Robot.isSimulation()) {
+            return new PrintCommand("Intooken");
+        }
+
         return this.INTAKE_CORAL.get().until(this.manipulator.justIntookenGamePooken.and(this.elevator.isStowed))
                 .andThen(this.STOP_INTAKE.get())
                 .andThen(new WaitCommand(0.1));
@@ -97,7 +98,7 @@ public class AutonomousRoutines {
 
     public Command testAuto() {
         FollowPath f = new FollowPath("JL4ToLeftFeedToLL4", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
         f.trajectory.sampleAt(0, false);
         return oneCoralInsideLeft()
                 .andThen(elevator.moveToPosition(Constants.Elevator.STOW_height))
@@ -140,13 +141,13 @@ public class AutonomousRoutines {
     @SuppressWarnings("unused")
     private Command JtoLeftFeed() {
         FollowPath path = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
         return path.gimmeCommand();
     }
 
     private Command EtoRightFeed() {
         FollowPath path = new FollowPath("EL4ToRightFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(null), drivetrain);
+                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
         return path.gimmeCommand();
     }
 
@@ -173,15 +174,15 @@ public class AutonomousRoutines {
     }
 
     public Command twoCoralInsideLeft() {
-        return feedAndScorePoseL4("JL4ToLeftFeedToLL4");
+        return oneCoralInsideLeft().andThen(feedAndScorePoseL4("JL4ToLeftFeedToLL4"));
     }
 
     public Command threeCoralInsideLeft() {
-        return feedAndScorePoseL4("LL4ToLeftFeedToKL4");
+        return twoCoralInsideLeft().andThen(feedAndScorePoseL4("LL4ToLeftFeedToKL4"));
     }
 
     public Command fourCoralInsideLeft() {
-        return feedAndScorePoseL4("KL4ToLeftFeedToAL4_Special");
+        return threeCoralInsideLeft().andThen(feedAndScorePoseL4("KL4ToLeftFeedToAL4_Special"));
     }
 
     // public Command oneCoralFeed() {
