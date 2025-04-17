@@ -8,6 +8,7 @@ package org.team9140.frc2025;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -19,13 +20,27 @@ import static edu.wpi.first.units.Units.Seconds;
 
 public class Robot extends TimedRobot {
     private Command autonomousCommand;
-    private Optional<DriverStation.Alliance> lastSetAlliance = Optional.empty();
+    // private Optional<DriverStation.Alliance> lastSetAlliance = Optional.empty();
 
     private final RobotContainer robotContainer;
 
+    public static final String kLeftAuto = "left 3";
+    public static final String kRightAuto = "right 3";
+
+    private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
     public Robot() {
         super(Constants.LOOP_PERIOD.in(Seconds));
+
         robotContainer = new RobotContainer();
+
+        m_chooser.setDefaultOption("Default Auto (left 3)", kLeftAuto);
+        m_chooser.addOption(kLeftAuto, kLeftAuto);
+        m_chooser.addOption(kRightAuto, kRightAuto);
+        SmartDashboard.putData("Auto choices", m_chooser);
+
+        m_chooser.onChange((s) -> robotContainer.setAuto(s));
+
     }
 
     @Override
@@ -49,14 +64,12 @@ public class Robot extends TimedRobot {
         SignalLogger.writeString("robot mode", "disabled");
         SmartDashboard.putString("robot mode", "disabled");
 
-        if (DriverStation.isDSAttached() && !Util.getAlliance().equals(lastSetAlliance)) {
-            lastSetAlliance = Util.getAlliance();
-            autonomousCommand = robotContainer.getAutonomousCommand();
-        }
+        // if (DriverStation.isDSAttached() && !Util.getAlliance().equals(lastSetAlliance)) {
+        //     lastSetAlliance = Util.getAlliance();
+        // }
 
         Util.updateAlliance();
-        if (autonomousCommand == null)
-            autonomousCommand = robotContainer.getAutonomousCommand();
+        autonomousCommand = robotContainer.getAutonomousCommand();
     }
 
     @Override

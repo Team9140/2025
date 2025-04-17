@@ -2,10 +2,13 @@ package org.team9140.frc2025.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.Robot;
@@ -24,7 +27,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
     private static final Time INTAKE_TIME = Seconds.of(1.0);
-    private static final Time THROW_TIME = Seconds.of(0.25);
+    private static final Time THROW_TIME = Seconds.of(0.5);
     private final CommandSwerveDrivetrain drivetrain;
 
     // private final Supplier<Command> SCORE_CORAL_L4;
@@ -63,8 +66,8 @@ public class AutonomousRoutines {
 
         return this.elevator.moveToPosition(Constants.Elevator.STOW_height).until(this.elevator.isUp.negate())
                 .andThen(path.gimmeCommand().andThen(drivetrain.stop())
-                .alongWith(this.intakeUntilIntooken()
-                        .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
+                        .alongWith(this.intakeUntilIntooken()
+                                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
                 .andThen(new WaitCommand(Seconds.of(0.25)))
                 .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
@@ -118,7 +121,6 @@ public class AutonomousRoutines {
                 .until(this.drivetrain.reachedPose)
                 .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
                 .andThen(this.drivetrain.stop())
-                .andThen(new WaitCommand(Seconds.of(0.125)))
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
@@ -138,40 +140,44 @@ public class AutonomousRoutines {
                 .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
-    @SuppressWarnings("unused")
-    private Command JtoLeftFeed() {
-        FollowPath path = new FollowPath("JL4ToLeftFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
-        return path.gimmeCommand();
-    }
+    // @SuppressWarnings("unused")
+    // private Command JtoLeftFeed() {
+    // FollowPath path = new FollowPath("JL4ToLeftFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue),
+    // drivetrain);
+    // return path.gimmeCommand();
+    // }
 
-    private Command EtoRightFeed() {
-        FollowPath path = new FollowPath("EL4ToRightFeed", () -> this.drivetrain.getState().Pose,
-                this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue), drivetrain);
-        return path.gimmeCommand();
-    }
+    // private Command EtoRightFeed() {
+    // FollowPath path = new FollowPath("EL4ToRightFeed", () ->
+    // this.drivetrain.getState().Pose,
+    // this.drivetrain::followSample, Util.getAlliance().orElse(Alliance.Blue),
+    // drivetrain);
+    // return path.gimmeCommand();
+    // }
 
-    public Command twoCoralInsideRight() {
-        // score on E
-        Pose2d scorePose;
-        if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.CD_B.getRight(ElevatorSetbacks.L4);
-        } else {
-            scorePose = AutoAiming.ReefFaces.CD_R.getRight(ElevatorSetbacks.L4);
-        }
+    // public Command twoCoralInsideRight() {
+    // // score on E
+    // Pose2d scorePose;
+    // if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
+    // scorePose = AutoAiming.ReefFaces.CD_B.getRight(ElevatorSetbacks.L4);
+    // } else {
+    // scorePose = AutoAiming.ReefFaces.CD_R.getRight(ElevatorSetbacks.L4);
+    // }
 
-        return this.oneCoralInsideRight()
-                .andThen(this.INTAKE_CORAL.get().raceWith(this.EtoRightFeed())
-                        .andThen(this.INTAKE_CORAL.get().withTimeout(INTAKE_TIME))
-                        .andThen(drivetrain.goToPose(() -> scorePose)
-                                .alongWith(this.INTAKE_CORAL.get())
-                                .until(this.drivetrain.reachedPose)
-                                .andThen(this.drivetrain.stop())))
-                .andThen(this.STOP_INTAKE.get())
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
-    }
+    // return this.oneCoralInsideRight()
+    // .andThen(this.INTAKE_CORAL.get().raceWith(this.EtoRightFeed())
+    // .andThen(this.INTAKE_CORAL.get().withTimeout(INTAKE_TIME))
+    // .andThen(drivetrain.goToPose(() -> scorePose)
+    // .alongWith(this.INTAKE_CORAL.get())
+    // .until(this.drivetrain.reachedPose)
+    // .andThen(this.drivetrain.stop())))
+    // .andThen(this.STOP_INTAKE.get())
+    // .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+    // .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
+    // .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height));
+    // }
 
     public Command twoCoralInsideLeft() {
         return oneCoralInsideLeft().andThen(feedAndScorePoseL4("JL4ToLeftFeedToLL4"));
@@ -183,6 +189,14 @@ public class AutonomousRoutines {
 
     public Command fourCoralInsideLeft() {
         return threeCoralInsideLeft().andThen(feedAndScorePoseL4("KL4ToLeftFeedToAL4_Special"));
+    }
+
+    public Command twoCoralInsideRight() {
+        return oneCoralInsideRight().andThen(feedAndScorePoseL4("EL4ToRightFeedToCL4"));
+    }
+
+    public Command threeCoralInsideRight() {
+        return twoCoralInsideRight().andThen(feedAndScorePoseL4("CL4ToRightFeedToDL4"));
     }
 
     // public Command oneCoralFeed() {

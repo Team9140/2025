@@ -56,8 +56,8 @@ public class Manipulator extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Command curr = this.getCurrentCommand();
-        SignalLogger.writeString("manipulator command", curr != null ? curr.getName() : "N/A");
+        // Command curr = this.getCurrentCommand();
+        // SignalLogger.writeString("manipulator command", curr != null ? curr.getName() : "N/A");
 
        SmartDashboard.putNumber("manipulator voltage", this.manipulatorMotor.getMotorOutputVoltage());
 //        SmartDashboard.putNumber("manipulator current", this.manipulatorMotor.getStatorCurrent());

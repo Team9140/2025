@@ -20,6 +20,7 @@ import org.team9140.frc2025.subsystems.Manipulator;
 
 import com.ctre.phoenix6.Utils;
 
+import choreo.auto.AutoRoutine;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -64,11 +65,11 @@ public class RobotContainer {
     private void configureBindings() {
 
         // if (tuning) {
-        //     controller.a().whileTrue(elevator.dForward());
-        //     controller.b().whileTrue(elevator.dReverse());
-        //     controller.x().whileTrue(elevator.qForward());
-        //     controller.y().whileTrue(elevator.qReverse());
-        //     return;
+        // controller.a().whileTrue(elevator.dForward());
+        // controller.b().whileTrue(elevator.dReverse());
+        // controller.x().whileTrue(elevator.qForward());
+        // controller.y().whileTrue(elevator.qReverse());
+        // return;
         // }
 
         drivetrain
@@ -240,8 +241,23 @@ public class RobotContainer {
         // limeC.setRobotOrientation(robotAngle);
     }
 
+    AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
+    private Command autoCommand;
+
     public Command getAutonomousCommand() {
-        AutonomousRoutines routines = new AutonomousRoutines(this.drivetrain);
-        return routines.fourCoralInsideLeft();
+        // return routines.threeCoralInsideLeft();
+        return autoCommand;
+    }
+
+    public void setAuto(String s) {
+        if (s.equals(Robot.kLeftAuto)) {
+            this.autoCommand = routines.threeCoralInsideLeft();
+            SmartDashboard.putString("selected auto", "left");
+        } else if (s.equals(Robot.kRightAuto)) {
+            this.autoCommand = routines.threeCoralInsideRight();
+            SmartDashboard.putString("selected auto", "right");
+        }
+
+        
     }
 }

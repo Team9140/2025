@@ -84,7 +84,7 @@ public class Constants {
         public static final Current MANIPULATOR_PEAK_CURRENT_LIMIT = Amps.of(30);
         public static final Time MANIPULATOR_PEAK_CURRENT_DURATION = Milliseconds.of(500.0);
         public static final Current MANIPULATOR_CONTINUOUS_CURRENT_LIMIT = Amps.of(20);
-        public static final Current HOLD_AMPERAGE_GAME_PIECE = Amps.of(12.0);
+        public static final Current HOLD_AMPERAGE_GAME_PIECE = Amps.of(13.0);
         public static final Time INTOOKEN_TIME = Seconds.of(0.25);
     }
 
@@ -100,7 +100,7 @@ public class Constants {
         public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
                 .of(Meters.of(3.0).div(SPOOL_CIRCUMFERENCE).magnitude());
         public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
-                .of(Meters.of(10.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+                .of(Meters.of(8.0).div(SPOOL_CIRCUMFERENCE).magnitude());
 
         public static Angle ElevatorAngle = Degrees.of(80);
 
@@ -125,9 +125,9 @@ public class Constants {
 
     public static final class Climber {
         public static final Current STATOR_LIMIT = Amps.of(80.0);
-        public static final double GEAR_RATIO = 5.0 * 5.0 * 4.0 * 4.0;
+        public static final double GEAR_RATIO = 5.0 * 5.0 * 3.0 * 4.0;
         public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
-        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.7);
+        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.73);
 
         public static final Voltage MAX_OUTPUT = Volts.of(12.0);
         public static final Voltage PREP_VOLTAGE = Volts.of(10.0);

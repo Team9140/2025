@@ -64,12 +64,12 @@ public class Elevator extends SubsystemBase {
         Slot0Configs elevatorGains = new Slot0Configs()
                 .withKP(175.0)
                 .withKI(0.0)
-                .withKD(14.0)
+                .withKD(12.0)
                 .withKS(0.88302)
                 .withKV(0.65)
-                .withKA(0.56)
+                .withKA(0.2)
                 .withGravityType(GravityTypeValue.Elevator_Static)
-                .withKG(9.9);
+                .withKG(10.0);
 
         CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs()
                 .withStatorCurrentLimit(Constants.Elevator.STATOR_LIMIT)
@@ -152,7 +152,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Elevator Current Position Inch", getPosition().in(Inches));
-        SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
+        // SmartDashboard.putNumber("Elevator Target Position Inch", targetPosition.in(Inches));
         // SmartDashboard.putNumber("Elevator Voltage",
         // rightMotor.getMotorVoltage(false).getValueAsDouble());
         // SmartDashboard.putNumber("Elevator Current",
@@ -222,7 +222,7 @@ public class Elevator extends SubsystemBase {
         }).andThen(new WaitUntilCommand(atPosition));
     }
 
-    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(4)));
+    public final Trigger isUp = new Trigger(() -> this.getPosition().gt(Feet.of(5)));
     private final Distance algaeingCenter = Constants.Elevator.L3_ALGAE_height.plus(Constants.Elevator.L2_ALGAE_height)
             .div(2.0);
     public final Trigger isAlgaeing = new Trigger(() -> this.getPosition().isNear(algaeingCenter, Inches.of(18.0)));

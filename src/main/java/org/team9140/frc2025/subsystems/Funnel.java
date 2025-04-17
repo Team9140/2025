@@ -49,13 +49,13 @@ public class Funnel extends SubsystemBase {
     }
 
     public void periodic() {
-        Command curr = this.getCurrentCommand();
-        SignalLogger.writeString("funnel command", curr != null ? curr.getName() : "N/A");
+        // Command curr = this.getCurrentCommand();
+        // SignalLogger.writeString("funnel command", curr != null ? curr.getName() : "N/A");
 
 //        SmartDashboard.putNumber("funnel voltage", this.motor.getMotorVoltage(false).getValue().in(Volts));
 //        SmartDashboard.putNumber("funnel current", this.motor.getStatorCurrent(false).getValue().in(Amps));
-        SmartDashboard.putString("funnel command",
-                this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
+        // SmartDashboard.putString("funnel command",
+        //         this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "null");
     }
 
     public Command turnOff() {
