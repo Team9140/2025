@@ -5,18 +5,17 @@
 
 package org.team9140.frc2025;
 
+import static edu.wpi.first.units.Units.Seconds;
+
+import org.team9140.lib.Util;
+
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.wpilibj.DriverStation;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import org.team9140.lib.Util;
-
-import java.util.Optional;
-
-import static edu.wpi.first.units.Units.Seconds;
 
 public class Robot extends TimedRobot {
     private Command autonomousCommand;
@@ -26,6 +25,7 @@ public class Robot extends TimedRobot {
 
     public static final String kLeftAuto = "left 3";
     public static final String kRightAuto = "right 3";
+    public static final String kCenterAuto = "center";
 
     private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -37,6 +37,7 @@ public class Robot extends TimedRobot {
         m_chooser.setDefaultOption("Default Auto (left 3)", kLeftAuto);
         m_chooser.addOption(kLeftAuto, kLeftAuto);
         m_chooser.addOption(kRightAuto, kRightAuto);
+        m_chooser.addOption(kCenterAuto, kCenterAuto);
         SmartDashboard.putData("Auto choices", m_chooser);
 
         m_chooser.onChange((s) -> robotContainer.setAuto(s));
@@ -64,8 +65,9 @@ public class Robot extends TimedRobot {
         SignalLogger.writeString("robot mode", "disabled");
         SmartDashboard.putString("robot mode", "disabled");
 
-        // if (DriverStation.isDSAttached() && !Util.getAlliance().equals(lastSetAlliance)) {
-        //     lastSetAlliance = Util.getAlliance();
+        // if (DriverStation.isDSAttached() &&
+        // !Util.getAlliance().equals(lastSetAlliance)) {
+        // lastSetAlliance = Util.getAlliance();
         // }
 
         Util.updateAlliance();

@@ -127,7 +127,7 @@ public class Constants {
         public static final Current STATOR_LIMIT = Amps.of(80.0);
         public static final double GEAR_RATIO = 5.0 * 5.0 * 3.0 * 4.0;
         public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
-        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.73);
+        public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.74);
 
         public static final Voltage MAX_OUTPUT = Volts.of(12.0);
         public static final Voltage PREP_VOLTAGE = Volts.of(10.0);
@@ -139,7 +139,7 @@ public class Constants {
         L1(Inches.of(18.0)),
         L2(Inches.of(18.0)),
         L3(Inches.of(18.0 + 4.0)),
-        L4(Inches.of(18.0 + 9.0)),
+        L4(Inches.of(18.0 + 9.5)),
         ALGAE_L2(Inches.of(18.0)),
         ALGAE_L3(Inches.of(18.0 + 3.0));
 

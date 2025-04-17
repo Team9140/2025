@@ -2,7 +2,6 @@ package org.team9140.frc2025.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -27,7 +26,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
     private static final Time INTAKE_TIME = Seconds.of(1.0);
-    private static final Time THROW_TIME = Seconds.of(0.5);
+    private static final Time THROW_TIME = Seconds.of(0.75);
     private final CommandSwerveDrivetrain drivetrain;
 
     // private final Supplier<Command> SCORE_CORAL_L4;
@@ -72,21 +71,24 @@ public class AutonomousRoutines {
                 .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
     }
 
+    private Command scorePose(Pose2d pose) {
+        return this.elevator.moveToPosition(Constants.Elevator.L4_coral_height)
+                .andThen(new WaitUntilCommand(this.drivetrain.reachedPose))
+                .andThen(new WaitCommand(Seconds.of(0.25)))
+                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
+                .deadlineFor(this.drivetrain.goToPose(() -> pose));
+    }
+
     public Command oneCoralCenter() {
         // score on G
-        Pose2d scorePose;
+        Pose2d pose;
         if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.GH_B.getLeft(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.GH_B.getRight(ElevatorSetbacks.L4);
         } else {
-            scorePose = AutoAiming.ReefFaces.GH_R.getLeft(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.GH_R.getRight(ElevatorSetbacks.L4);
         }
 
-        return new WaitCommand(Seconds.of(5.0)).andThen(this.drivetrain.goToPose(() -> scorePose)
-                .until(this.drivetrain.reachedPose)
-                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(this.drivetrain.stop())
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME))
-                .andThen(this.elevator.moveToPosition(Constants.Elevator.STOW_height)));
+        return new WaitCommand(Seconds.of(5.0)).andThen(scorePose(pose));
     }
 
     public Command intakeUntilIntooken() {
@@ -110,34 +112,26 @@ public class AutonomousRoutines {
 
     public Command oneCoralInsideLeft() {
         // score on J
-        Pose2d scorePose;
+        Pose2d pose;
         if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.IJ_B.getLeft(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.IJ_B.getLeft(ElevatorSetbacks.L4);
         } else {
-            scorePose = AutoAiming.ReefFaces.IJ_R.getLeft(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.IJ_R.getLeft(ElevatorSetbacks.L4);
         }
 
-        return this.drivetrain.goToPose(() -> scorePose)
-                .until(this.drivetrain.reachedPose)
-                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(this.drivetrain.stop())
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        return scorePose(pose);
     }
 
     public Command oneCoralInsideRight() {
         // score on E
-        Pose2d scorePose;
+        Pose2d pose;
         if (Util.getAlliance().equals(Optional.of(Alliance.Blue))) {
-            scorePose = AutoAiming.ReefFaces.EF_B.getRight(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.EF_B.getRight(ElevatorSetbacks.L4);
         } else {
-            scorePose = AutoAiming.ReefFaces.EF_R.getRight(ElevatorSetbacks.L4);
+            pose = AutoAiming.ReefFaces.EF_R.getRight(ElevatorSetbacks.L4);
         }
 
-        return this.drivetrain.goToPose(() -> scorePose)
-                .until(this.drivetrain.reachedPose)
-                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
-                .andThen(this.drivetrain.stop())
-                .andThen(manipulator.outtakeCoral().withTimeout(THROW_TIME));
+        return scorePose(pose);
     }
 
     // @SuppressWarnings("unused")
