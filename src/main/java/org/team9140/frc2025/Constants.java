@@ -129,7 +129,7 @@ public class Constants {
         public static final Angle SOFT_LIMIT_LOWER = Radians.of(0.0);
         public static final Angle SOFT_LIMIT_HIGHER = Rotations.of(0.74);
 
-        public static final Voltage MAX_OUTPUT = Volts.of(12.0);
+        public static final Voltage MAX_OUTPUT = Volts.of(10.0);
         public static final Voltage PREP_VOLTAGE = Volts.of(10.0);
         public static final Angle PREPPED_POSITION = Rotations.of(0.46);
     }
