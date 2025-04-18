@@ -250,13 +250,21 @@ public class CommandSwerveDrivetrain extends TunerConstantsComp.TunerSwerveDrive
 
             if (!Util.epsilonEquals(pose.getX(), targetPose.getX(), 0.01)) {
                 vx = m_pathXController.calculate(pose.getX(), this.targetPose.getX(), currentTime);
-                vx = Util.clamp(vx, 1.625);
+                // vx = Util.clamp(vx, 1.625);
             }
 
             if (!Util.epsilonEquals(pose.getY(), targetPose.getY(), 0.01)) {
                 vy = m_pathYController.calculate(pose.getY(), this.targetPose.getY(), currentTime);
-                vy = Util.clamp(vy, 1.625);
+                // vy = Util.clamp(vy, 1.625);
             }
+
+            double v = Math.hypot(vx, vy);
+
+            if (v >= 2.25) {
+                vx *= 2.25 / v;
+                vy *= 2.25 / v;
+            }
+
             if (!Util.epsilonEquals(pose.getRotation().getDegrees(), targetPose.getRotation().getDegrees(), 1.0)) {
                 omega = this.headingController.calculate(pose.getRotation().getRadians(),
                         this.targetPose.getRotation().getRadians(), currentTime);

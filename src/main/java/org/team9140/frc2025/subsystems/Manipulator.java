@@ -10,7 +10,6 @@ import static org.team9140.frc2025.Constants.Manipulator.MANIPULATOR_PEAK_CURREN
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_ALGAE;
 import static org.team9140.frc2025.Constants.Manipulator.OUTTAKE_VOLTAGE_CORAL;
 
-import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team9140.frc2025.Constants;

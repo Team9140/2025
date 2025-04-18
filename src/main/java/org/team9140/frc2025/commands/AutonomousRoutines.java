@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
-    private static final Time INTAKE_TIME = Seconds.of(1.0);
     private static final Time THROW_TIME = Seconds.of(0.75);
     private final CommandSwerveDrivetrain drivetrain;
 
@@ -67,8 +66,10 @@ public class AutonomousRoutines {
                 .andThen(path.gimmeCommand().andThen(drivetrain.stop())
                         .alongWith(this.intakeUntilIntooken()
                                 .andThen(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))))
-                .andThen(new WaitCommand(Seconds.of(0.25)))
-                .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME));
+                .andThen(new WaitCommand(Seconds.of(0.25))
+                        .andThen(this.manipulator.outtakeCoral().withTimeout(THROW_TIME))
+                        .deadlineFor(drivetrain.goToPose(path::getFinalPose)))
+                .andThen(drivetrain.stop());
     }
 
     private Command scorePose(Pose2d pose) {

@@ -3,7 +3,15 @@
  "version":1,
  "type":"Swerve",
  "variables":{
-  "expressions":{},
+  "expressions":{
+   "robot_accel":{
+    "dimension":"LinAcc",
+    "var":{
+     "exp":"2.9 m / s / s",
+     "val":2.9
+    }
+   }
+  },
   "poses":{
    "A_L3":{
     "x":{
