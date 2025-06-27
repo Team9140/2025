@@ -58,8 +58,8 @@ public class Constants {
     }
             
     public static class Funnel {
-        public static final Current STATOR_LIMIT = Amps.of(70);
-        public static final Current SUPPLY_LIMIT = Amps.of(30);
+        public static final Current STATOR_LIMIT = Amps.of(90);
+        public static final Current SUPPLY_LIMIT = Amps.of(40);
         public static final Voltage INTAKE_VOLTAGE = Volts.of(12);
         public static final Voltage UNSTICK_VOLTAGE = Volts.of(-8);
     }
@@ -70,7 +70,7 @@ public class Constants {
         public static final double INTAKE_VOLTAGE_CORAL = 7.0;
         public static final double INTAKE_VOLTAGE_ALGAE = 10;
 
-        public static final double OUTTAKE_VOLTAGE_CORAL = 8;
+        public static final double OUTTAKE_VOLTAGE_CORAL = 10;
         public static final double OUTTAKE_VOLTAGE_ALGAE = -10;
 
         // public static final Measure<DistanceUnit> CORAL_DISTANCE = Centimeters.of(10);

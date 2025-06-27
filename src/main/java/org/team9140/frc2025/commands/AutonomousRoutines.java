@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 import static edu.wpi.first.units.Units.Seconds;
 
 public class AutonomousRoutines {
-    private static final Time THROW_TIME = Seconds.of(0.75);
+    private static final Time THROW_TIME = Seconds.of(0.875);
     private final CommandSwerveDrivetrain drivetrain;
 
     // private final Supplier<Command> SCORE_CORAL_L4;
